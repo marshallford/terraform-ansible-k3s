@@ -7,7 +7,7 @@ variable "ansible_navigator_binary" {
 
 variable "execution_environment_image" {
   type        = string
-  default     = "ghcr.io/marshallford/terraform-ansible-k3s:v0.1.0" # x-release-please-version
+  default     = "ghcr.io/marshallford/terraform-ansible-k3s:v0.1.1" # x-release-please-version
   nullable    = true
   description = "Name of the execution environment container image."
 }

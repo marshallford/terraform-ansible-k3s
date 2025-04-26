@@ -1,0 +1,10 @@
+# https://docs.fedoraproject.org/en-US/fedora-coreos/hostname/
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+  - path: /etc/hostname
+    mode: 0644
+    overwrite: true
+    contents:
+      inline: ${hostname}

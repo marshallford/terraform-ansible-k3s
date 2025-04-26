@@ -1,0 +1,101 @@
+- name: Set mmapfs virtual memory limit
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: "{{ __k3s_max_map_count }}"
+
+- name: Ensure k3s config directory exists
+  ansible.builtin.file:
+    path: "{{ __k3s_config_dir }}"
+    state: directory
+    mode: u=rwx,g=rx,o=
+
+- name: Set k3s env file
+  ansible.builtin.template:
+    src: k3s.env.j2
+    dest: "{{ __k3s_config_dir }}/k3s.env"
+    mode: u=rw,g=,o=
+  no_log: true
+
+- name: Ensure k3s files directory exists
+  ansible.builtin.file:
+    path: "{{ __k3s_files_dir }}"
+    state: directory
+    mode: u=rwx,g=rx,o=
+
+- name: Ensure k3s images directory exists
+  ansible.builtin.file:
+    path: "{{ __k3s_images_dir }}"
+    state: directory
+    mode: u=rwx,g=rx,o=
+
+- name: Ensure k3s staging directory exists
+  ansible.builtin.file:
+    path: "{{ __k3s_staging_dir }}"
+    state: directory
+    mode: u=rwx,g=rx,o=
+
+- name: Ensure k3s manifests directory exists
+  ansible.builtin.file:
+    path: "{{ __k3s_manifests_dir }}"
+    state: directory
+    mode: u=rwx,g=,o=
+  when: __k3s_role == "server"
+
+- name: Copy auto deployed manifests
+  ansible.builtin.copy:
+    content: "{{ item.value }}"
+    dest: "{{ __k3s_manifests_dir }}/{{ item.key }}"
+    mode: u=rw,g=,o=
+  loop: "{{ __k3s_manifests | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  when: __k3s_role == "server"
+
+- name: Find existing auto deployed manifests
+  ansible.builtin.find:
+    paths: "{{ __k3s_manifests_dir }}"
+    patterns: "*"
+  register: current_k3s_manifests_dir
+  when: __k3s_role == "server"
+
+- name: Prune auto deployed manifests
+  ansible.builtin.file:
+    path: "{{ __k3s_manifests_dir }}/{{ item }}"
+    state: absent
+  loop: "{{ (current_k3s_manifests_dir.files | map(attribute='path') | map('basename')) | difference(__k3s_manifests.keys() | list) }}"
+  when: __k3s_role == "server"
+
+- name: Harden kernel parameters for kubelet
+  ansible.builtin.template:
+    src: 90-kubelet.conf.j2
+    dest: /etc/sysctl.d/90-kubelet.conf
+    mode: u=rw,g=,o=
+  notify: Restart systemd-sysctl
+
+- name: Check if k3s binary exists
+  ansible.builtin.stat:
+    path: "{{ __k3s_staging_dir }}/{{ __k3s_binary }}"
+  register: k3s_binary
+
+- name: Check if k3s images exists
+  ansible.builtin.stat:
+    path: "{{ __k3s_staging_dir }}/{{ __k3s_images }}"
+  register: k3s_images
+
+- name: Check if k3s selinux package exists
+  ansible.builtin.stat:
+    path: "{{ __k3s_staging_dir }}/{{ __k3s_selinux_package }}"
+  register: k3s_selinux_package
+
+- name: Check if k3s service is enabled
+  ansible.builtin.command:
+    cmd: systemctl is-enabled --quiet k3s-{{ __k3s_role }}.service # noqa:command-instead-of-module
+  register: k3s_service_enabled
+  failed_when: false
+  changed_when: false
+
+- name: Set k3s facts
+  ansible.builtin.set_fact:
+    k3s_staged: "{{ k3s_binary.stat.exists and k3s_images.stat.exists and k3s_selinux_package.stat.exists }}"
+    k3s_installed: "{{ k3s_service_enabled.rc == 0 }}"
+    k3s_arch: "{{ 'arm64' if ansible_facts.architecture == 'aarch64' else 'arm' if ansible_facts.architecture == 'armv7l' else 'amd64' }}"

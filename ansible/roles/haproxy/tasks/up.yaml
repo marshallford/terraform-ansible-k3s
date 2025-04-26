@@ -1,0 +1,55 @@
+- name: Create haproxy quadlet volume
+  ansible.builtin.copy:
+    content: "[Volume]"
+    dest: "{{ quadlet_containers_dir }}/haproxy.volume"
+    owner: "{{ quadlet_user }}"
+    group: "{{ quadlet_user }}"
+    mode: u=rwx,g=rx,o=rx
+
+- name: Start haproxy volume
+  ansible.builtin.systemd_service:
+    name: haproxy-volume.service
+    daemon_reload: true
+    state: started
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: /run/user/{{ quadlet_user_uid }}
+
+- name: Create haproxy config
+  ansible.builtin.template:
+    src: haproxy.cfg.j2
+    dest: "{{ quadlet_volumes_dir }}/systemd-haproxy/_data/haproxy.cfg"
+    owner: "{{ quadlet_user }}"
+    group: "{{ quadlet_user }}"
+    mode: u=rw,g=,o=
+  notify: Reload haproxy
+
+- name: Create haproxy keepalived config
+  ansible.builtin.template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/conf.d/haproxy.conf
+    owner: "{{ quadlet_user }}"
+    group: "{{ quadlet_user }}"
+    mode: u=rw,g=rw,o=
+  notify: Restart keepalived
+
+- name: Create haproxy quadlet container
+  ansible.builtin.template:
+    src: haproxy.container.j2
+    dest: "{{ quadlet_containers_dir }}/haproxy.container"
+    owner: "{{ quadlet_user }}"
+    group: "{{ quadlet_user }}"
+    mode: u=rwx,g=rx,o=rx
+  notify:
+  - Reload systemd
+  - Restart haproxy
+
+- name: Start and enable haproxy service
+  ansible.builtin.systemd_service:
+    name: haproxy.service
+    daemon_reload: true
+    state: started
+    enabled: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: /run/user/{{ quadlet_user_uid }}

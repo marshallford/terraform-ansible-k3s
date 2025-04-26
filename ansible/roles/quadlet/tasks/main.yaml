@@ -1,0 +1,62 @@
+- name: Assertions
+  ansible.builtin.assert:
+    that:
+    - ansible_version.full is version_compare('2.18.0', '>=')
+    - ansible_facts.distribution == 'Fedora'
+    - ansible_facts.distribution_major_version | int >= 41
+    quiet: true
+
+- name: Set unprivileged port start
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_unprivileged_port_start
+    value: 80
+  become: true
+
+- name: Create user systemd directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ __quadlet_user }}"
+    group: "{{ __quadlet_user }}"
+    mode: u=rwx,g=rx,o=rx
+  loop:
+  - "{{ __quadlet_systemd_user_dir }}/default.target.wants"
+  - "{{ __quadlet_systemd_user_dir }}/timers.target.wants"
+
+- name: Create quadlet user config directory
+  ansible.builtin.file:
+    path: "{{ __quadlet_containers_dir }}"
+    state: directory
+    owner: "{{ __quadlet_user }}"
+    group: "{{ __quadlet_user }}"
+    mode: u=rwx,g=rx,o=rx
+
+- name: Ensure lingering for user is enabled
+  ansible.builtin.command:
+    cmd: loginctl enable-linger {{ __quadlet_user }}
+    creates: /var/lib/systemd/linger/{{ __quadlet_user }}
+
+- name: Create wait-for-dns service
+  ansible.builtin.template:
+    src: wait-for-dns.service.j2
+    dest: "{{ __quadlet_systemd_user_dir }}/wait-for-dns.service"
+    owner: "{{ __quadlet_user }}"
+    group: "{{ __quadlet_user }}"
+    mode: u=rwx,g=rx,o=rx
+
+- name: Enable wait-for-dns service
+  ansible.builtin.systemd_service:
+    name: wait-for-dns.service
+    enabled: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: /run/user/{{ __quadlet_user_id }}
+
+- name: Set quadlet facts
+  ansible.builtin.set_fact:
+    quadlet_user_uid: "{{ __quadlet_user_id }}"
+    quadlet_user: "{{ __quadlet_user }}"
+    quadlet_user_home: "{{ __quadlet_user_home }}"
+    quadlet_systemd_user_dir: "{{ __quadlet_systemd_user_dir }}"
+    quadlet_containers_dir: "{{ __quadlet_containers_dir }}"
+    quadlet_volumes_dir: "{{ __quadlet_volumes_dir }}"

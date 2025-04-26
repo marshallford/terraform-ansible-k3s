@@ -1,0 +1,130 @@
+- name: Check if nodes are all healthy
+  ansible.builtin.command:
+    cmd: "{{ __k3s_binary_dir }}/k3s kubectl wait --for=condition=Ready node --all --timeout=1m"
+  changed_when: false
+  when: __k3s_installed and __k3s_delegated_server_host == inventory_hostname
+  delegate_to: "{{ __k3s_delegated_server_host }}"
+
+- name: Cordon and drain node
+  ansible.builtin.include_tasks:
+    file: drain.yaml
+    apply:
+      delegate_to: "{{ __k3s_delegated_server_host }}"
+  when: __k3s_installed
+
+- name: System upgrade
+  ansible.builtin.include_role:
+    name: fcos_upgrade
+
+- name: Link to k3s binary in staging
+  ansible.builtin.file:
+    src: "{{ __k3s_staging_dir }}/{{ __k3s_binary }}"
+    dest: "{{ __k3s_binary_dir }}/k3s"
+    state: link
+  notify: Restart k3s-{{ __k3s_role }}
+
+- name: Link to k3s images in staging
+  ansible.builtin.file:
+    src: "{{ __k3s_staging_dir }}/{{ __k3s_images }}"
+    dest: "{{ __k3s_images_dir }}/images.tar.zst"
+    state: link
+  notify: Restart k3s-{{ __k3s_role }}
+
+# TODO https://github.com/coreos/rpm-ostree/issues/2127
+- name: Install k3s selinux package
+  community.general.rpm_ostree_pkg:
+    name: "{{ __k3s_staging_dir }}/{{ __k3s_selinux_package }}"
+    apply_live: true
+  retries: 3
+  delay: 30
+  when: "__k3s_selinux_rpm_ostree_package not in rpm_ostree_local_packages"
+  notify: Restart k3s-{{ __k3s_role }}
+
+- name: Ensure k3s systemd service
+  ansible.builtin.template:
+    src: k3s.service.j2
+    dest: /etc/systemd/system/k3s-{{ __k3s_role }}.service
+    mode: u=rw,g=r,o=r
+  notify:
+  - Reload systemd
+  - Restart k3s-{{ __k3s_role }}
+
+- name: Copy k3s files
+  ansible.builtin.copy:
+    content: "{{ item.value }}"
+    dest: "{{ __k3s_files_dir }}/{{ item.key }}"
+    mode: u=rw,g=,o=
+  loop: "{{ __k3s_files | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  notify: Restart k3s-{{ __k3s_role }}
+
+- name: Find existing k3s files
+  ansible.builtin.find:
+    paths: "{{ __k3s_files_dir }}"
+    patterns: "*"
+  register: current_k3s_files_dir
+
+- name: Prune k3s files
+  ansible.builtin.file:
+    path: "{{ __k3s_files_dir }}/{{ item }}"
+    state: absent
+  loop: "{{ (current_k3s_files_dir.files | map(attribute='path') | map('basename')) | difference(__k3s_files.keys() | list) }}"
+  notify: Restart k3s-{{ __k3s_role }}
+
+- name: Ensure k3s registries config
+  ansible.builtin.copy:
+    content: "{{ __k3s_registries_config | to_nice_yaml | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
+    dest: "{{ __k3s_config_dir }}/registries.yaml"
+    mode: u=rwx,g=rwx,o=
+  notify: Restart k3s-{{ __k3s_role }}
+
+- name: Ensure k3s config
+  ansible.builtin.copy:
+    content: "{{ __k3s_config | to_nice_yaml | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
+    dest: "{{ __k3s_config_dir }}/config.yaml"
+    mode: u=rwx,g=r,o=
+  notify: Restart k3s-{{ __k3s_role }}
+
+- name: Check if certificate rotation is required
+  ansible.builtin.command:
+    cmd: "{{ __k3s_binary_dir }}/k3s certificate check -o table"
+  register: certificate_check
+  changed_when: certificate_check.stdout_lines | select('search', 'WARNING|EXPIRED') | list | length != 0
+  notify: Restart k3s-{{ __k3s_role }}
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Start and enable k3s service
+  ansible.builtin.service:
+    name: k3s-{{ __k3s_role }}
+    state: started
+    enabled: true
+
+- name: Wait for kubeconfig to exist
+  ansible.builtin.wait_for:
+    path: "{{ __k3s_kubeconfig }}"
+  when: k3s_role == "server" and not __k3s_installed
+
+- name: Wait for matching kubelet version
+  ansible.builtin.command:
+    cmd: "{{ __k3s_binary_dir }}/k3s kubectl wait node {{ __k3s_node_config['node-name'] }} --for=jsonpath='{.status.nodeInfo.kubeletVersion}'=v{{ __k3s_version }}"
+  retries: 10
+  delay: 30
+  changed_when: false
+  delegate_to: "{{ __k3s_delegated_server_host }}"
+
+- name: Wait for healthy node
+  ansible.builtin.command:
+    cmd: "{{ __k3s_binary_dir }}/k3s kubectl wait --for=condition=Ready node {{ __k3s_node_config['node-name'] }} --timeout=5m"
+  changed_when: false
+  when: __k3s_installed
+  delegate_to: "{{ __k3s_delegated_server_host }}"
+
+- name: Uncordon node
+  ansible.builtin.command:
+    cmd: "{{ __k3s_binary_dir }}/k3s kubectl uncordon {{ __k3s_node_config['node-name'] }}"
+  changed_when: true
+  when: __k3s_installed
+  delegate_to: "{{ __k3s_delegated_server_host }}"

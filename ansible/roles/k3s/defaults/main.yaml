@@ -1,0 +1,28 @@
+__k3s_version: "1.32.3+k3s1"
+__k3s_selinux_version: "1.6.1"
+__k3s_part: configure
+__k3s_config_dir: /etc/rancher/k3s
+__k3s_files_dir: "{{ __k3s_config_dir }}/files"
+__k3s_kubeconfig: "{{ __k3s_config_dir }}/k3s.yaml"
+__k3s_data_dir: /var/lib/rancher/k3s
+__k3s_images_dir: "{{ __k3s_data_dir }}/agent/images"
+__k3s_binary_dir: /usr/local/bin
+__k3s_manifests_dir: "{{ __k3s_data_dir }}/server/manifests/ansible"
+__k3s_manifests: {}
+__k3s_staging_dir: "{{ __k3s_data_dir }}/staging"
+__k3s_binary: "k3s-{{ __k3s_version }}.bin"
+__k3s_images: "images-{{ __k3s_version }}.tar.zst"
+__k3s_selinux_package: "selinux-{{ __k3s_selinux_version }}.rpm"
+__k3s_controller_download_dir: "{{ playbook_dir }}/tmp/k3s"
+__k3s_max_map_count: 262144
+__k3s_download_baseurl: "https://github.com/k3s-io/k3s/releases/download/v{{ __k3s_version }}"
+__k3s_download_binary: "k3s{{ (__k3s_arch == 'amd64') | ternary('', '-' + __k3s_arch) }}"
+__k3s_download_airgap_images: "k3s-airgap-images-{{ __k3s_arch }}.tar.zst"
+__k3s_download_checksum: sha256sum-{{ __k3s_arch }}.txt
+__k3s_selinux_major_minor: "{{ __k3s_selinux_version.split('.')[0] }}.{{ __k3s_selinux_version.split('.')[1] }}"
+__k3s_selinux_patch: "{{ __k3s_selinux_version.split('.')[2] }}"
+__k3s_selinux_download_baseurl: "https://github.com/k3s-io/k3s-selinux/releases/download/v{{ __k3s_selinux_major_minor }}.stable.{{ __k3s_selinux_patch }}"
+__k3s_selinux_download_package: "k3s-selinux-{{ __k3s_selinux_major_minor }}-{{ __k3s_selinux_patch }}.coreos.noarch.rpm"
+__k3s_selinux_download_checksum: sha256sum-coreos-noarch.txt
+__k3s_selinux_rpm_ostree_package: "k3s-selinux-{{ __k3s_selinux_major_minor }}-{{ __k3s_selinux_patch }}.coreos.noarch"
+__k3s_drain_opts: --ignore-daemonsets --delete-emptydir-data --force --timeout 10m

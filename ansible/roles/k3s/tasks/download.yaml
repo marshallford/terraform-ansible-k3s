@@ -1,0 +1,26 @@
+- name: Ensure k3s controller download directory exists
+  ansible.builtin.file:
+    path: "{{ __k3s_controller_download_dir }}/{{ __k3s_arch }}"
+    state: directory
+    mode: u=rwx,g=rwx,o=rx
+
+- name: Download k3s binary
+  ansible.builtin.get_url:
+    url: "{{ __k3s_download_baseurl }}/{{ __k3s_download_binary }}"
+    dest: "{{ __k3s_controller_download_dir }}/{{ __k3s_arch }}/{{ __k3s_binary }}"
+    checksum: "sha256:{{ __k3s_download_baseurl }}/{{ __k3s_download_checksum }}"
+    mode: u=rw,g=r,o=r
+
+- name: Download k3s images
+  ansible.builtin.get_url:
+    url: "{{ __k3s_download_baseurl }}/{{ __k3s_download_airgap_images }}"
+    dest: "{{ __k3s_controller_download_dir }}/{{ __k3s_arch }}/{{ __k3s_images }}"
+    checksum: "sha256:{{ __k3s_download_baseurl }}/{{ __k3s_download_checksum }}"
+    mode: u=rw,g=r,o=r
+
+- name: Download k3s selinux package
+  ansible.builtin.get_url:
+    url: "{{ __k3s_selinux_download_baseurl }}/{{ __k3s_selinux_download_package }}"
+    dest: "{{ __k3s_controller_download_dir }}/{{ __k3s_selinux_package }}"
+    checksum: "sha256:{{ __k3s_selinux_download_baseurl }}/{{ __k3s_selinux_download_checksum }}"
+    mode: u=rw,g=r,o=r

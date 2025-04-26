@@ -1,0 +1,3 @@
+- name: "{{ __k3s_part | capitalize }}"
+  ansible.builtin.include_tasks:
+    file: "{{ __k3s_part }}.yaml"

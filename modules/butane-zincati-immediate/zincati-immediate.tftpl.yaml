@@ -1,0 +1,19 @@
+# https://docs.fedoraproject.org/en-US/fedora-coreos/auto-updates/
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+  - path: /etc/zincati/config.d/51-rollout-wariness.toml
+    mode: 0644
+    overwrite: true
+    contents:
+      inline: |
+        [identity]
+        rollout_wariness = ${wariness}
+  - path: /etc/zincati/config.d/55-updates-strategy.toml
+    mode: 0644
+    overwrite: true
+    contents:
+      inline: |
+        [updates]
+        strategy = "immediate"

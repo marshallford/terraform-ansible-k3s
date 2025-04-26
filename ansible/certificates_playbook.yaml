@@ -1,0 +1,12 @@
+- name: Check cluster certificates
+  hosts: all
+  gather_facts: false
+  become: true
+  ignore_unreachable: true
+  ignore_errors: true
+  tasks:
+  - name: Check certificates
+    ansible.builtin.include_role:
+      name: k3s
+    vars:
+      __k3s_part: check_certificates

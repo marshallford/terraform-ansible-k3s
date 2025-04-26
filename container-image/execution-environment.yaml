@@ -1,0 +1,10 @@
+version: 3
+
+images:
+  base_image:
+    name: ghcr.io/ansible/community-ansible-dev-tools:v25.4.0
+
+dependencies:
+  galaxy:
+    collections:
+    - name: community.general

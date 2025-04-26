@@ -1,0 +1,13 @@
+{
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": true,
+  "packages": {
+    ".": {
+      "release-type": "terraform-module",
+      "extra-files": [
+        "variables.tf",
+        "modules/kubeconfig/variables.tf"
+      ]
+    }
+  }
+}

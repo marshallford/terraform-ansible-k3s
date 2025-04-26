@@ -1,0 +1,21 @@
+#jinja2: lstrip_blocks: "True"
+vrrp_script check_haproxy {
+  script "/usr/bin/pgrep haproxy"
+  interval 1
+}
+
+vrrp_instance HAPROXY {
+  state BACKUP
+  interface {{ __haproxy_keepalived_interface | mandatory }}
+  virtual_router_id {{ __haproxy_keepalived_virtual_router_id }}
+  priority 100
+  advert_int 1
+  nopreempt
+  virtual_ipaddress {
+    {{ __haproxy_keepalived_virtual_ip_address | mandatory }}
+  }
+
+  track_script {
+    check_haproxy
+  }
+}

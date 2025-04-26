@@ -1,0 +1,4 @@
+- name: Delete node
+  ansible.builtin.command:
+    cmd: "{{ __k3s_binary_dir }}/k3s kubectl delete node {{ __k3s_node_config['node-name'] }}"
+  changed_when: true

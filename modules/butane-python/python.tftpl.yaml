@@ -1,0 +1,25 @@
+# https://docs.fedoraproject.org/en-US/fedora-coreos/os-extensions/
+# https://github.com/coreos/fedora-coreos-tracker/issues/681#issuecomment-974301872
+variant: fcos
+version: 1.5.0
+systemd:
+  units:
+  - name: rpm-ostree-install-python.service
+    enabled: true
+    contents: |
+      [Unit]
+      Description=Layer python with rpm-ostree
+      Wants=network-online.target
+      After=network-online.target
+      Before=zincati.service
+      ConditionPathExists=!/var/lib/%N.stamp
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=true
+      ExecStart=/bin/sh -c 'while ! host mirrors.fedoraproject.org; do sleep 1; done'
+      ExecStart=/usr/bin/rpm-ostree install --apply-live --assumeyes --allow-inactive --idempotent python3 python3-libselinux
+      ExecStart=/bin/touch /var/lib/%N.stamp
+
+      [Install]
+      WantedBy=default.target

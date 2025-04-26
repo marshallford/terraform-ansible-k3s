@@ -1,0 +1,20 @@
+- name: Stop zincati
+  ansible.builtin.service:
+    name: zincati
+    state: stopped
+  when: fcos_system_upgrade | default(false)
+  notify: Start zincati
+
+- name: System upgrade
+  ansible.posix.rpm_ostree_upgrade:
+    allow_downgrade: true
+    cache_only: true
+  when: fcos_system_upgrade | default(false)
+  notify:
+  - Reboot
+
+- name: Set upgrade trigger
+  ansible.builtin.copy:
+    content: "{{ fcos_system_upgrade_trigger | default('') }}"
+    dest: "{{ __fcos_upgrade_trigger_file }}"
+    mode: u=rw,g=,o=

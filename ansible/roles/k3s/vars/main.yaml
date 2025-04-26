@@ -1,0 +1,10 @@
+__k3s_all_nodes_config_base:
+  server: "{{ __k3s_server }}"
+__k3s_server_nodes_config_base:
+  server: "{{ none if (__k3s_node_config['cluster-init'] | default(false)) else __k3s_server }}"
+  tls-san: "{{ __k3s_tls_san }}"
+__k3s_config: >-
+  {{ (__k3s_role == 'server') | ternary(
+    ([__k3s_node_config, __k3s_server_nodes_config, __k3s_all_nodes_config, __k3s_server_nodes_config_base] | combine),
+    ([__k3s_node_config, __k3s_all_nodes_config, __k3s_all_nodes_config_base] | combine)
+  )}}

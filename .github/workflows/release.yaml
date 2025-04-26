@@ -1,0 +1,56 @@
+name: Release and Publish
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches:
+    - main
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Release Please
+      id: release
+      uses: googleapis/release-please-action@v4
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      version: ${{ steps.release.outputs.version }}
+  publish:
+    name: Publish
+    needs: release
+    if: ${{ fromJSON(needs.release.outputs.releases_created) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Extract Makefile variables
+      run: eval "$(make -q vars/github)"
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: .python-version
+        cache: pip
+    - name: Create container image context
+      run: make build/context
+    - name: Publish container image
+      uses: ./.github/actions/container-image
+      with:
+        push: true
+        image: ${{ env.MAKEFILE_CONTAINER_IMAGE }}
+        tags: |
+          v${{ needs.release.outputs.version }}
+          latest
+        context: ${{ env.MAKEFILE_BUILD_CONTEXT }}
+        platforms: linux/amd64,linux/arm64

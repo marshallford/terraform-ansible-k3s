@@ -1,0 +1,195 @@
+- name: Initialize machines
+  hosts: servers:agents
+  gather_facts: false
+  become: false
+  tasks:
+  - name: Wait for hosts
+    ansible.builtin.wait_for_connection:
+      timeout: 600
+  - name: Gather facts
+    ansible.builtin.setup:
+  - name: Gather rpm-ostree facts
+    ansible.builtin.include_role:
+      name: fcos_rpm_ostree_status
+  - name: Quadlet
+    ansible.builtin.include_role:
+      name: quadlet
+- name: Configure API server load balancer
+  hosts: servers
+  gather_facts: false
+  become: false
+  serial: "{{ (lookup('ansible.builtin.env', 'ANSIBLE_TF_OPERATION') == 'create') | ternary(omit, 1) }}"
+  handlers:
+  - name: Reload systemd
+    ansible.builtin.systemd_service:
+      daemon_reload: true
+      scope: user
+    environment:
+      XDG_RUNTIME_DIR: /run/user/{{ quadlet_user_uid }}
+  tasks:
+  - name: Keepalived
+    ansible.builtin.include_role:
+      name: keepalived
+      apply:
+        become: true
+    vars:
+      __keepalived_interface: "{{ ansible_facts.default_ipv4.alias }}"
+      __keepalived_script_user: "{{ quadlet_user }}"
+  - name: HAProxy
+    ansible.builtin.include_role:
+      name: haproxy
+    vars:
+      __haproxy_container_image: "{{ haproxy_container_image }}"
+      __haproxy_container_image_tag: "{{ haproxy_container_image_tag }}"
+      __haproxy_keepalived_interface: "{{ ansible_facts.default_ipv4.alias }}"
+      __haproxy_keepalived_virtual_ip_address: "{{ k3s_api_server.virtual_ip }}"
+      __haproxy_keepalived_virtual_router_id: "{{ k3s_api_server.virtual_router_id }}"
+      __haproxy_backend_port: 6443
+- name: Prepare machines for k3s
+  hosts: servers:agents
+  gather_facts: false
+  become: true
+  tasks:
+  - name: Prepare
+    ansible.builtin.include_role:
+      name: k3s
+    vars:
+      __k3s_part: prepare
+      __k3s_role: "{{ k3s_role }}"
+      __k3s_version: "{{ k3s_version }}"
+      __k3s_selinux_version: "{{ k3s_selinux_version }}"
+      __k3s_server_token: "{{ k3s_tokens.server }}"
+      __k3s_agent_token: "{{ k3s_tokens.agent }}"
+      __k3s_manifests: "{{ k3s_manifests }}"
+  - name: System upgrade setup
+    ansible.builtin.include_role:
+      name: fcos_upgrade
+    vars:
+      __fcos_upgrade_part: setup
+      __fcos_upgrade_trigger: "{{ system_upgrade_trigger }}"
+- name: Download k3s
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+  - name: Download
+    ansible.builtin.include_role:
+      name: k3s
+    vars:
+      __k3s_part: download
+      __k3s_version: "{{ k3s_version }}"
+      __k3s_selinux_version: "{{ k3s_selinux_version }}"
+      __k3s_arch: "{{ item }}"
+    loop: "{{ groups.all | map('extract', hostvars, 'k3s_arch') | unique | list }}"
+    when: groups.all | map('extract', hostvars, 'k3s_staged') | list is not all
+- name: Stage downloads on machines
+  hosts: servers:agents
+  gather_facts: false
+  become: true
+  tasks:
+  - name: Stage
+    ansible.builtin.include_role:
+      name: k3s
+    vars:
+      __k3s_part: stage
+      __k3s_version: "{{ k3s_version }}"
+      __k3s_selinux_version: "{{ k3s_selinux_version }}"
+      __k3s_arch: "{{ k3s_arch }}"
+    when: not k3s_staged
+- name: Configure k3s cluster
+  hosts: servers:agents
+  gather_facts: false
+  become: true
+  serial: 1
+  tasks:
+  - name: Configure
+    ansible.builtin.include_role:
+      name: k3s
+    vars:
+      __k3s_role: "{{ k3s_role }}"
+      __k3s_version: "{{ k3s_version }}"
+      __k3s_selinux_version: "{{ k3s_selinux_version }}"
+      __k3s_installed: "{{ k3s_installed }}"
+      __k3s_delegated_server_host: "{{ groups.servers | first }}"
+      __k3s_server: "https://{{ k3s_api_server.virtual_ip }}"
+      __k3s_tls_san: "{{ [k3s_api_server.virtual_ip] + k3s_api_server.hosts }}"
+      __k3s_all_nodes_config: "{{ k3s_all_nodes_config }}"
+      __k3s_server_nodes_config: "{{ k3s_server_nodes_config }}"
+      __k3s_node_config: "{{ k3s_node_config }}"
+      __k3s_files: "{{ k3s_files }}"
+      __k3s_registries_config: "{{ k3s_registries_config }}"
+- name: Cleanup machines
+  hosts: servers:agents
+  gather_facts: false
+  become: true
+  tasks:
+  - name: Cleanup
+    ansible.builtin.include_role:
+      name: k3s
+    vars:
+      __k3s_part: cleanup
+      __k3s_version: "{{ k3s_version }}"
+      __k3s_selinux_version: "{{ k3s_selinux_version }}"
+    when: k3s_cleanup
+- name: Add removed machines to inventory
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+  - name: Add removed hosts
+    ansible.builtin.include_role:
+      name: removed_inventory
+    vars:
+      __removed_inventory_previous_inventory_file: "{{ lookup('env', 'ANSIBLE_TF_PREVIOUS_INVENTORY') }}"
+      __removed_inventory_current_inventory_file: "{{ lookup('env', 'ANSIBLE_TF_INVENTORY') }}"
+    when: lookup('env', 'ANSIBLE_TF_OPERATION') == 'update'
+- name: Reset removed machines
+  hosts: removed_servers:removed_agents
+  gather_facts: true
+  become: false
+  serial: 1
+  tasks:
+  - name: Quadlet
+    ansible.builtin.include_role:
+      name: quadlet
+    when: k3s_role == "server"
+  - name: HAProxy
+    ansible.builtin.include_role:
+      name: haproxy
+    vars:
+      __haproxy_part: down
+    when: k3s_role == "server"
+  - name: Keepalived
+    ansible.builtin.include_role:
+      name: keepalived
+      apply:
+        become: true
+    vars:
+      __keepalived_part: down
+    when: k3s_role == "server"
+  - name: Cordon and drain node
+    ansible.builtin.include_role:
+      name: k3s
+      apply:
+        become: true
+        delegate_to: "{{ groups.servers | first }}"
+    vars:
+      __k3s_part: drain
+      __k3s_node_config: "{{ k3s_node_config }}"
+  - name: Reset k3s
+    ansible.builtin.include_role:
+      name: k3s
+      apply:
+        become: true
+    vars:
+      __k3s_part: reset
+      __k3s_role: "{{ k3s_role }}"
+  - name: Delete node from cluster
+    ansible.builtin.include_role:
+      name: k3s
+      apply:
+        become: true
+        delegate_to: "{{ groups.servers | first }}"
+    vars:
+      __k3s_part: delete
+      __k3s_node_config: "{{ k3s_node_config }}"

@@ -1,0 +1,71 @@
+name: Container image
+
+inputs:
+  push:
+    required: false
+    type: boolean
+    default: false
+  image:
+    required: true
+    type: string
+  tags:
+    required: true
+    type: string
+  context:
+    required: false
+    type: string
+    default: .
+  platforms:
+    required: false
+    type: string
+  build-args:
+    required: false
+    type: string
+
+runs:
+  using: composite
+  steps:
+  - name: Setup QEMU
+    uses: docker/setup-qemu-action@v3
+  - name: Setup Buildx
+    uses: docker/setup-buildx-action@v3
+  - name: Meta
+    id: meta
+    uses: docker/metadata-action@v5
+    with:
+      images: ${{ inputs.image }}
+      tags: ${{ inputs.tags }}
+      flavor: |
+        latest=false
+  - name: Login
+    if: ${{ fromJSON(inputs.push) }}
+    uses: docker/login-action@v3
+    with:
+      registry: ghcr.io
+      username: ${{ github.actor }}
+      password: ${{ github.token }}
+  - name: Build${{ fromJSON(inputs.push) && ' and push' || '' }}
+    id: build
+    uses: docker/build-push-action@v6
+    with:
+      context: ${{ inputs.context }}
+      platforms: ${{ inputs.platforms }}
+      pull: true
+      push: ${{ fromJSON(inputs.push) }}
+      load: ${{ ! fromJSON(inputs.push) }}
+      cache-from: type=gha
+      cache-to: type=gha,mode=min
+      build-args: ${{ inputs.build-args }}
+      labels: ${{ steps.meta.outputs.labels }}
+      tags: ${{ steps.meta.outputs.tags }}
+  - name: Attestation
+    if: ${{ fromJSON(inputs.push) }}
+    uses: actions/attest-build-provenance@v2
+    with:
+      subject-name: ${{ inputs.image }}
+      subject-digest: ${{ steps.build.outputs.digest }}
+      push-to-registry: true
+
+outputs:
+  json:
+    value: ${{ steps.meta.outputs.json }}

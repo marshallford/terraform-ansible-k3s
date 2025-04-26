@@ -1,0 +1,41 @@
+- name: Setup ip forwarding and non-local binding
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: "1"
+  loop:
+  - net.ipv4.ip_forward
+  - net.ipv4.ip_nonlocal_bind
+
+# TODO https://github.com/ansible-collections/community.general/issues/9229
+- name: Install keepalived
+  community.general.rpm_ostree_pkg:
+    name: keepalived
+  retries: 3
+  delay: 30
+  when: "'keepalived' not in rpm_ostree_booted_packages"
+  notify: Reboot
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Create keepalived conf.d directory
+  ansible.builtin.file:
+    path: /etc/keepalived/conf.d
+    state: directory
+    owner: root
+    group: "{{ ansible_user | default(ansible_facts.env.USER) }}"
+    mode: u=rwx,g=rwx,o=rx
+
+- name: Keepalived config
+  ansible.builtin.template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: u=rw,g=rw,o=
+  notify: Restart keepalived
+
+- name: Enable keepalived service
+  ansible.builtin.service:
+    name: keepalived
+    enabled: true

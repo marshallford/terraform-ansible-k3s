@@ -1,0 +1,8 @@
+# https://docs.fedoraproject.org/en-US/fedora-coreos/counting/
+variant: fcos
+version: 1.5.0
+systemd:
+  units:
+  - name: rpm-ostree-countme.timer
+    enabled: false
+    mask: true

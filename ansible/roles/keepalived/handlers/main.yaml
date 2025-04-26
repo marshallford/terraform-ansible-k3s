@@ -1,0 +1,8 @@
+- name: Reboot
+  ansible.builtin.reboot:
+    reboot_timeout: 1800 # 30m
+
+- name: Restart keepalived
+  ansible.builtin.service:
+    name: keepalived
+    state: restarted

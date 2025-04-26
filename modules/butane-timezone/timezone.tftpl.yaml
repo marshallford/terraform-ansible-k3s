@@ -1,0 +1,7 @@
+# https://docs.fedoraproject.org/en-US/fedora-coreos/time-zone/#_setting_the_time_zone_via_ignition
+variant: fcos
+version: 1.5.0
+storage:
+  links:
+  - path: /etc/localtime
+    target: ../usr/share/zoneinfo/${timezone}

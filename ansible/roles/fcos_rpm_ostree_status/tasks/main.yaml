@@ -1,0 +1,14 @@
+- name: Gather rpm-ostree status
+  ansible.builtin.command:
+    cmd: rpm-ostree status --json
+  register: rpm_ostree_status_json
+  changed_when: false
+
+- name: Set rpm-ostree status facts
+  ansible.builtin.set_fact:
+    rpm_ostree_packages: "{{ (rpm_ostree_status.deployments | first).packages }}"
+    rpm_ostree_booted_packages: "{{ (rpm_ostree_status.deployments | selectattr('booted', 'eq', true) | list | first).packages }}"
+    rpm_ostree_local_packages: "{{ (rpm_ostree_status.deployments | first)['requested-local-packages'] }}"
+    rpm_ostree_booted_local_packages: "{{ (rpm_ostree_status.deployments | selectattr('booted', 'eq', true) | list | first)['requested-local-packages'] }}"
+  vars:
+    rpm_ostree_status: "{{ rpm_ostree_status_json.stdout | from_json }}"

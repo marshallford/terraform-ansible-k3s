@@ -1,0 +1,71 @@
+name: CI
+
+on: # yamllint disable-line rule:truthy
+  pull_request:
+    types:
+    - opened
+    - synchronize
+    - reopened
+    # - edited
+    branches:
+    - main
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: .python-version
+        cache: pip
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_wrapper: false
+    - name: Pull
+      run: make -j pull
+    - name: Lint
+      run: make lint
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Extract Makefile variables
+      run: eval "$(make -q vars/github)"
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: .python-version
+        cache: pip
+    - name: Create container image context
+      run: make build/context
+    - name: Build container image
+      uses: ./.github/actions/container-image
+      with:
+        image: ${{ env.MAKEFILE_CONTAINER_IMAGE }}
+        tags: ${{ env.MAKEFILE_CI_IMAGE_TAG }}
+        context: ${{ env.MAKEFILE_BUILD_CONTEXT }}
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+    - lint
+    - build
+    steps:
+    - run: exit 1
+      # see https://stackoverflow.com/a/67532120/4907315
+      if: >-
+        ${{
+          contains(needs.*.result, 'failure') ||
+          contains(needs.*.result, 'cancelled')
+        }}

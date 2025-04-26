@@ -1,0 +1,6 @@
+- name: Reload systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: /run/user/{{ quadlet_user_uid }}

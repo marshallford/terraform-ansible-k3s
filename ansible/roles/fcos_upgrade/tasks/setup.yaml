@@ -1,0 +1,30 @@
+- name: Check if trigger file exists
+  ansible.builtin.stat:
+    path: "{{ __fcos_upgrade_trigger_file }}"
+  register: trigger_file_stat
+
+- name: Retrieve trigger file
+  ansible.builtin.slurp:
+    src: "{{ __fcos_upgrade_trigger_file }}"
+  when: trigger_file_stat.stat.exists
+  register: trigger_file
+
+- name: Set system upgrade facts
+  ansible.builtin.set_fact:
+    fcos_system_upgrade: "{{ trigger_file_stat.stat.exists | ternary(__fcos_upgrade_trigger != trigger_file_content, false) }}"
+    fcos_system_upgrade_trigger: "{{ __fcos_upgrade_trigger }}"
+  vars:
+    trigger_file_content: "{{ trigger_file.content | default('') | b64decode }}"
+
+- name: Stop zincati
+  ansible.builtin.service:
+    name: zincati
+    state: stopped
+  when: fcos_system_upgrade
+  notify: Start zincati
+
+- name: Download ostree and rpm data
+  ansible.builtin.command:
+    cmd: rpm-ostree upgrade --download-only
+  changed_when: true
+  when: fcos_system_upgrade

@@ -1,0 +1,21 @@
+- name: Copy k3s binary
+  ansible.builtin.copy:
+    src: "{{ __k3s_controller_download_dir }}/{{ __k3s_arch }}/{{ __k3s_binary }}"
+    dest: "{{ __k3s_staging_dir }}/{{ __k3s_binary }}"
+    mode: u=rwx,g=r,o=r
+    seuser: system_u
+    serole: object_r
+    setype: container_runtime_exec_t
+    selevel: s0
+
+- name: Copy k3s images
+  ansible.builtin.copy:
+    src: "{{ __k3s_controller_download_dir }}/{{ __k3s_arch }}/{{ __k3s_images }}"
+    dest: "{{ __k3s_staging_dir }}/{{ __k3s_images }}"
+    mode: u=rw,g=r,o=r
+
+- name: Copy k3s selinux package
+  ansible.builtin.copy:
+    src: "{{ __k3s_controller_download_dir }}/{{ __k3s_selinux_package }}"
+    dest: "{{ __k3s_staging_dir }}/{{ __k3s_selinux_package }}"
+    mode: u=rw,g=r,o=r

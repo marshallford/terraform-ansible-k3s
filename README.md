@@ -44,11 +44,9 @@ Deploy and manage a fully-featured Kubernetes cluster with the convenience of a 
 
 See the [examples](./examples) directory for complete k3s cluster configuration and deployment examples.
 
-<!-- x-release-please-start-version -->
 ```terraform
 module "k3s_cluster" {
   source  = "marshallford/k3s/ansible"
-  version = "0.1.0"
 
   ssh_private_keys = {
     "example" = file("~/.ssh/example")
@@ -91,7 +89,6 @@ provider "kubernetes" {
   cluster_ca_certificate = module.k3s_cluster.persistent_cluster_credentials.certificate_authority
 }
 ```
-<!-- x-release-please-end -->
 
 ## Limitations
 

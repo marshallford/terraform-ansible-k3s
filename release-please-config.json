@@ -5,6 +5,7 @@
     ".": {
       "release-type": "terraform-module",
       "extra-files": [
+        "README.md",
         "variables.tf",
         "modules/kubeconfig/variables.tf",
         "examples/readme/main.tf"

@@ -49,4 +49,5 @@ output "snippet" {
     nameservers    = var.nameservers,
     search_domains = var.search_domains,
   })
+  description = "Butane snippet."
 }

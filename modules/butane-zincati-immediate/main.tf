@@ -13,4 +13,5 @@ output "snippet" {
   value = templatefile("${path.module}/zincati-immediate.tftpl.yaml", {
     wariness = var.wariness
   })
+  description = "Butane snippet."
 }

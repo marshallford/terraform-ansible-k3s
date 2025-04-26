@@ -12,4 +12,5 @@ output "snippet" {
   value = templatefile("${path.module}/hostname.tftpl.yaml", {
     hostname = var.hostname
   })
+  description = "Butane snippet."
 }

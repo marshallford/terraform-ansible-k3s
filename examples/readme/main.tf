@@ -1,5 +1,6 @@
 module "k3s_cluster" {
-  source = "marshallford/k3s/ansible"
+  source  = "marshallford/k3s/ansible"
+  version = "0.1.0" # x-release-please-version
 
   ssh_private_keys = {
     "example" = file("~/.ssh/example")

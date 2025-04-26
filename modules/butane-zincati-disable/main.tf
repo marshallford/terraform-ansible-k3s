@@ -3,5 +3,6 @@ terraform {
 }
 
 output "snippet" {
-  value = templatefile("${path.module}/zincati-disable.tftpl.yaml", {})
+  value       = templatefile("${path.module}/zincati-disable.tftpl.yaml", {})
+  description = "Butane snippet."
 }

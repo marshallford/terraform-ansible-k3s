@@ -9,25 +9,3 @@ module "kubeconfig" {
   server_machine              = one([for machine in var.server_machines : machine if try(machine.config.cluster_init, false)])
   persistent_outputs          = var.persistent_outputs
 }
-
-# output "cluster_credentials" {
-#   value = module.kubeconfig.credentials
-#   sensitive = true
-#   ephemeral = true
-# }
-
-# output "kubeconfig_yaml" {
-#   value = module.kubeconfig.yaml
-#   sensitive = true
-#   ephemeral = true
-# }
-
-output "persistent_cluster_credentials" {
-  value     = module.kubeconfig.persistent_credentials
-  sensitive = true
-}
-
-output "persistent_kubeconfig_yaml" {
-  value     = module.kubeconfig.persistent_yaml
-  sensitive = true
-}

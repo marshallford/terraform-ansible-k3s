@@ -12,4 +12,5 @@ output "snippet" {
   value = templatefile("${path.module}/ssh-authorized-key.tftpl.yaml", {
     ssh_authorized_key = var.ssh_authorized_key
   })
+  description = "Butane snippet."
 }

@@ -134,25 +134,3 @@ locals {
     current-context = "default"
   })
 }
-
-# output "credentials" {
-#   value     = local.cluster_credentials
-#   sensitive = true
-#   ephemeral = true
-# }
-
-# output "yaml" {
-#   value     = local.kubeconfig_yaml
-#   sensitive = true
-#   ephemeral = true
-# }
-
-output "persistent_credentials" {
-  value     = local.persistent_cluster_credentials
-  sensitive = true
-}
-
-output "persistent_yaml" {
-  value     = var.persistent_outputs ? local.persistent_kubeconfig_yaml : null
-  sensitive = true
-}

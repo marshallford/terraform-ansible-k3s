@@ -33,4 +33,5 @@ output "snippet" {
     time_zone = var.time_zone
     windows   = var.windows
   })
+  description = "Butane snippet."
 }

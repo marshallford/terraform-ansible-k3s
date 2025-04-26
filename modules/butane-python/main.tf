@@ -3,5 +3,6 @@ terraform {
 }
 
 output "snippet" {
-  value = templatefile("${path.module}/python.tftpl.yaml", {})
+  value       = templatefile("${path.module}/python.tftpl.yaml", {})
+  description = "Butane snippet."
 }

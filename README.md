@@ -1,5 +1,8 @@
 # k3s Cluster Terraform Module
 
+[![Terraform Registry](https://img.shields.io/badge/terraform-ansible--k3s-%23844FBA?logo=terraform&logoColor=%23844FBA)](https://registry.terraform.io/modules/marshallford/k3s/ansible/latest)
+![GitHub Release](https://img.shields.io/github/v/release/marshallford/terraform-ansible-k3s?sort=semver&display_name=release&logo=github)
+
 Deploy and manage a fully-featured Kubernetes cluster with the convenience of a managed cloud service. Ideal for homelab environments, on-premises deployments, and edge computing scenarios.
 
 ## Features
@@ -43,7 +46,8 @@ See the [examples](./examples) directory for complete k3s cluster configuration 
 
 ```terraform
 module "k3s_cluster" {
-  source = "marshallford/k3s/ansible"
+  source  = "marshallford/k3s/ansible"
+  version = "0.1.0"
 
   ssh_private_keys = {
     "example" = file("~/.ssh/example")

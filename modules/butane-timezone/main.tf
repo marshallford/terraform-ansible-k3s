@@ -12,4 +12,5 @@ output "snippet" {
   value = templatefile("${path.module}/timezone.tftpl.yaml", {
     timezone = var.timezone
   })
+  description = "Butane snippet."
 }

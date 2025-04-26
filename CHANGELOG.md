@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.1](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.1.0...v0.1.1) (2025-04-26)
+
+
+### Bug Fixes
+
+* adds output descriptions ([#2](https://github.com/marshallford/terraform-ansible-k3s/issues/2)) ([bc2cfda](https://github.com/marshallford/terraform-ansible-k3s/commit/bc2cfda1a7a3654178d8cf1299e6b22a6af9ef56))
+* giving up on release-please readme templating ([#6](https://github.com/marshallford/terraform-ansible-k3s/issues/6)) ([40a5912](https://github.com/marshallford/terraform-ansible-k3s/commit/40a5912ccdce914da6ea70e8e728b6f8b0676a94))
+* tweak release-please templating ([#4](https://github.com/marshallford/terraform-ansible-k3s/issues/4)) ([e05cec6](https://github.com/marshallford/terraform-ansible-k3s/commit/e05cec6c07f16de9a46eead3e3f29ef44c87d494))
+* tweak release-please templating again ([#5](https://github.com/marshallford/terraform-ansible-k3s/issues/5)) ([24b2ec2](https://github.com/marshallford/terraform-ansible-k3s/commit/24b2ec26b69fbb02dbf13d2b9de4127a67c10c16))
+
 ## 0.1.0 (2025-04-26)
 
 

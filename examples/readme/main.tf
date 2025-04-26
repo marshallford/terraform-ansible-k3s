@@ -1,3 +1,5 @@
+# Note: This example is not complete and is used for formatting purposes only.
+
 module "k3s_cluster" {
   source  = "marshallford/k3s/ansible"
   version = "0.1.0" # x-release-please-version

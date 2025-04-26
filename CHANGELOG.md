@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.1.1...v0.1.2) (2025-04-26)
+
+
+### Bug Fixes
+
+* add link to github release badge ([#7](https://github.com/marshallford/terraform-ansible-k3s/issues/7)) ([fbb84f0](https://github.com/marshallford/terraform-ansible-k3s/commit/fbb84f0e4bea466433b63896332ee1d140f27c8e))
+
 ## [0.1.1](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.1.0...v0.1.1) (2025-04-26)
 
 

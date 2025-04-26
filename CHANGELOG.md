@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0 (2025-04-26)
+
+
+### Features
+
+* initial release ([e204a31](https://github.com/marshallford/terraform-ansible-k3s/commit/e204a317bfe03801877ad5c50789eac0eb533676))
+
 ## [0.1.1](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.1.0...v0.1.1) (2025-04-17)
 
 

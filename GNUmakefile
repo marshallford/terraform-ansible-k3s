@@ -8,7 +8,7 @@ CI_IMAGE_TAG := ci
 
 DOCKER_FLAGS += --rm
 ifeq ($(shell tty > /dev/null && echo 1 || echo 0), 1)
-DOCKER_FLAGS += -i
+DOCKER_FLAGS += -it
 endif
 
 DOCKER := docker

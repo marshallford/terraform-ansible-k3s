@@ -39,6 +39,8 @@ jobs:
       run: make lint
     - name: Check PR title
       uses: amannn/action-semantic-pull-request@v5
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
   build:
     name: Build
     runs-on: ubuntu-latest

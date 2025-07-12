@@ -3,6 +3,18 @@ revision = 2
 requires-python = ">=3.13.5"
 
 [[package]]
+name = "ansible"
+version = "11.7.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ansible-core" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/83/31/1fe54cfce344fff6ef17933705c2a5ecf2af29301e8d1af13dd1b3f14e3f/ansible-11.7.0.tar.gz", hash = "sha256:f9df37c71d407f65bcb9c5c06c9918e297d9ea74b5cdaf5926c4c9aa9e44db5f", size = 44365403, upload-time = "2025-06-17T19:38:22.081Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d4/3a/4e6005176766287496a4bd057b4831a5888d02a94984d822fa5aed5ccec9/ansible-11.7.0-py3-none-any.whl", hash = "sha256:caa56fc92e5bea012abf37f08aa348da27d2fcaf94bf398e24cadcb618a4dc3b", size = 55838653, upload-time = "2025-06-17T19:38:17.421Z" },
+]
+
+[[package]]
 name = "ansible-builder"
 version = "3.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -72,41 +84,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/5c/27/f04e69b710efbfde20cfdcdb8eec3b3b1d4b6d480a80afa803386304e829/ansible_lint-25.6.1.tar.gz", hash = "sha256:6a1dd2b7a9f3f202c9e92a6c80296ff33ca863348c3acf978f80fb0d4536dce4", size = 559349, upload-time = "2025-06-19T07:34:23.206Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ea/1d/8e4972bc37bc6a2ac87a687076775e631350dd05c3d0517f88e0c46176a6/ansible_lint-25.6.1-py3-none-any.whl", hash = "sha256:69fe294a3cc30d8819b5a30625a7e25225f48558cadb83ad3d4dec597c1b8c2c", size = 316902, upload-time = "2025-06-19T07:34:21.1Z" },
-]
-
-[[package]]
-name = "ansible-navigator"
-version = "25.5.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "ansible-builder" },
-    { name = "ansible-lint" },
-    { name = "ansible-runner" },
-    { name = "jinja2" },
-    { name = "jsonschema" },
-    { name = "onigurumacffi" },
-    { name = "pyyaml" },
-    { name = "setuptools" },
-    { name = "tzdata" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/fc/12/a34f8457bc3b33e0b393770b287f276f8aa249511d8172d0c10edccf23cf/ansible_navigator-25.5.0.tar.gz", hash = "sha256:7c616ed4099c148ccc50bfebed2bcaee3b2c9134226a74ba632eb1b9b35d98d9", size = 394240, upload-time = "2025-05-26T11:28:28.716Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e4/9c/336c1bdf811a2d6ab4b77777b668db843d10bd141e9d250570c84822ab59/ansible_navigator-25.5.0-py3-none-any.whl", hash = "sha256:e67f1763fe75428e54087e446206ca053096a4d05e34c32a9798558e7cb6cef9", size = 304281, upload-time = "2025-05-26T11:28:27.063Z" },
-]
-
-[[package]]
-name = "ansible-runner"
-version = "2.4.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "packaging" },
-    { name = "pexpect" },
-    { name = "python-daemon" },
-    { name = "pyyaml" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/06/89/9426e3353829ab0c2f0277a14a6bc4d99d301b74533b0c901e7636794e45/ansible_runner-2.4.1.tar.gz", hash = "sha256:11d717da4dd8d93d56703a4a98e5f2154026a7ed1b46d9930902b8298dc67d09", size = 149599, upload-time = "2025-03-26T13:45:38.648Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1a/a7/59265056ce589f73f150e69dcc3666741c884c775b13f2bcdf2143d947d7/ansible_runner-2.4.1-py3-none-any.whl", hash = "sha256:ef4efe906414f6e9a4c2e41d131fabc3bfe952f16edded7bdc06d597b05f0eb6", size = 79558, upload-time = "2025-03-26T13:45:37.137Z" },
 ]
 
 [[package]]
@@ -310,15 +287,6 @@ wheels = [
 ]
 
 [[package]]
-name = "lockfile"
-version = "0.12.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/17/47/72cb04a58a35ec495f96984dddb48232b551aafb95bde614605b754fe6f7/lockfile-0.12.2.tar.gz", hash = "sha256:6aed02de03cba24efabcd600b30540140634fc06cfa603822d508d5361e9f799", size = 20874, upload-time = "2015-11-25T18:29:58.279Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c8/22/9460e311f340cb62d26a38c419b1381b8593b0bb6b5d1f056938b086d362/lockfile-0.12.2-py2.py3-none-any.whl", hash = "sha256:6c3cb24f344923d30b2785d5ad75182c8ea7ac1b6171b08657258ec7429d50fa", size = 13564, upload-time = "2015-11-25T18:29:51.462Z" },
-]
-
-[[package]]
 name = "markupsafe"
 version = "3.0.2"
 source = { registry = "https://pypi.org/simple" }
@@ -353,22 +321,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a2/6e/371856a3fb9d31ca8dac321cda606860fa4548858c0cc45d9d1d4ca2628b/mypy_extensions-1.1.0.tar.gz", hash = "sha256:52e68efc3284861e772bbcd66823fde5ae21fd2fdb51c62a211403730b916558", size = 6343, upload-time = "2025-04-22T14:54:24.164Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505", size = 4963, upload-time = "2025-04-22T14:54:22.983Z" },
-]
-
-[[package]]
-name = "onigurumacffi"
-version = "1.4.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "cffi" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/f7/fc/6bcec22dcf08634364284d533999efb078da6e0de9a965f9ece58c346ad4/onigurumacffi-1.4.1.tar.gz", hash = "sha256:5bfbc1ef6e5d1179e22453f82437a824f9d5771e0ce65f3a72ca6b9c61226536", size = 5527, upload-time = "2025-01-04T19:17:03.885Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/16/30/0f51da57b11b787b9a83eef0b152f098cac863b777686d991c263b2bded7/onigurumacffi-1.4.1-cp39-abi3-macosx_13_0_x86_64.whl", hash = "sha256:40f587bb4eaabcc0dadfcd6bc56ac2f8db0966e16c90588748410b3e14761715", size = 238030, upload-time = "2025-01-04T19:29:18.047Z" },
-    { url = "https://files.pythonhosted.org/packages/20/e1/4e90ddcb88baa2a93b6c4c79914fbb453e4f5833556572c629c4cbf19756/onigurumacffi-1.4.1-cp39-abi3-macosx_14_0_arm64.whl", hash = "sha256:56b583b9d2065fb7d36001d15d7951f5cb3143ff0d8be7daa330a0096db7483a", size = 226097, upload-time = "2025-01-04T19:29:19.238Z" },
-    { url = "https://files.pythonhosted.org/packages/6a/28/50922eddf6dff1b8c5dd8ed5b0a8165b1cdcfe366b7a399ef9d7b1cd02ef/onigurumacffi-1.4.1-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:db36a8297f16e8e52621cb5826289c107e9e8016cf4ca00e0c81dc3d480b90c9", size = 603072, upload-time = "2025-01-04T19:18:20.152Z" },
-    { url = "https://files.pythonhosted.org/packages/33/da/a797f3df3fcdac893c2f31c764ec7fe79fb786c63ace543675096bbb32ff/onigurumacffi-1.4.1-cp39-abi3-win32.whl", hash = "sha256:c0fed9bcdaf289a8ecd8343f7b8a4cbabffcc37911be12c8087669edc5ca5a45", size = 178757, upload-time = "2025-01-04T19:29:20.459Z" },
-    { url = "https://files.pythonhosted.org/packages/91/4d/247f9df7a57226e488f149206e96943b9d15a076569e659d7df3c123a187/onigurumacffi-1.4.1-cp39-abi3-win_amd64.whl", hash = "sha256:949af6f48b6dbdae42b1a4f0121d8904f03904b501bd918b6d18fc7c7ad83836", size = 193233, upload-time = "2025-01-04T19:29:24.563Z" },
 ]
 
 [[package]]
@@ -411,18 +363,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pexpect"
-version = "4.9.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "ptyprocess" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/9e/c3/059298687310d527a58bb01f3b1965787ee3b40dce76752eda8b44e9a2c5/pexpect-4.9.0-py2.py3-none-any.whl", hash = "sha256:7236d1e080e4936be2dc3e326cec0af72acf9212a7e1d060210e70a47e253523", size = 63772, upload-time = "2023-11-25T06:56:14.81Z" },
-]
-
-[[package]]
 name = "platformdirs"
 version = "4.3.8"
 source = { registry = "https://pypi.org/simple" }
@@ -432,33 +372,12 @@ wheels = [
 ]
 
 [[package]]
-name = "ptyprocess"
-version = "0.7.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/20/e5/16ff212c1e452235a90aeb09066144d0c5a6a8c0834397e03f5224495c4e/ptyprocess-0.7.0.tar.gz", hash = "sha256:5c5d0a3b48ceee0b48485e0c26037c0acd7d29765ca3fbb5cb3831d347423220", size = 70762, upload-time = "2020-12-28T15:15:30.155Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/22/a6/858897256d0deac81a172289110f31629fc4cee19b6f01283303e18c8db3/ptyprocess-0.7.0-py2.py3-none-any.whl", hash = "sha256:4b41f3967fce3af57cc7e94b888626c18bf37a083e3651ca8feeb66d492fef35", size = 13993, upload-time = "2020-12-28T15:15:28.35Z" },
-]
-
-[[package]]
 name = "pycparser"
 version = "2.22"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/1d/b2/31537cf4b1ca988837256c910a668b553fceb8f069bedc4b1c826024b52c/pycparser-2.22.tar.gz", hash = "sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6", size = 172736, upload-time = "2024-03-30T13:22:22.564Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/13/a3/a812df4e2dd5696d1f351d58b8fe16a405b234ad2886a0dab9183fb78109/pycparser-2.22-py3-none-any.whl", hash = "sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc", size = 117552, upload-time = "2024-03-30T13:22:20.476Z" },
-]
-
-[[package]]
-name = "python-daemon"
-version = "3.1.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "lockfile" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/3d/37/4f10e37bdabc058a32989da2daf29e57dc59dbc5395497f3d36d5f5e2694/python_daemon-3.1.2.tar.gz", hash = "sha256:f7b04335adc473de877f5117e26d5f1142f4c9f7cd765408f0877757be5afbf4", size = 71576, upload-time = "2024-12-03T08:41:07.843Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/45/3c/b88167e2d6785c0e781ee5d498b07472aeb9b6765da3b19e7cc9e0813841/python_daemon-3.1.2-py3-none-any.whl", hash = "sha256:b906833cef63502994ad48e2eab213259ed9bb18d54fa8774dcba2ff7864cec6", size = 30872, upload-time = "2024-12-03T08:41:03.322Z" },
 ]
 
 [[package]]
@@ -614,23 +533,16 @@ name = "terraform-ansible-k3s"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "ansible" },
     { name = "ansible-builder" },
-    { name = "ansible-navigator" },
+    { name = "ansible-lint" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "ansible", specifier = ">=11.7.0" },
     { name = "ansible-builder", specifier = ">=3.1.0" },
-    { name = "ansible-navigator", specifier = ">=25.5.0" },
-]
-
-[[package]]
-name = "tzdata"
-version = "2025.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/95/32/1a225d6164441be760d75c2c42e2780dc0873fe382da3e98a2e1e48361e5/tzdata-2025.2.tar.gz", hash = "sha256:b60a638fcc0daffadf82fe0f57e53d06bdec2f36c4df66280ae79bce6bd6f2b9", size = 196380, upload-time = "2025-03-23T13:54:43.652Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5c/23/c7abc0ca0a1526a0774eca151daeb8de62ec457e77262b66b359c3c7679e/tzdata-2025.2-py2.py3-none-any.whl", hash = "sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8", size = 347839, upload-time = "2025-03-23T13:54:41.845Z" },
+    { name = "ansible-lint", specifier = ">=25.6.1" },
 ]
 
 [[package]]

@@ -2,5 +2,9 @@
 profile: production
 offline: true
 
+exclude_paths:
+- .github/
+- container-image/
+
 skip_list:
 - yaml # yamllint will catch these

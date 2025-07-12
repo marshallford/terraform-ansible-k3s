@@ -8,7 +8,7 @@ CI_IMAGE_TAG := ci
 
 DOCKER_FLAGS += --rm
 ifeq ($(shell tty > /dev/null && echo 1 || echo 0), 1)
-DOCKER_FLAGS += -it
+DOCKER_FLAGS += -i
 endif
 
 DOCKER := docker
@@ -61,8 +61,8 @@ lint/editorconfig:
 lint/yamllint:
 	$(YAMLLINT) .
 
-lint/ansible: $(VENV_STAMP) $(BUILD_IMAGE_STAMP)
-	$(ACTIVATE); ansible-navigator lint
+lint/ansible: $(VENV_STAMP)
+	$(ACTIVATE); ansible-lint
 
 .PHONY: build build/context build/image
 build: build/image

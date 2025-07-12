@@ -1,0 +1,10 @@
+# https://ansible.readthedocs.io/projects/lint/configuring/#ansible-lint-configuration
+profile: production
+offline: true
+
+exclude_paths:
+- .github/
+- container-image/
+
+skip_list:
+- yaml # yamllint will catch these

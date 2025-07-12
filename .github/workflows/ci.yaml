@@ -20,11 +20,15 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Setup Python
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        version: 0.7.20
+    - name: Setup python
       uses: actions/setup-python@v5
       with:
         python-version-file: .python-version
-        cache: pip
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
@@ -41,11 +45,15 @@ jobs:
       uses: actions/checkout@v4
     - name: Extract Makefile variables
       run: eval "$(make -q vars/github)"
-    - name: Setup Python
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        version: 0.7.20
+    - name: Setup python
       uses: actions/setup-python@v5
       with:
         python-version-file: .python-version
-        cache: pip
     - name: Create container image context
       run: make build/context
     - name: Build container image

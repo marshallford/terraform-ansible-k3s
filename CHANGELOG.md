@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.2](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.1.1...v0.1.2) (2025-07-12)
+
+
+### Bug Fixes
+
+* add link to github release badge ([#7](https://github.com/marshallford/terraform-ansible-k3s/issues/7)) ([fbb84f0](https://github.com/marshallford/terraform-ansible-k3s/commit/fbb84f0e4bea466433b63896332ee1d140f27c8e))
+* switch to uv for python mgmt, cleanup makefile ([#9](https://github.com/marshallford/terraform-ansible-k3s/issues/9)) ([eaf192c](https://github.com/marshallford/terraform-ansible-k3s/commit/eaf192c72b2a7c4342353cd12d71d9f47dfa6a85))
+
 ## [0.1.1](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.1.0...v0.1.1) (2025-04-26)
 
 

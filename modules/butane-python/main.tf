@@ -10,7 +10,7 @@ variable "test_dns_host" {
 }
 
 output "snippet" {
-  value       = templatefile("${path.module}/python.tftpl.yaml", {
+  value = templatefile("${path.module}/python.tftpl.yaml", {
     test_dns_host = var.test_dns_host
   })
   description = "Butane snippet."

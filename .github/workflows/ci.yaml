@@ -6,7 +6,7 @@ on: # yamllint disable-line rule:truthy
     - opened
     - synchronize
     - reopened
-    # - edited
+    - edited
     branches:
     - main
 
@@ -25,7 +25,7 @@ jobs:
       with:
         enable-cache: true
         version: 0.7.20
-    - name: Setup python
+    - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version-file: .python-version
@@ -37,6 +37,10 @@ jobs:
       run: make -j pull
     - name: Lint
       run: make lint
+    - name: Check PR title
+      uses: amannn/action-semantic-pull-request@v5
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -50,7 +54,7 @@ jobs:
       with:
         enable-cache: true
         version: 0.7.20
-    - name: Setup python
+    - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version-file: .python-version

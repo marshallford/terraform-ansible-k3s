@@ -5,6 +5,13 @@ variable "ansible_navigator_binary" {
   description = "Path to the ansible-navigator binary. By default $PATH is searched."
 }
 
+variable "execution_environment_enabled" {
+  type        = bool
+  default     = true
+  nullable    = false
+  description = "Enable or disable the use of an execution environment."
+}
+
 variable "execution_environment_image" {
   type        = string
   default     = "ghcr.io/marshallford/terraform-ansible-k3s:v0.1.1" # x-release-please-version

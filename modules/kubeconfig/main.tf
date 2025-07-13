@@ -63,7 +63,8 @@ data "ansible_navigator_run" "this" {
   playbook                 = local.playbook
   inventory                = local.inventory
   execution_environment = {
-    image = var.execution_environment_image
+    enabled = var.execution_environment_enabled
+    image   = var.execution_environment_image
   }
   ansible_options = {
     ssh_private_keys = var.ssh_private_keys

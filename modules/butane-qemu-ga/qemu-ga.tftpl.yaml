@@ -4,11 +4,11 @@ variant: fcos
 version: 1.5.0
 systemd:
   units:
-  - name: rpm-ostree-install-python.service
+  - name: rpm-ostree-install-qemu-ga.service
     enabled: true
     contents: |
       [Unit]
-      Description=Layer python with rpm-ostree
+      Description=Layer qemu-ga with rpm-ostree
       Wants=network-online.target
       After=network-online.target
       Before=zincati.service
@@ -19,7 +19,8 @@ systemd:
       RemainAfterExit=true
       ExecStartPre=/bin/sh -c 'for i in $(seq 1 300); do getent hosts ${test_dns_host} >/dev/null && exit 0 || sleep 1; done; exit 1'
       ExecStart=/bin/sh -c '\
-        flock /var/lib/rpm-ostree.lock rpm-ostree install --apply-live --assumeyes --allow-inactive --idempotent python3 python3-libselinux && \
+        flock /var/lib/rpm-ostree.lock rpm-ostree install --apply-live --assumeyes --allow-inactive --idempotent qemu-guest-agent && \
+        systemctl enable --now qemu-guest-agent.service && \
         touch /var/lib/%N.stamp'
 
       [Install]

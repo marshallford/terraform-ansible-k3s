@@ -3,7 +3,7 @@ terraform {
   required_providers {
     ansible = {
       source  = "marshallford/ansible"
-      version = ">= 0.27.0, < 1.0.0"
+      version = ">= 0.31.0, < 1.0.0"
     }
   }
 }

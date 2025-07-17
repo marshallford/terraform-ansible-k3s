@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.2](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.1.1...v0.1.2) (2025-07-17)
+
+
+### Features
+
+* improve butane rpm-ostree snippets, add execution_environment_enabled variable, fix ssh_private_keys var ([#12](https://github.com/marshallford/terraform-ansible-k3s/issues/12)) ([70001fe](https://github.com/marshallford/terraform-ansible-k3s/commit/70001fee494b9079694793f6e0d44665a6e44527))
+
+
+### Bug Fixes
+
+* add conventional commit check, switch release please to use github app ([#10](https://github.com/marshallford/terraform-ansible-k3s/issues/10)) ([0c70944](https://github.com/marshallford/terraform-ansible-k3s/commit/0c7094497b1ad4a75d6455d4ede577d6d4dd3798))
+* add link to github release badge ([#7](https://github.com/marshallford/terraform-ansible-k3s/issues/7)) ([fbb84f0](https://github.com/marshallford/terraform-ansible-k3s/commit/fbb84f0e4bea466433b63896332ee1d140f27c8e))
+* switch to uv for python mgmt, cleanup makefile ([#9](https://github.com/marshallford/terraform-ansible-k3s/issues/9)) ([eaf192c](https://github.com/marshallford/terraform-ansible-k3s/commit/eaf192c72b2a7c4342353cd12d71d9f47dfa6a85))
+
 ## [0.1.1](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.1.0...v0.1.1) (2025-04-26)
 
 

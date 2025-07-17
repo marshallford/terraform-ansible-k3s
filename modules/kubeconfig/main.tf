@@ -67,7 +67,7 @@ data "ansible_navigator_run" "this" {
     image   = var.execution_environment_image
   }
   ansible_options = {
-    ssh_private_keys = var.ssh_private_keys
+    private_keys = var.ssh_private_keys
   }
   artifact_queries = {
     "credentials" = {

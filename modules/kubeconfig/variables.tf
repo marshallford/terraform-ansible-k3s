@@ -20,11 +20,14 @@ variable "execution_environment_image" {
 }
 
 variable "ssh_private_keys" {
-  type        = map(string)
-  default     = {}
+  type = list(object({
+    name = string
+    data = string
+  }))
+  default     = []
   nullable    = false
   sensitive   = true
-  description = "SSH private keys used to connect to the machines (name=contents)."
+  description = "SSH private keys used to connect to the machines."
 }
 
 variable "cluster_reference" {

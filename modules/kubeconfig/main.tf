@@ -3,7 +3,7 @@ terraform {
   required_providers {
     ansible = {
       source  = "marshallford/ansible"
-      version = ">= 0.27.0, < 1.0.0"
+      version = ">= 0.31.0, < 1.0.0"
     }
   }
 }
@@ -63,10 +63,11 @@ data "ansible_navigator_run" "this" {
   playbook                 = local.playbook
   inventory                = local.inventory
   execution_environment = {
-    image = var.execution_environment_image
+    enabled = var.execution_environment_enabled
+    image   = var.execution_environment_image
   }
   ansible_options = {
-    ssh_private_keys = var.ssh_private_keys
+    private_keys = var.ssh_private_keys
   }
   artifact_queries = {
     "credentials" = {

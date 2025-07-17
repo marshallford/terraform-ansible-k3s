@@ -33,10 +33,11 @@ data "ansible_navigator_run" "certificates" {
   playbook                 = file("${path.module}/ansible/certificates_playbook.yaml")
   inventory                = local.certificates_inventory
   execution_environment = {
-    image = var.execution_environment_image
+    enabled = var.execution_environment_enabled
+    image   = var.execution_environment_image
   }
   ansible_options = {
-    ssh_private_keys = var.ssh_private_keys
+    private_keys = var.ssh_private_keys
   }
   artifact_queries = {
     "certificates_ok" = {

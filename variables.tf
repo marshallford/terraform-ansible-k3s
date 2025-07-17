@@ -5,6 +5,13 @@ variable "ansible_navigator_binary" {
   description = "Path to the ansible-navigator binary. By default $PATH is searched."
 }
 
+variable "execution_environment_enabled" {
+  type        = bool
+  default     = true
+  nullable    = false
+  description = "Enable or disable the use of an execution environment."
+}
+
 variable "execution_environment_image" {
   type        = string
   default     = "ghcr.io/marshallford/terraform-ansible-k3s:v0.1.1" # x-release-please-version
@@ -13,11 +20,14 @@ variable "execution_environment_image" {
 }
 
 variable "ssh_private_keys" {
-  type        = map(string)
-  default     = {}
+  type = list(object({
+    name = string
+    data = string
+  }))
+  default     = []
   nullable    = false
   sensitive   = true
-  description = "SSH private keys used to connect to the machines (name=contents)."
+  description = "SSH private keys used to connect to the machines."
 }
 
 variable "api_server" {
@@ -106,7 +116,7 @@ variable "k3s_version" {
     condition     = var.k3s_version == null || can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+.*$", var.k3s_version))
     error_message = "The k3s_version must be a valid semantic version starting with x.y.z (e.g. '1.30.0') without a 'v' prefix."
   }
-  default     = "1.32.3+k3s1"
+  default     = "1.33.2+k3s1"
   description = "The version of k3s to install."
 }
 
@@ -216,7 +226,7 @@ variable "haproxy_container_image" {
 variable "haproxy_container_image_tag" {
   type        = string
   nullable    = false
-  default     = "3.1.6"
+  default     = "3.2.3"
   description = "HAProxy container image tag used for API server load balancing."
 }
 

@@ -13,26 +13,28 @@ output "server" {
   description = "Kubernetes API server host."
 }
 
-# output "cluster_credentials" {
-#   value = module.kubeconfig.credentials
-#   sensitive = true
-#   ephemeral = true
-# }
-
-# output "kubeconfig_yaml" {
-#   value = module.kubeconfig.yaml
-#   sensitive = true
-#   ephemeral = true
-# }
-
-output "persistent_cluster_credentials" {
-  value       = module.kubeconfig.persistent_credentials
+output "credentials" {
+  value       = module.kubeconfig.credentials
   sensitive   = true
-  description = "Cluster admin credentials (client certificate, client key, certificate authority). Credentials are retrieved via a data source, thus are written in cleartext to state file. Protect state and plan artifacts accordingly."
+  description = "Cluster admin credentials (client certificate, client key, cluster ca certificate)."
 }
 
-output "persistent_kubeconfig_yaml" {
-  value       = module.kubeconfig.persistent_yaml
+output "kubeconfig_yaml" {
+  value       = module.kubeconfig.kubeconfig_yaml
   sensitive   = true
-  description = "Cluster admin kubeconfig. Credentials are retrieved via a data source, thus are written in cleartext to state file. Protect state and plan artifacts accordingly."
+  description = "Cluster admin kubeconfig."
+}
+
+output "ephemeral_credentials" {
+  value       = module.kubeconfig.ephemeral_credentials
+  sensitive   = true
+  ephemeral   = true
+  description = "Cluster admin credentials (client certificate, client key, cluster ca certificate)."
+}
+
+output "ephemeral_kubeconfig_yaml" {
+  value       = module.kubeconfig.ephemeral_kubeconfig_yaml
+  sensitive   = true
+  ephemeral   = true
+  description = "Cluster admin kubeconfig."
 }

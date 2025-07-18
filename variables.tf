@@ -158,9 +158,12 @@ variable "all_nodes_config" {
 variable "server_nodes_config" {
   type = object({
     secrets_encryption                = optional(bool)
+    secrets_encryption_provider       = optional(string)
     cluster_cidr                      = optional(string)
     service_cidr                      = optional(string)
     flannel_backend                   = optional(string)
+    egress_selector_mode              = optional(string)
+    default_local_storage_path        = optional(string)
     disable                           = optional(list(string))
     disable_scheduler                 = optional(bool)
     disable_cloud_controller          = optional(bool)
@@ -174,6 +177,7 @@ variable "server_nodes_config" {
     kube_cloud_controller_manager_arg = optional(map(string), {})
     kubelet_arg                       = optional(map(string), {})
     kube_proxy_arg                    = optional(map(string), {})
+    disable_agent                     = optional(bool)
   })
   nullable    = false
   default     = {}

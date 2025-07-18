@@ -2,7 +2,7 @@ locals {
   certificates_inventory = yamlencode({
     all = {
       vars = {
-        ansible_ssh_common_args    = "-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile={{ ansible_ssh_known_hosts_file }}"
+        ansible_ssh_common_args    = provider::ansible::ssh_args(true)
         ansible_python_interpreter = "/usr/bin/python3"
       }
       children = {

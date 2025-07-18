@@ -45,16 +45,24 @@ Deploy and manage a fully-featured Kubernetes cluster with the convenience of a 
 See the [examples](./examples) directory for complete k3s cluster configuration and deployment examples.
 
 ```terraform
-module "k3s_cluster" {
+module "k3s" {
   source  = "marshallford/k3s/ansible"
 
-  ssh_private_keys = {
-    "example" = file("~/.ssh/example")
-  }
+  ssh_private_keys = [
+    {
+      name = "example"
+      data = file("~/.ssh/example")
+    }
+  ]
 
   api_server = {
     virtual_ip        = "192.168.1.99"
     virtual_router_id = 1
+  }
+
+  tokens = {
+    server = "some-token"
+    agent  = "some-token"
   }
 
   server_machines = { for name, addr in local.server_machines : name => {
@@ -75,18 +83,13 @@ module "k3s_cluster" {
       }
     } }
   }
-
-  tokens = {
-    "server" = "some-token"
-    "agent"  = "some-token"
-  }
 }
 
 provider "kubernetes" {
-  host                   = module.k3s_cluster.server
-  client_certificate     = module.k3s_cluster.persistent_cluster_credentials.client_certificate
-  client_key             = module.k3s_cluster.persistent_cluster_credentials.client_key
-  cluster_ca_certificate = module.k3s_cluster.persistent_cluster_credentials.certificate_authority
+  host                   = module.k3s.server
+  cluster_ca_certificate = module.k3s.ephemeral_credentials.cluster_ca_certificate
+  client_certificate     = module.k3s.ephemeral_credentials.client_certificate
+  client_key             = module.k3s.ephemeral_credentials.client_key
 }
 ```
 
@@ -113,3 +116,4 @@ provider "kubernetes" {
 - [ ] Token rotation
 - [ ] Stop Zicanati at start of playbook and start at the end
 - [ ] Examples: CIS hardening, kubeletConfiguration, custom CNI, registry
+- [ ] Knownhost management

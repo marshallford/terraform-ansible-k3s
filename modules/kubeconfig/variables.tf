@@ -30,19 +30,6 @@ variable "ssh_private_keys" {
   description = "SSH private keys used to connect to the machines."
 }
 
-variable "cluster_reference" {
-  type        = string
-  nullable    = true
-  default     = null
-  description = "Used to create an implicit dependency on the cluster."
-}
-
-variable "server" {
-  type        = string
-  nullable    = false
-  description = "Address of the cluster."
-}
-
 variable "server_machine" {
   type = object({
     ssh = object({
@@ -55,9 +42,48 @@ variable "server_machine" {
   description = "Machine that has been configured as a server node."
 }
 
-variable "persistent_outputs" {
-  type        = bool
+variable "block_type" {
+  type     = string
+  nullable = false
+  default  = "ephemeral"
+  validation {
+    condition     = contains(["ephemeral", "data", "resource"], var.block_type)
+    error_message = "The block_type must be either 'ephemeral', 'data', or 'resource'."
+  }
+  description = "Terraform block type to use for retrieving cluster kubeconfig and credentials."
+}
+
+variable "cluster_reference" {
+  type        = string
+  nullable    = true
+  default     = null
+  description = "Cluster reference to ensure correct dependency ordering."
+}
+
+variable "server" {
+  type        = string
   nullable    = false
-  default     = true # TODO switch to false when bug is fixed
-  description = "Retrieve cluster kubeconfig yaml and credentials via data source in addition to an ephemeral resource. Results in sensitive values being stored in the state file."
+  description = "Address of the cluster."
+}
+
+variable "cluster_name" {
+  type        = string
+  nullable    = false
+  default     = "default"
+  description = "Name of the cluster for the kubeconfig."
+}
+
+variable "user_name" {
+  type        = string
+  nullable    = false
+  default     = "default"
+  description = "Name of the user for the kubeconfig."
+}
+
+variable "context_name" {
+  type        = string
+  nullable    = false
+  default     = "default"
+  description = "Name of the context for the kubeconfig."
+
 }

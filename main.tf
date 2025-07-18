@@ -12,7 +12,7 @@ locals {
   inventory = yamlencode({
     all = {
       vars = {
-        ansible_ssh_common_args     = "-o StrictHostKeyChecking=accept-new -o UserKnownHostsFile={{ ansible_ssh_known_hosts_file }}"
+        ansible_ssh_common_args     = provider::ansible::ssh_args(true)
         ansible_python_interpreter  = "/usr/bin/python3"
         k3s_api_server              = var.api_server
         k3s_version                 = var.k3s_version

@@ -44,6 +44,16 @@ variable "api_server" {
   description = "Keepalived configuration for API server VIP and additional TLS SAN entries for API server certificate."
 }
 
+variable "tokens" {
+  type = object({
+    server = string
+    agent  = string
+  })
+  nullable    = false
+  sensitive   = true
+  description = "Shared secret used to join a server or agent to cluster."
+}
+
 variable "server_machines" {
   type = map(object({
     name = string
@@ -131,14 +141,18 @@ variable "selinux_version" {
   description = "The version of k3s SELinux package to install."
 }
 
-variable "tokens" {
-  type = object({
-    server = string
-    agent  = string
-  })
+variable "haproxy_container_image" {
+  type        = string
   nullable    = false
-  sensitive   = true
-  description = "Shared secret used to join a server or agent to cluster."
+  default     = "docker.io/library/haproxy"
+  description = "HAProxy container image used for API server load balancing."
+}
+
+variable "haproxy_container_image_tag" {
+  type        = string
+  nullable    = false
+  default     = "3.2.3"
+  description = "HAProxy container image tag used for API server load balancing."
 }
 
 # https://docs.k3s.io/cli/agent
@@ -206,32 +220,11 @@ variable "registries_config" {
   description = "Registry configuration to be used by k3s when generating the containerd configuration."
 }
 
-variable "cleanup" {
-  type        = bool
-  nullable    = false
-  default     = true
-  description = "Remove unused k3s binaries, images and selinux packages from machines. Disable when performing frequent downgrades/upgrades."
-}
-
 variable "system_upgrade_trigger" {
   type        = string
   nullable    = false
   default     = ""
   description = "Trigger machine system upgrades (with reboot)."
-}
-
-variable "haproxy_container_image" {
-  type        = string
-  nullable    = false
-  default     = "docker.io/library/haproxy"
-  description = "HAProxy container image used for API server load balancing."
-}
-
-variable "haproxy_container_image_tag" {
-  type        = string
-  nullable    = false
-  default     = "3.2.3"
-  description = "HAProxy container image tag used for API server load balancing."
 }
 
 variable "reset_on_destroy" {
@@ -241,9 +234,20 @@ variable "reset_on_destroy" {
   description = "Stop services (Keepalived, HAProxy, k3s) and stop all containers on destroy."
 }
 
-variable "persistent_outputs" {
+variable "cleanup" {
   type        = bool
   nullable    = false
-  default     = true # TODO switch to false when bug is fixed
-  description = "Retrieve cluster kubeconfig yaml and credentials via data source in addition to an ephemeral resource. Results in sensitive values being stored in the state file."
+  default     = true
+  description = "Remove unused k3s binaries, images and selinux packages from machines. Disable when performing frequent downgrades/upgrades."
+}
+
+variable "kubeconfig_block_type" {
+  type     = string
+  nullable = false
+  default  = "ephemeral"
+  validation {
+    condition     = contains(["ephemeral", "data", "resource"], var.kubeconfig_block_type)
+    error_message = "The kubeconfig_block_type must be either 'ephemeral', 'data', or 'resource'."
+  }
+  description = "Terraform block type to use for retrieving cluster kubeconfig and credentials."
 }

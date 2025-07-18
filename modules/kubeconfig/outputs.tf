@@ -1,23 +1,25 @@
-# output "credentials" {
-#   value     = local.cluster_credentials
-#   sensitive = true
-#   ephemeral = true
-# }
-
-# output "yaml" {
-#   value     = local.kubeconfig_yaml
-#   sensitive = true
-#   ephemeral = true
-# }
-
-output "persistent_credentials" {
-  value       = local.persistent_cluster_credentials
+output "credentials" {
+  value       = var.block_type == "data" ? local.data_credentials : (var.block_type == "resource" ? local.resource_credentials : null)
   sensitive   = true
-  description = "Cluster admin credentials (client certificate, client key, certificate authority). Credentials are retrieved via a data source, thus are written in cleartext to state file. Protect state and plan artifacts accordingly."
+  description = "Cluster admin credentials (client certificate, client key, cluster ca certificate)."
 }
 
-output "persistent_yaml" {
-  value       = var.persistent_outputs ? local.persistent_kubeconfig_yaml : null
+output "kubeconfig_yaml" {
+  value       = var.block_type == "data" ? local.data_kubeconfig_yaml : (var.block_type == "resource" ? local.resource_kubeconfig_yaml : null)
   sensitive   = true
-  description = "Cluster admin kubeconfig. Credentials are retrieved via a data source, thus are written in cleartext to state file. Protect state and plan artifacts accordingly."
+  description = "Cluster admin kubeconfig."
+}
+
+output "ephemeral_credentials" {
+  value       = var.block_type == "ephemeral" ? local.ephemeral_credentials : null
+  sensitive   = true
+  ephemeral   = true
+  description = "Cluster admin credentials (client certificate, client key, cluster ca certificate)."
+}
+
+output "ephemeral_kubeconfig_yaml" {
+  value       = var.block_type == "ephemeral" ? local.ephemeral_kubeconfig_yaml : null
+  sensitive   = true
+  ephemeral   = true
+  description = "Cluster admin kubeconfig."
 }

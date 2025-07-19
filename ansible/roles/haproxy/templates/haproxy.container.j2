@@ -1,14 +1,11 @@
 #jinja2: lstrip_blocks: "True"
-[Unit]
-After=wait-for-dns.service
-Wants=wait-for-dns.service
-
 [Container]
 Image={{ __haproxy_container_image }}:{{ __haproxy_container_image_tag }}
 PublishPort={{ __haproxy_publish_port }}:{{ __haproxy_bind_port }}
 UserNS=keep-id:uid=99,gid=99
 Volume=haproxy.volume:/usr/local/etc/haproxy:Z
 ReloadSignal=SIGHUP
+Retry=5
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target

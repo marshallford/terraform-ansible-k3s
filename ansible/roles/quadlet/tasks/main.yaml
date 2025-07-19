@@ -20,7 +20,7 @@
     group: "{{ __quadlet_user }}"
     mode: u=rwx,g=rx,o=rx
   loop:
-  - "{{ __quadlet_systemd_user_dir }}/multi-user.target.wants"
+  - "{{ __quadlet_systemd_user_dir }}/default.target.wants"
   - "{{ __quadlet_systemd_user_dir }}/timers.target.wants"
 
 - name: Create quadlet user config directory
@@ -35,22 +35,6 @@
   ansible.builtin.command:
     cmd: loginctl enable-linger {{ __quadlet_user }}
     creates: /var/lib/systemd/linger/{{ __quadlet_user }}
-
-- name: Create wait-for-dns service
-  ansible.builtin.template:
-    src: wait-for-dns.service.j2
-    dest: "{{ __quadlet_systemd_user_dir }}/wait-for-dns.service"
-    owner: "{{ __quadlet_user }}"
-    group: "{{ __quadlet_user }}"
-    mode: u=rwx,g=rx,o=rx
-
-- name: Enable wait-for-dns service
-  ansible.builtin.systemd_service:
-    name: wait-for-dns.service
-    enabled: true
-    scope: user
-  environment:
-    XDG_RUNTIME_DIR: /run/user/{{ __quadlet_user_id }}
 
 - name: Set quadlet facts
   ansible.builtin.set_fact:

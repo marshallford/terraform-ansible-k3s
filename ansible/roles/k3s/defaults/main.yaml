@@ -1,4 +1,4 @@
-__k3s_version: "1.33.2+k3s1"
+__k3s_version: "1.33.3+k3s1"
 __k3s_selinux_version: "1.6.1"
 __k3s_part: configure
 __k3s_config_dir: /etc/rancher/k3s
@@ -26,3 +26,4 @@ __k3s_selinux_download_package: "k3s-selinux-{{ __k3s_selinux_major_minor }}-{{ 
 __k3s_selinux_download_checksum: sha256sum-coreos-noarch.txt
 __k3s_selinux_rpm_ostree_package: "k3s-selinux-{{ __k3s_selinux_major_minor }}-{{ __k3s_selinux_patch }}.coreos.noarch"
 __k3s_drain_opts: --ignore-daemonsets --delete-emptydir-data --force --timeout 10m
+__k3s_https_listen_port: 8443

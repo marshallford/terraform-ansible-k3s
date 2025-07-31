@@ -1,10 +1,9 @@
 #jinja2: lstrip_blocks: "True"
 global_defs {
-  default_interface {{ __keepalived_interface | mandatory }}
   vrrp_version 3
   vrrp_skip_check_adv_addr
   enable_script_security
-  script_user {{ __keepalived_script_user | mandatory }}
+  script_user {{ __keepalived_script_user }}
 }
 
 include conf.d/*.conf

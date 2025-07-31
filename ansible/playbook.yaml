@@ -33,7 +33,6 @@
       apply:
         become: true
     vars:
-      __keepalived_interface: "{{ ansible_facts.default_ipv4.alias }}"
       __keepalived_script_user: "{{ quadlet_user }}"
   - name: HAProxy
     ansible.builtin.include_role:
@@ -41,10 +40,10 @@
     vars:
       __haproxy_container_image: "{{ haproxy_container_image }}"
       __haproxy_container_image_tag: "{{ haproxy_container_image_tag }}"
-      __haproxy_keepalived_interface: "{{ ansible_facts.default_ipv4.alias }}"
+      __haproxy_keepalived_vip_interface: "{{ ansible_facts.default_ipv4.interface}}"
+      __haproxy_keepalived_vrrp_interface: "{{ ansible_facts.default_ipv4.interface}}"
       __haproxy_keepalived_virtual_ip_address: "{{ k3s_api_server.virtual_ip }}"
       __haproxy_keepalived_virtual_router_id: "{{ k3s_api_server.virtual_router_id }}"
-      __haproxy_backend_port: 6443
 - name: Prepare machines for k3s
   hosts: servers:agents
   gather_facts: false
@@ -111,7 +110,7 @@
       __k3s_selinux_version: "{{ k3s_selinux_version }}"
       __k3s_installed: "{{ k3s_installed }}"
       __k3s_delegated_server_host: "{{ groups.servers | first }}"
-      __k3s_server: "https://{{ k3s_api_server.virtual_ip }}"
+      __k3s_server: "https://{{ k3s_api_server.virtual_ip }}:6443"
       __k3s_tls_san: "{{ [k3s_api_server.virtual_ip] + k3s_api_server.hosts }}"
       __k3s_all_nodes_config: "{{ k3s_all_nodes_config }}"
       __k3s_server_nodes_config: "{{ k3s_server_nodes_config }}"

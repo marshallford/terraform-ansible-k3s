@@ -96,15 +96,13 @@ provider "kubernetes" {
 ## Limitations
 
 1. Only tested with `x86_64` machines on a IPv4 network
-2. Likely requires a simple flat network
-3. SELinux package cannot be upgraded ([upstream issue](https://github.com/coreos/rpm-ostree/issues/2127))
-4. Removal of `cluster-init` server node not tested
-5. Removed server nodes cannot be re-added without first destroying the machine or machine disk
-6. Node removal requires `create_before_destroy = true` set on machine resource(s) for correct order of operations
+2. SELinux package cannot be upgraded ([upstream issue](https://github.com/coreos/rpm-ostree/issues/2127))
+3. Removal of `cluster-init` server node not tested
+4. Removed server nodes cannot be re-added without first destroying the machine or machine disk
+5. Node removal requires `create_before_destroy = true` set on machine resource(s) for correct order of operations
 
 ## To-do
 
-- [ ] Refactor usage of `mandatory` filter
 - [ ] Conditional Ansible roles equivalent to included butane snippets
 - [ ] Support custom Ansible plays (before, after, etc)
 - [ ] Butane snippet for NTP

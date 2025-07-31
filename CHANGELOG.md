@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.1.2...v0.2.0) (2025-07-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* fixes api server vip port conflict with traefik, simplifies keepalived interface config, misc cleanup ([#17](https://github.com/marshallford/terraform-ansible-k3s/issues/17))
+
+### Features
+
+* fixes api server vip port conflict with traefik, simplifies keepalived interface config, misc cleanup ([#17](https://github.com/marshallford/terraform-ansible-k3s/issues/17)) ([a3737fe](https://github.com/marshallford/terraform-ansible-k3s/commit/a3737fe79028f4320d7da6deb91bd530e10558cd))
+* refactor kubeconfig submodule, cleanup readme and example ([#15](https://github.com/marshallford/terraform-ansible-k3s/issues/15)) ([6959473](https://github.com/marshallford/terraform-ansible-k3s/commit/6959473738f0e7f2e88fa031c21a35d14896c01f))
+
+
+### Bug Fixes
+
+* adds new server_nodes_config configuration options ([#13](https://github.com/marshallford/terraform-ansible-k3s/issues/13)) ([8a230d2](https://github.com/marshallford/terraform-ansible-k3s/commit/8a230d26bb92aca1cd7a25ade78584f6630a0532))
+* swap wait-for-dns service for quadlet retry ([#16](https://github.com/marshallford/terraform-ansible-k3s/issues/16)) ([a7dfe2d](https://github.com/marshallford/terraform-ansible-k3s/commit/a7dfe2d01655e8e64e204f38c77ba43f842968b8))
+
 ## [0.1.2](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.1.1...v0.1.2) (2025-07-17)
 
 

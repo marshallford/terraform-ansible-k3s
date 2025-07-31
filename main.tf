@@ -74,10 +74,10 @@ locals {
     }
   })
   roles_files_hashes = {
-    for file_path in fileset("${path.module}/ansible/roles", "**/*.yaml") :
+    for file_path in fileset("${path.module}/ansible/roles", "**/*.{yaml,j2}") :
     file_path => filebase64sha512("${path.module}/ansible/roles/${file_path}")
   }
-  server = "https://${coalesce(try(var.api_server.hosts[0], null), var.api_server.virtual_ip)}"
+  server = "https://${coalesce(try(var.api_server.hosts[0], null), var.api_server.virtual_ip)}:6443"
 }
 
 resource "ansible_navigator_run" "this" {

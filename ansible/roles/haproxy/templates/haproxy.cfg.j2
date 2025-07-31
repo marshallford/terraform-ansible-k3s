@@ -24,5 +24,5 @@ backend machines
   balance leastconn
   default-server inter 5s fall 2 rise 1 check
   {% for host in ansible_play_hosts_all %}
-  server {{ hostvars[host].inventory_hostname }} {{ (hostvars[host].inventory_hostname == inventory_hostname) | ternary('host.containers.internal', (hostvars[host].ansible_facts.default_ipv4.address | default(hostvars[host].ansible_facts.all_ipv4_addresses[0]))) }}:{{ __haproxy_backend_port | mandatory }}
+  server {{ hostvars[host].inventory_hostname }} {{ (hostvars[host].inventory_hostname == inventory_hostname) | ternary('host.containers.internal', (hostvars[host].ansible_facts.default_ipv4.address | default(hostvars[host].ansible_facts.all_ipv4_addresses[0]))) }}:{{ __haproxy_backend_port }}
   {% endfor %}

@@ -6,13 +6,13 @@ vrrp_script check_haproxy {
 
 vrrp_instance HAPROXY {
   state BACKUP
-  interface {{ __haproxy_keepalived_interface | mandatory }}
+  interface {{ __haproxy_keepalived_vrrp_interface }}
   virtual_router_id {{ __haproxy_keepalived_virtual_router_id }}
   priority 100
   advert_int 1
   nopreempt
   virtual_ipaddress {
-    {{ __haproxy_keepalived_virtual_ip_address | mandatory }}
+    {{ __haproxy_keepalived_virtual_ip_address }} dev {{ __haproxy_keepalived_vip_interface }}
   }
 
   track_script {

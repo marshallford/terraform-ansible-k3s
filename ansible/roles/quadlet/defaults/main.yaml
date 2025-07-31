@@ -4,3 +4,4 @@ __quadlet_user_home: "{{ ansible_facts.env.HOME }}"
 __quadlet_systemd_user_dir: "{{ __quadlet_user_home }}/.config/systemd/user"
 __quadlet_containers_dir: "{{ __quadlet_user_home }}/.config/containers/systemd"
 __quadlet_volumes_dir: "{{ __quadlet_user_home }}/.local/share/containers/storage/volumes"
+__quadlet_ipv4_unprivileged_port_start: 1024

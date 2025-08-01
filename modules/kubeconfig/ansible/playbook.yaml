@@ -3,15 +3,11 @@
   gather_facts: false
   become: true
   tasks:
-  - name: Retrieve kubeconfig
-    ansible.builtin.slurp:
-      src: /etc/rancher/k3s/k3s.yaml
-    register: k3s_kubeconfig
-    no_log: true
-  - name: Set kubeconfig facts
-    ansible.builtin.set_fact:
-      cluster_ca_certificate: "{{ parsed_kubeconfig.clusters[0].cluster['certificate-authority-data'] | b64decode }}"
-      client_certificate: "{{ parsed_kubeconfig.users[0].user['client-certificate-data'] | b64decode }}"
-      client_key: "{{ parsed_kubeconfig.users[0].user['client-key-data'] | b64decode }}"
+  - name: Kubeconfig
+    ansible.builtin.include_role:
+      name: k3s_kubeconfig
     vars:
-      parsed_kubeconfig: "{{ k3s_kubeconfig.content | b64decode | from_yaml }}"
+      __k3s_kubeconfig_server: "{{ k3s_server }}"
+      __k3s_kubeconfig_cluster_name: "{{ k3s_cluster_name }}"
+      __k3s_kubeconfig_user_name: "{{ k3s_user_name }}"
+      __k3s_kubeconfig_context_name: "{{ k3s_context_name }}"

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.0...v0.2.1) (2025-08-01)
+
+
+### Bug Fixes
+
+* refactor kubeconfig submodule ([#18](https://github.com/marshallford/terraform-ansible-k3s/issues/18)) ([413b836](https://github.com/marshallford/terraform-ansible-k3s/commit/413b836f586fd4ef0805a56af2ad3313f6a67e0e))
+
 ## [0.2.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.1.2...v0.2.0) (2025-07-31)
 
 

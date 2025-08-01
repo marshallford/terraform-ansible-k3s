@@ -1,0 +1,35 @@
+- name: Retrieve kubeconfig
+  ansible.builtin.slurp:
+    src: /etc/rancher/k3s/k3s.yaml
+  register: k3s_kubeconfig
+  no_log: true
+- name: Set kubeconfig facts
+  ansible.builtin.set_fact:
+    cluster_ca_certificate: "{{ cluster_ca_certificate | b64decode }}"
+    client_certificate: "{{ client_certificate | b64decode }}"
+    client_key: "{{ client_key | b64decode }}"
+    kubeconfig_yaml: "{{ kubeconfig | to_nice_yaml }}"
+  vars:
+    parsed_kubeconfig: "{{ k3s_kubeconfig.content | b64decode | from_yaml }}"
+    cluster_ca_certificate: "{{ parsed_kubeconfig.clusters[0].cluster['certificate-authority-data'] }}"
+    client_certificate: "{{ parsed_kubeconfig.users[0].user['client-certificate-data'] }}"
+    client_key: "{{ parsed_kubeconfig.users[0].user['client-key-data'] }}"
+    kubeconfig:
+      apiVersion: v1
+      kind: Config
+      clusters:
+      - name: "{{ __k3s_kubeconfig_cluster_name }}"
+        cluster:
+          server: "{{ __k3s_kubeconfig_server }}"
+          certificate-authority-data: "{{ cluster_ca_certificate }}"
+      users:
+      - name: "{{ __k3s_kubeconfig_user_name }}"
+        user:
+          client-certificate-data: "{{ client_certificate }}"
+          client-key-data: "{{ client_key }}"
+      contexts:
+      - name: "{{ __k3s_kubeconfig_context_name }}"
+        context:
+          cluster: "{{ __k3s_kubeconfig_cluster_name }}"
+          user: "{{ __k3s_kubeconfig_user_name }}"
+      current-context: "{{ __k3s_kubeconfig_context_name }}"

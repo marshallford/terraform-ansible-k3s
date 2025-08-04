@@ -160,8 +160,8 @@ variable "all_nodes_config" {
   type = object({
     protect_kernel_defaults = optional(bool)
     selinux                 = optional(bool)
-    kubelet_arg             = optional(map(string), {})
-    kube_proxy_arg          = optional(map(string), {})
+    kubelet_arg             = optional(map(any), {})
+    kube_proxy_arg          = optional(map(any), {})
   })
   nullable    = false
   default     = {}
@@ -184,13 +184,13 @@ variable "server_nodes_config" {
     disable_kube_proxy                = optional(bool)
     disable_network_policy            = optional(bool)
     disable_helm_controller           = optional(bool)
-    etcd_arg                          = optional(map(string), {})
-    kube_apiserver_arg                = optional(map(string), {})
-    kube_scheduler_arg                = optional(map(string), {})
-    kube_controller_manager_arg       = optional(map(string), {})
-    kube_cloud_controller_manager_arg = optional(map(string), {})
-    kubelet_arg                       = optional(map(string), {})
-    kube_proxy_arg                    = optional(map(string), {})
+    etcd_arg                          = optional(map(any), {})
+    kube_apiserver_arg                = optional(map(any), {})
+    kube_scheduler_arg                = optional(map(any), {})
+    kube_controller_manager_arg       = optional(map(any), {})
+    kube_cloud_controller_manager_arg = optional(map(any), {})
+    kubelet_arg                       = optional(map(any), {})
+    kube_proxy_arg                    = optional(map(any), {})
     disable_agent                     = optional(bool)
   })
   nullable    = false

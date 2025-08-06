@@ -1,4 +1,3 @@
-# https://docs.fedoraproject.org/en-US/fedora-coreos/os-extensions/
 # https://github.com/coreos/fedora-coreos-tracker/issues/681#issuecomment-974301872
 variant: fcos
 version: 1.5.0

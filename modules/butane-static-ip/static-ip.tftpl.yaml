@@ -1,4 +1,3 @@
-# https://docs.fedoraproject.org/en-US/fedora-coreos/sysconfig-network-configuration/
 variant: fcos
 version: 1.5.0
 storage:

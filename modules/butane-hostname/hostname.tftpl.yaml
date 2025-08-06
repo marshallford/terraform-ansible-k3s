@@ -1,4 +1,3 @@
-# https://docs.fedoraproject.org/en-US/fedora-coreos/hostname/
 variant: fcos
 version: 1.5.0
 storage:

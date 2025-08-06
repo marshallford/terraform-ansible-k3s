@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.2](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.1...v0.2.2) (2025-08-06)
+
+
+### Features
+
+* adds cis hardening submodule ([#20](https://github.com/marshallford/terraform-ansible-k3s/issues/20)) ([a9194bc](https://github.com/marshallford/terraform-ansible-k3s/commit/a9194bcc471c130da7a3f8bd09712ab14967dbd0))
+
+
+### Bug Fixes
+
+* adds submodule readmes ([#22](https://github.com/marshallford/terraform-ansible-k3s/issues/22)) ([c04455c](https://github.com/marshallford/terraform-ansible-k3s/commit/c04455ce525ad26651e576b03ec60eeb72ef8e91))
+
 ## [0.2.1](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.0...v0.2.1) (2025-08-01)
 
 

@@ -42,7 +42,7 @@ Deploy and manage a fully-featured Kubernetes cluster with the convenience of a 
 
 ## Example
 
-See the [examples](./examples) directory for complete k3s cluster configuration and deployment examples.
+See the [examples](/examples) directory for complete examples.
 
 ```terraform
 module "k3s" {
@@ -51,7 +51,7 @@ module "k3s" {
   ssh_private_keys = [
     {
       name = "example"
-      data = file("~/.ssh/example")
+      data = var.private_key
     }
   ]
 
@@ -71,7 +71,7 @@ module "k3s" {
       address = addr
     }
     config = {
-      cluster_init = key == "a",
+      cluster_init = name == "a",
     }
   } }
 

@@ -7,7 +7,9 @@
       "extra-files": [
         "variables.tf",
         "modules/kubeconfig/variables.tf",
-        "examples/readme/main.tf"
+        "examples/cis-hardening/main.tf",
+        "examples/kubeconfig/main.tf",
+        "examples/simple/main.tf"
       ]
     }
   }

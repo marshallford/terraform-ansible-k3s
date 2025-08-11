@@ -6,6 +6,7 @@ __k3s_files_dir: "{{ __k3s_config_dir }}/files"
 __k3s_kubeconfig: "{{ __k3s_config_dir }}/k3s.yaml"
 __k3s_data_dir: /var/lib/rancher/k3s
 __k3s_images_dir: "{{ __k3s_data_dir }}/agent/images"
+__k3s_kubelet_config_dir: "{{ __k3s_data_dir }}/agent/etc/kubelet.conf.d"
 __k3s_binary_dir: /usr/local/bin
 __k3s_manifests_dir: "{{ __k3s_data_dir }}/server/manifests/ansible"
 __k3s_manifests: {}

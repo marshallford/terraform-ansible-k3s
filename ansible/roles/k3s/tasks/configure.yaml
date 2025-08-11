@@ -57,6 +57,7 @@
   loop: "{{ __k3s_files | dict2items }}"
   loop_control:
     label: "{{ item.key }}"
+  register: k3s_files
   notify: Restart k3s-{{ __k3s_role }}
 
 - name: Find existing k3s files
@@ -67,9 +68,39 @@
 
 - name: Prune k3s files
   ansible.builtin.file:
-    path: "{{ __k3s_files_dir }}/{{ item }}"
+    path: "{{ item }}"
     state: absent
-  loop: "{{ (current_k3s_files_dir.files | map(attribute='path') | map('basename')) | difference(__k3s_files.keys() | list) }}"
+  loop: "{{ (current_k3s_files_dir.files | map(attribute='path')) | difference(k3s_files.results | map(attribute='dest') | list) }}"
+  loop_control:
+    label: "{{ item | basename }}"
+  notify: Restart k3s-{{ __k3s_role }}
+
+- name: Copy k3s kubelet configs
+  ansible.builtin.copy:
+    content: "{{ item | to_nice_yaml | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
+    dest: "{{ __k3s_kubelet_config_dir }}/{{ '%02d' | format(index+1) }}-ansible.conf"
+    mode: u=rw,g=,o=
+  loop: "{{ __k3s_kubelet_configs }}"
+  loop_control:
+    label: "{{ index + 1 }}"
+    index_var: index
+  register: k3s_kubelet_config_files
+  notify: Restart k3s-{{ __k3s_role }}
+
+- name: Find existing k3s kubelet configs
+  ansible.builtin.find:
+    paths: "{{ __k3s_kubelet_config_dir }}"
+    patterns: "*"
+    excludes: "00-*"
+  register: current_k3s_kubelet_config_dir
+
+- name: Prune k3s kubelet configs
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ (current_k3s_kubelet_config_dir.files | map(attribute='path')) | difference(k3s_kubelet_config_files.results | map(attribute='dest') | list) }}"
+  loop_control:
+    label: "{{ item | basename }}"
   notify: Restart k3s-{{ __k3s_role }}
 
 - name: Ensure k3s registries config

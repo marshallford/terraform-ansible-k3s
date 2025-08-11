@@ -116,6 +116,7 @@
       __k3s_server_nodes_config: "{{ k3s_server_nodes_config }}"
       __k3s_node_config: "{{ k3s_node_config }}"
       __k3s_files: "{{ k3s_files }}"
+      __k3s_kubelet_configs: "{{ k3s_kubelet_configs }}"
       __k3s_registries_config: "{{ k3s_registries_config }}"
 - name: Cleanup machines
   hosts: servers:agents

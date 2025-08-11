@@ -1,4 +1,15 @@
-# Note: This example is not complete and is used for formatting purposes only.
+locals {
+  server_machines = {
+    a = "192.168.1.100"
+    b = "192.168.1.101"
+    c = "192.168.1.102"
+  }
+
+  agent_machines = {
+    x = "192.168.1.103"
+    y = "192.168.1.104"
+  }
+}
 
 module "k3s" {
   source  = "marshallford/k3s/ansible"
@@ -7,7 +18,7 @@ module "k3s" {
   ssh_private_keys = [
     {
       name = "example"
-      data = file("~/.ssh/example")
+      data = var.private_key
     }
   ]
 
@@ -27,7 +38,7 @@ module "k3s" {
       address = addr
     }
     config = {
-      cluster_init = key == "a",
+      cluster_init = name == "a",
     }
   } }
 
@@ -48,15 +59,8 @@ provider "kubernetes" {
   client_key             = module.k3s.ephemeral_credentials.client_key
 }
 
-locals {
-  server_machines = {
-    a = "192.168.1.100"
-    b = "192.168.1.101"
-    c = "192.168.1.102"
-  }
-
-  agent_machines = {
-    x = "192.168.1.103"
-    y = "192.168.1.104"
+resource "kubernetes_namespace_v1" "example" {
+  metadata {
+    name = "example"
   }
 }

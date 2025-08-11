@@ -12,6 +12,7 @@ output "all_nodes_config" {
       "pod-max-pids"                      = var.pod_max_pids
     }
   }
+  description = "CIS hardening configuration options that apply to all nodes."
 }
 
 output "server_nodes_config" {
@@ -30,6 +31,7 @@ output "server_nodes_config" {
       "terminated-pod-gc-threshold" = var.terminated_pod_gc_threshold
     }
   }
+  description = "CIS hardening configuration options that apply to server nodes."
 }
 
 output "files" {
@@ -74,4 +76,5 @@ output "files" {
       rules      = var.audit_policy_rules
     })
   }
+  description = "Files copied to machines necessary for CIS hardening."
 }

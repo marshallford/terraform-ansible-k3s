@@ -4,21 +4,7 @@ This submodule provides k3s configuration based on the [CIS hardening guide](htt
 
 ## Example
 
-```hcl
-module "k3s_cis_hardening" {
-  source = "marshallford/k3s/ansible//modules/cis-hardening"
-}
-
-module "k3s" {
-  source = "marshallford/k3s/ansible"
-
-  # ...
-
-  all_nodes_config    = module.k3s_cis_hardening.all_nodes_config
-  server_nodes_config = module.k3s_cis_hardening.server_nodes_config
-  files               = module.k3s_cis_hardening.files
-}
-```
+See [examples/cis-hardening](/examples/cis-hardening).
 
 ## Out of scope
 

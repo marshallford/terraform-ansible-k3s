@@ -40,8 +40,8 @@
     vars:
       __haproxy_container_image: "{{ haproxy_container_image }}"
       __haproxy_container_image_tag: "{{ haproxy_container_image_tag }}"
-      __haproxy_keepalived_vip_interface: "{{ ansible_facts.default_ipv4.interface}}"
-      __haproxy_keepalived_vrrp_interface: "{{ ansible_facts.default_ipv4.interface}}"
+      __haproxy_keepalived_vip_interface: "{{ ansible_facts.default_ipv4.interface }}"
+      __haproxy_keepalived_vrrp_interface: "{{ ansible_facts.default_ipv4.interface }}"
       __haproxy_keepalived_virtual_ip_address: "{{ k3s_api_server.virtual_ip }}"
       __haproxy_keepalived_virtual_router_id: "{{ k3s_api_server.virtual_router_id }}"
 - name: Prepare machines for k3s

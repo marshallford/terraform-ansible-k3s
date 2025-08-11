@@ -78,7 +78,7 @@
 - name: Copy k3s kubelet configs
   ansible.builtin.copy:
     content: "{{ item | to_nice_yaml | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
-    dest: "{{ __k3s_kubelet_config_dir }}/{{ '%02d' | format(index+1) }}-ansible.conf"
+    dest: "{{ __k3s_kubelet_config_dir }}/{{ '%02d' | format(index + 1) }}-ansible.conf"
     mode: u=rw,g=,o=
   loop: "{{ __k3s_kubelet_configs }}"
   loop_control:

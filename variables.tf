@@ -212,6 +212,21 @@ variable "files" {
   description = "Files copied to the machines to be referenced in configuration (filename=contents). The string 'K3S_FILES_DIR' can be referenced in configurations to point to the directory where the files are copied."
 }
 
+# https://docs.k3s.io/installation/configuration#kubelet-configuration-files
+variable "kubelet_configs" {
+  type     = list(map(any))
+  nullable = false
+  default  = []
+  validation {
+    condition = alltrue([
+      for config in var.kubelet_configs :
+      try(config.kind, null) == "KubeletConfiguration"
+    ])
+    error_message = "Each kubelet configuration must contain 'kind: KubeletConfiguration'."
+  }
+  description = "Configure kubelet via drop-in configuration files."
+}
+
 # https://rancher.com/docs/k3s/latest/en/installation/private-registry/
 variable "registries_config" {
   type        = any

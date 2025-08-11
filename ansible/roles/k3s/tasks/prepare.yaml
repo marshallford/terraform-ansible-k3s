@@ -28,6 +28,12 @@
     state: directory
     mode: u=rwx,g=rx,o=
 
+- name: Ensure k3s kubelet config directory exists
+  ansible.builtin.file:
+    path: "{{ __k3s_kubelet_config_dir }}"
+    state: directory
+    mode: u=rwx,g=rx,o=
+
 - name: Ensure k3s staging directory exists
   ansible.builtin.file:
     path: "{{ __k3s_staging_dir }}"
@@ -49,6 +55,7 @@
   loop: "{{ __k3s_manifests | dict2items }}"
   loop_control:
     label: "{{ item.key }}"
+  register: k3s_manifest_files
   when: __k3s_role == "server"
 
 - name: Find existing auto deployed manifests
@@ -60,9 +67,11 @@
 
 - name: Prune auto deployed manifests
   ansible.builtin.file:
-    path: "{{ __k3s_manifests_dir }}/{{ item }}"
+    path: "{{ item }}"
     state: absent
-  loop: "{{ (current_k3s_manifests_dir.files | map(attribute='path') | map('basename')) | difference(__k3s_manifests.keys() | list) }}"
+  loop: "{{ (current_k3s_manifests_dir.files | map(attribute='path')) | difference(k3s_manifest_files.results | map(attribute='dest') | list) }}"
+  loop_control:
+    label: "{{ item | basename }}"
   when: __k3s_role == "server"
 
 - name: Harden kernel parameters for kubelet

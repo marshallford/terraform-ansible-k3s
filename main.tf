@@ -19,6 +19,7 @@ locals {
         k3s_selinux_version         = var.selinux_version
         k3s_tokens                  = var.tokens
         k3s_files                   = var.files
+        k3s_kubelet_configs         = var.kubelet_configs
         k3s_registries_config       = var.registries_config
         k3s_cleanup                 = var.cleanup
         system_upgrade_trigger      = var.system_upgrade_trigger

@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.3](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.2...v0.2.3) (2025-08-11)
+
+
+### Features
+
+* adds kubelet configuration support ([#23](https://github.com/marshallford/terraform-ansible-k3s/issues/23)) ([30f1d4f](https://github.com/marshallford/terraform-ansible-k3s/commit/30f1d4fd7b634009efb8cca48e51de93ce7c4ce2))
+
+
+### Bug Fixes
+
+* improves module and submodule docs ([#25](https://github.com/marshallford/terraform-ansible-k3s/issues/25)) ([114869c](https://github.com/marshallford/terraform-ansible-k3s/commit/114869c382846ecd523f384d150f7c1638793cef))
+
 ## [0.2.2](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.1...v0.2.2) (2025-08-06)
 
 

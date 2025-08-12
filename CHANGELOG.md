@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.4](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.3...v0.2.4) (2025-08-12)
+
+
+### Bug Fixes
+
+* adds cilium and graceful shutdown examples, ansible yaml conversion tweak ([#26](https://github.com/marshallford/terraform-ansible-k3s/issues/26)) ([25b0af1](https://github.com/marshallford/terraform-ansible-k3s/commit/25b0af14b3bcc066e4e2fddd63a645b2a4238fb2))
+* adds new examples to release please extra-files config ([#28](https://github.com/marshallford/terraform-ansible-k3s/issues/28)) ([a96f59f](https://github.com/marshallford/terraform-ansible-k3s/commit/a96f59ff3a922ff74a1612bbc90e73253e6c8d6a))
+
 ## [0.2.3](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.2...v0.2.3) (2025-08-11)
 
 

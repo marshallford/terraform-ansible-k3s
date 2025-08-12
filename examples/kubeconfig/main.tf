@@ -4,7 +4,7 @@ locals {
 
 module "k3s_kubeconfig" {
   source  = "marshallford/k3s/ansible//modules/kubeconfig"
-  version = "0.2.3" # x-release-please-version
+  version = "0.2.4" # x-release-please-version
 
   server_machine = {
     ssh = {

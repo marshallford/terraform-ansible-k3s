@@ -220,6 +220,13 @@ variable "kubelet_configs" {
   validation {
     condition = alltrue([
       for config in var.kubelet_configs :
+      try(config.apiVersion, null) != null
+    ])
+    error_message = "Each kubelet configuration must contain an 'apiVersion' key."
+  }
+  validation {
+    condition = alltrue([
+      for config in var.kubelet_configs :
       try(config.kind, null) == "KubeletConfiguration"
     ])
     error_message = "Each kubelet configuration must contain 'kind: KubeletConfiguration'."

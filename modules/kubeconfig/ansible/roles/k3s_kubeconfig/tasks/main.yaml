@@ -8,7 +8,7 @@
     cluster_ca_certificate: "{{ cluster_ca_certificate | b64decode }}"
     client_certificate: "{{ client_certificate | b64decode }}"
     client_key: "{{ client_key | b64decode }}"
-    kubeconfig_yaml: "{{ kubeconfig | to_nice_yaml }}"
+    kubeconfig_yaml: "{{ kubeconfig | to_nice_yaml(indent=2, sort_keys=false) }}"
   vars:
     parsed_kubeconfig: "{{ k3s_kubeconfig.content | b64decode | from_yaml }}"
     cluster_ca_certificate: "{{ parsed_kubeconfig.clusters[0].cluster['certificate-authority-data'] }}"

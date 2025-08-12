@@ -98,7 +98,7 @@ provider "kubernetes" {
 1. Only tested with `x86_64` machines on a IPv4 network
 2. SELinux package cannot be upgraded ([upstream issue](https://github.com/coreos/rpm-ostree/issues/2127))
 3. Removal of `cluster-init` server node not tested
-4. Removed server nodes cannot be re-added without first destroying the machine or machine disk
+4. Removed server nodes cannot be re-added without first destroying the underlying machine and disk(s)
 5. Node removal requires `create_before_destroy = true` set on machine resource(s) for correct order of operations
 
 ## To-do
@@ -109,9 +109,7 @@ provider "kubernetes" {
 - [ ] Add Firewall rules
 - [ ] Explore Keepalived `max_auto_priority` option
 - [ ] Assert podman version
-- [ ] Simplify ansible handlers sharing across plays/roles
 - [ ] Configuration for k3s node-ip and node-external-ip (haproxy/keepalived interface and address too)
 - [ ] Token rotation
 - [ ] Stop Zicanati at start of playbook and start at the end
-- [ ] Examples: CIS hardening, kubeletConfiguration, custom CNI, registry
 - [ ] Knownhost management

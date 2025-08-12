@@ -77,7 +77,7 @@
 
 - name: Copy k3s kubelet configs
   ansible.builtin.copy:
-    content: "{{ item | to_nice_yaml | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
+    content: "{{ item | to_nice_yaml(indent=2, sort_keys=false) | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
     dest: "{{ __k3s_kubelet_config_dir }}/{{ '%02d' | format(index + 1) }}-ansible.conf"
     mode: u=rw,g=,o=
   loop: "{{ __k3s_kubelet_configs }}"
@@ -105,14 +105,14 @@
 
 - name: Ensure k3s registries config
   ansible.builtin.copy:
-    content: "{{ __k3s_registries_config | to_nice_yaml | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
+    content: "{{ __k3s_registries_config | to_nice_yaml(indent=2, sort_keys=false) | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
     dest: "{{ __k3s_config_dir }}/registries.yaml"
     mode: u=rwx,g=rwx,o=
   notify: Restart k3s-{{ __k3s_role }}
 
 - name: Ensure k3s config
   ansible.builtin.copy:
-    content: "{{ __k3s_config | to_nice_yaml | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
+    content: "{{ __k3s_config | to_nice_yaml(indent=2, sort_keys=false) | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
     dest: "{{ __k3s_config_dir }}/config.yaml"
     mode: u=rwx,g=r,o=
   notify: Restart k3s-{{ __k3s_role }}

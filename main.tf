@@ -46,9 +46,11 @@ locals {
             ansible_host = machine.ssh.address
             ansible_port = machine.ssh.port
             k3s_node_config = { for k, v in merge(machine.config, {
-              node_name  = coalesce(machine.config.node_name, "server-${machine.name}"),
-              node_label = [for k, v in machine.config.node_label : "${k}=${v}"]
-              node_taint = [for k, v in machine.config.node_taint : "${k}=${v}"]
+              node_name        = coalesce(machine.config.node_name, "server-${machine.name}"),
+              node_ip          = coalesce(machine.config.node_ip, machine.ssh.address),
+              node_external_ip = coalesce(machine.config.node_external_ip, machine.ssh.address),
+              node_label       = [for k, v in machine.config.node_label : "${k}=${v}"]
+              node_taint       = [for k, v in machine.config.node_taint : "${k}=${v}"]
             }) : replace(k, "_", "-") => v if v != null && v != [] }
           } }
           vars = {
@@ -64,9 +66,11 @@ locals {
               ansible_host = machine.ssh.address
               ansible_port = machine.ssh.port
               k3s_node_config = { for k, v in merge(machine.config, {
-                node_name  = coalesce(machine.config.node_name, "agent-${group_name}-${machine.name}"),
-                node_label = [for k, v in machine.config.node_label : "${k}=${v}"]
-                node_taint = [for k, v in machine.config.node_taint : "${k}=${v}"]
+                node_name        = coalesce(machine.config.node_name, "agent-${group_name}-${machine.name}"),
+                node_ip          = coalesce(machine.config.node_ip, machine.ssh.address),
+                node_external_ip = coalesce(machine.config.node_external_ip, machine.ssh.address),
+                node_label       = [for k, v in machine.config.node_label : "${k}=${v}"]
+                node_taint       = [for k, v in machine.config.node_taint : "${k}=${v}"]
               }) : replace(k, "_", "-") => v if v != null && v != [] }
             } }
           } }

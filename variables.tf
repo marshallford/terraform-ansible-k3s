@@ -63,10 +63,13 @@ variable "server_machines" {
       port    = optional(number, 22)
     })
     config = optional(object({
-      cluster_init = optional(bool, false)
-      node_name    = optional(string)
-      node_label   = optional(map(string), {})
-      node_taint   = optional(map(string), {})
+      cluster_init     = optional(bool, false)
+      node_name        = optional(string)
+      with_node_id     = optional(bool, false)
+      node_ip          = optional(string)
+      node_external_ip = optional(string)
+      node_label       = optional(map(string), {})
+      node_taint       = optional(map(string), {})
     }), {})
   }))
   nullable = false
@@ -98,9 +101,12 @@ variable "agent_machine_groups" {
       port    = optional(number, 22)
     })
     config = optional(object({
-      node_name  = optional(string)
-      node_label = optional(map(string), {})
-      node_taint = optional(map(string), {})
+      node_name        = optional(string)
+      with_node_id     = optional(bool, false)
+      node_ip          = optional(string)
+      node_external_ip = optional(string)
+      node_label       = optional(map(string), {})
+      node_taint       = optional(map(string), {})
     }), {})
   })))
   nullable = false
@@ -151,7 +157,7 @@ variable "haproxy_container_image" {
 variable "haproxy_container_image_tag" {
   type        = string
   nullable    = false
-  default     = "3.2.3"
+  default     = "3.2.4"
   description = "HAProxy container image tag used for API server load balancing."
 }
 

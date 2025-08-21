@@ -19,8 +19,14 @@ storage:
         type=ethernet
         interface-name=${interface}
         [ipv4]
-        address1=${ip}/${prefix},${gateway}
+        address1=${ip}/${prefix}
+        %{~ if gateway != null ~}
+        gateway=${gateway}
+        %{~ endif ~}
         dns=${join(";", nameservers)};
         dns-search=${join(";", search_domains)};
+        %{~ for index, route in static_routes ~}
+        route${index+1}=${join(",", compact(["${route.address}/${route.prefix}", route.gateway, route.metric]))}
+        %{~ endfor ~}
         may-fail=false
         method=manual

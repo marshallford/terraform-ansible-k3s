@@ -4,7 +4,6 @@ terraform {
 
 variable "interface" {
   type        = string
-  default     = "ens3"
   nullable    = false
   description = "Network interface to configure with a static IP address."
 }
@@ -24,20 +23,35 @@ variable "prefix" {
 
 variable "gateway" {
   type        = string
-  nullable    = false
+  default     = null
+  nullable    = true
   description = "Gateway IP address for the network."
 }
 
 variable "nameservers" {
   type        = list(string)
+  default     = []
   nullable    = false
   description = "DNS nameservers."
 }
 
 variable "search_domains" {
   type        = list(string)
+  default     = []
   nullable    = false
   description = "DNS search domains."
+}
+
+variable "static_routes" {
+  type = list(object({
+    address = string
+    prefix  = optional(number, 24)
+    gateway = optional(string)
+    metric  = optional(number)
+  }))
+  default     = []
+  nullable    = false
+  description = "Static routes."
 }
 
 output "snippet" {
@@ -48,6 +62,7 @@ output "snippet" {
     gateway        = var.gateway,
     nameservers    = var.nameservers,
     search_domains = var.search_domains,
+    static_routes  = var.static_routes,
   })
   description = "Butane snippet."
 }

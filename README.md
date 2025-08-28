@@ -112,3 +112,5 @@ provider "kubernetes" {
 - [ ] Token rotation
 - [ ] Stop Zicanati at start of playbook and start at the end
 - [ ] Knownhost management
+- [ ] Variables for fine-grained node draining (`--disable-eviction`, timeout, etc)
+- [ ] Handle node drain failure without manual intervention

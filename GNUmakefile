@@ -33,7 +33,7 @@ BUILD_CONTEXT_STAMP := container-image/context.stamp
 BUILD_IMAGE_STAMP := container-image/build.stamp
 
 $(VENV_STAMP): pyproject.toml $(wildcard uv.lock)
-	$(UV) venv $(VENV) --clean
+	$(UV) venv $(VENV) --clear
 	$(UV) sync
 	touch $(VENV_STAMP)
 

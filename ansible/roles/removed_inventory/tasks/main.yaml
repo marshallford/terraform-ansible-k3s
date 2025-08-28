@@ -1,8 +1,0 @@
-- name: Add removed hosts
-  ansible.builtin.add_host:
-    name: "{{ item.key }}"
-    groups: "{{ ['removed_'] | product(item.value.groups) | map('join') | list }}"
-  args: "{{ item.value.hostvars }}"
-  loop: "{{ (__removed_inventory_previous_inventory_file) | inventory_difference(__removed_inventory_current_inventory_file) | dict2items }}"
-  loop_control:
-    label: "{{ item.key }}"

@@ -40,6 +40,9 @@ locals {
         }) : replace(k, "_", "-") => v if v != null && v != [] }
       }
       children = {
+        cluster_init_server = {
+          hosts = { for machine in var.server_machines : "server-${machine.name}" => {} if machine.config.cluster_init }
+        }
         servers = {
           hosts = { for machine in var.server_machines : "server-${machine.name}" => {
             ansible_user = machine.ssh.user

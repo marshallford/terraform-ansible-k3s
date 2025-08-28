@@ -17,6 +17,17 @@
   - name: Interface facts
     ansible.builtin.set_fact:
       interfaces_with_ipv4_addr: "{{ ansible_facts.interfaces | map('extract', ansible_facts) | selectattr('ipv4.address', 'defined') }}"
+- name: Add new and removed hosts to inventory
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+  - name: Inventory difference
+    ansible.builtin.include_role:
+      name: inventory_difference
+    vars:
+      __inventory_difference_previous_inventory_file: "{{ lookup('env', 'ANSIBLE_TF_PREVIOUS_INVENTORY') }}"
+      __inventory_difference_current_inventory_file: "{{ lookup('env', 'ANSIBLE_TF_INVENTORY') }}"
 - name: Configure API server load balancer
   hosts: servers
   gather_facts: false
@@ -107,8 +118,78 @@
       __k3s_selinux_version: "{{ k3s_selinux_version }}"
       __k3s_arch: "{{ k3s_arch }}"
     when: not k3s_staged
-- name: Configure k3s cluster
-  hosts: servers:agents
+- name: Configure new k3s servers
+  hosts: new_cluster_init_server:new_servers
+  gather_facts: false
+  become: true
+  serial:
+  - 1
+  - 100%
+  tasks:
+  - name: Configure
+    ansible.builtin.include_role:
+      name: k3s
+    vars:
+      __k3s_role: "{{ k3s_role }}"
+      __k3s_version: "{{ k3s_version }}"
+      __k3s_selinux_version: "{{ k3s_selinux_version }}"
+      __k3s_installed: "{{ k3s_installed }}"
+      __k3s_delegated_server_host: "{{ groups.servers | first }}"
+      __k3s_server: "https://{{ k3s_api_server.virtual_ip }}:6443"
+      __k3s_tls_san: "{{ [k3s_api_server.virtual_ip] + k3s_api_server.hosts }}"
+      __k3s_all_nodes_config: "{{ k3s_all_nodes_config }}"
+      __k3s_server_nodes_config: "{{ k3s_server_nodes_config }}"
+      __k3s_node_config: "{{ k3s_node_config }}"
+      __k3s_files: "{{ k3s_files }}"
+      __k3s_kubelet_configs: "{{ k3s_kubelet_configs }}"
+      __k3s_registries_config: "{{ k3s_registries_config }}"
+- name: Configure existing k3s servers
+  hosts: servers:!new_servers
+  gather_facts: false
+  become: true
+  serial: 1
+  tasks:
+  - name: Configure
+    ansible.builtin.include_role:
+      name: k3s
+    vars:
+      __k3s_role: "{{ k3s_role }}"
+      __k3s_version: "{{ k3s_version }}"
+      __k3s_selinux_version: "{{ k3s_selinux_version }}"
+      __k3s_installed: "{{ k3s_installed }}"
+      __k3s_delegated_server_host: "{{ groups.servers | first }}"
+      __k3s_server: "https://{{ k3s_api_server.virtual_ip }}:6443"
+      __k3s_tls_san: "{{ [k3s_api_server.virtual_ip] + k3s_api_server.hosts }}"
+      __k3s_all_nodes_config: "{{ k3s_all_nodes_config }}"
+      __k3s_server_nodes_config: "{{ k3s_server_nodes_config }}"
+      __k3s_node_config: "{{ k3s_node_config }}"
+      __k3s_files: "{{ k3s_files }}"
+      __k3s_kubelet_configs: "{{ k3s_kubelet_configs }}"
+      __k3s_registries_config: "{{ k3s_registries_config }}"
+- name: Configure new k3s agents
+  hosts: new_agents
+  gather_facts: false
+  become: true
+  tasks:
+  - name: Configure
+    ansible.builtin.include_role:
+      name: k3s
+    vars:
+      __k3s_role: "{{ k3s_role }}"
+      __k3s_version: "{{ k3s_version }}"
+      __k3s_selinux_version: "{{ k3s_selinux_version }}"
+      __k3s_installed: "{{ k3s_installed }}"
+      __k3s_delegated_server_host: "{{ groups.servers | first }}"
+      __k3s_server: "https://{{ k3s_api_server.virtual_ip }}:6443"
+      __k3s_tls_san: "{{ [k3s_api_server.virtual_ip] + k3s_api_server.hosts }}"
+      __k3s_all_nodes_config: "{{ k3s_all_nodes_config }}"
+      __k3s_server_nodes_config: "{{ k3s_server_nodes_config }}"
+      __k3s_node_config: "{{ k3s_node_config }}"
+      __k3s_files: "{{ k3s_files }}"
+      __k3s_kubelet_configs: "{{ k3s_kubelet_configs }}"
+      __k3s_registries_config: "{{ k3s_registries_config }}"
+- name: Configure existing k3s agents
+  hosts: agents:!new_agents
   gather_facts: false
   become: true
   serial: 1
@@ -143,18 +224,6 @@
       __k3s_version: "{{ k3s_version }}"
       __k3s_selinux_version: "{{ k3s_selinux_version }}"
     when: k3s_cleanup
-- name: Add removed machines to inventory
-  hosts: localhost
-  gather_facts: false
-  become: false
-  tasks:
-  - name: Add removed hosts
-    ansible.builtin.include_role:
-      name: removed_inventory
-    vars:
-      __removed_inventory_previous_inventory_file: "{{ lookup('env', 'ANSIBLE_TF_PREVIOUS_INVENTORY') }}"
-      __removed_inventory_current_inventory_file: "{{ lookup('env', 'ANSIBLE_TF_INVENTORY') }}"
-    when: lookup('env', 'ANSIBLE_TF_OPERATION') == 'update'
 - name: Reset removed machines
   hosts: removed_servers:removed_agents
   gather_facts: true

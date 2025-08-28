@@ -15,11 +15,11 @@ DOCKER := docker
 DOCKER_RUN := $(DOCKER) run $(DOCKER_FLAGS)
 DOCKER_PULL := $(DOCKER) pull -q
 
-EDITORCONFIG_CHECKER_VERSION ?= 3.3.0
+EDITORCONFIG_CHECKER_VERSION ?= 3.4.0
 EDITORCONFIG_CHECKER_IMAGE ?= docker.io/mstruebing/editorconfig-checker:v$(EDITORCONFIG_CHECKER_VERSION)
 EDITORCONFIG_CHECKER := $(DOCKER_RUN) -v=$(CURDIR):/check $(EDITORCONFIG_CHECKER_IMAGE)
 
-YAMLLINT_VERSION ?= 0.34.0
+YAMLLINT_VERSION ?= 0.35.0
 YAMLLINT_IMAGE ?= docker.io/pipelinecomponents/yamllint:$(YAMLLINT_VERSION)
 YAMLLINT := $(DOCKER_RUN) -v=$(CURDIR):/code $(YAMLLINT_IMAGE) yamllint
 
@@ -33,7 +33,7 @@ BUILD_CONTEXT_STAMP := container-image/context.stamp
 BUILD_IMAGE_STAMP := container-image/build.stamp
 
 $(VENV_STAMP): pyproject.toml $(wildcard uv.lock)
-	$(UV) venv $(VENV)
+	$(UV) venv $(VENV) --clear
 	$(UV) sync
 	touch $(VENV_STAMP)
 

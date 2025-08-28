@@ -109,7 +109,8 @@ provider "kubernetes" {
 - [ ] Add Firewall rules
 - [ ] Explore Keepalived `max_auto_priority` option
 - [ ] Assert podman version
-- [ ] Configuration for k3s node-ip and node-external-ip (haproxy/keepalived interface and address too)
 - [ ] Token rotation
 - [ ] Stop Zicanati at start of playbook and start at the end
 - [ ] Knownhost management
+- [ ] Variables for fine-grained node draining (`--disable-eviction`, timeout, etc)
+- [ ] Handle node drain failure without manual intervention

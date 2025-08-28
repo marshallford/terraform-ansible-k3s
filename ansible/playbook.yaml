@@ -14,6 +14,9 @@
   - name: Quadlet
     ansible.builtin.include_role:
       name: quadlet
+  - name: Interface facts
+    ansible.builtin.set_fact:
+      interfaces_with_ipv4_addr: "{{ ansible_facts.interfaces | map('extract', ansible_facts) | selectattr('ipv4.address', 'defined') }}"
 - name: Configure API server load balancer
   hosts: servers
   gather_facts: false
@@ -40,10 +43,19 @@
     vars:
       __haproxy_container_image: "{{ haproxy_container_image }}"
       __haproxy_container_image_tag: "{{ haproxy_container_image_tag }}"
-      __haproxy_keepalived_vip_interface: "{{ ansible_facts.default_ipv4.interface }}"
-      __haproxy_keepalived_vrrp_interface: "{{ ansible_facts.default_ipv4.interface }}"
+      __haproxy_keepalived_vip_interface: >-
+        {{
+          interfaces_with_ipv4_addr | selectattr('ipv4.address', 'equalto', k3s_node_config['node-external-ip']) |
+          map(attribute='device') | default([none], true) | first
+        }}
+      __haproxy_keepalived_vrrp_interface: >-
+        {{
+          interfaces_with_ipv4_addr | selectattr('ipv4.address', 'equalto', k3s_node_config['node-ip']) |
+          map(attribute='device') | default([none], true) | first
+        }}
       __haproxy_keepalived_virtual_ip_address: "{{ k3s_api_server.virtual_ip }}"
       __haproxy_keepalived_virtual_router_id: "{{ k3s_api_server.virtual_router_id }}"
+      __haproxy_backend_servers: "{{ ansible_play_hosts_all | zip(ansible_play_hosts_all | map('extract', hostvars, ['k3s_node_config', 'node-ip'])) }}"
 - name: Prepare machines for k3s
   hosts: servers:agents
   gather_facts: false

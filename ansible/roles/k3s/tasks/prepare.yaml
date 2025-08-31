@@ -62,14 +62,14 @@
   ansible.builtin.find:
     paths: "{{ __k3s_manifests_dir }}"
     patterns: "*"
-  register: current_k3s_manifests_dir
+  register: __k3s_current_manifests_dir
   when: __k3s_role == "server"
 
 - name: Prune auto deployed manifests
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
-  loop: "{{ (current_k3s_manifests_dir.files | map(attribute='path')) | difference(k3s_manifest_files.results | map(attribute='dest') | list) }}"
+  loop: "{{ (__k3s_current_manifests_dir.files | map(attribute='path')) | difference(k3s_manifest_files.results | map(attribute='dest') | list) }}"
   loop_control:
     label: "{{ item | basename }}"
   when: __k3s_role == "server"

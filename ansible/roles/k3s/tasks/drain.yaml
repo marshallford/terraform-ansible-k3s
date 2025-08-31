@@ -6,12 +6,12 @@
 - name: Drain node
   ansible.builtin.command:
     cmd: "{{ __k3s_binary_dir }}/k3s kubectl drain {{ __k3s_drain_opts }} {{ __k3s_node_config['node-name'] }}"
-  register: drain
-  failed_when: drain.rc not in [0, 1]
+  register: __k3s_drain
+  failed_when: __k3s_drain.rc not in [0, 1]
   changed_when: true
 
 - name: Force drain node
   ansible.builtin.command:
     cmd: "{{ __k3s_binary_dir }}/k3s kubectl drain {{ __k3s_drain_opts }} --disable-eviction {{ __k3s_node_config['node-name'] }}"
-  when: drain.rc == 1
+  when: __k3s_drain.rc == 1
   changed_when: true

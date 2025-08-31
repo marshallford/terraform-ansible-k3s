@@ -37,7 +37,7 @@
     apply_live: true
   retries: 3
   delay: 30
-  when: "__k3s_selinux_rpm_ostree_package not in rpm_ostree_local_packages"
+  when: "__k3s_selinux_rpm_ostree_package not in fcos_rpm_ostree_status_local_packages"
   notify: Restart k3s-{{ __k3s_role }}
 
 - name: Ensure k3s systemd service
@@ -64,13 +64,13 @@
   ansible.builtin.find:
     paths: "{{ __k3s_files_dir }}"
     patterns: "*"
-  register: current_k3s_files_dir
+  register: __k3s_current_files_dir
 
 - name: Prune k3s files
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
-  loop: "{{ (current_k3s_files_dir.files | map(attribute='path')) | difference(k3s_files.results | map(attribute='dest') | list) }}"
+  loop: "{{ (__k3s_current_files_dir.files | map(attribute='path')) | difference(k3s_files.results | map(attribute='dest') | list) }}"
   loop_control:
     label: "{{ item | basename }}"
   notify: Restart k3s-{{ __k3s_role }}
@@ -92,13 +92,13 @@
     paths: "{{ __k3s_kubelet_config_dir }}"
     patterns: "*"
     excludes: "00-*"
-  register: current_k3s_kubelet_config_dir
+  register: __k3s_current_kubelet_config_dir
 
 - name: Prune k3s kubelet configs
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
-  loop: "{{ (current_k3s_kubelet_config_dir.files | map(attribute='path')) | difference(k3s_kubelet_config_files.results | map(attribute='dest') | list) }}"
+  loop: "{{ (__k3s_current_kubelet_config_dir.files | map(attribute='path')) | difference(k3s_kubelet_config_files.results | map(attribute='dest') | list) }}"
   loop_control:
     label: "{{ item | basename }}"
   notify: Restart k3s-{{ __k3s_role }}
@@ -120,8 +120,8 @@
 - name: Check if certificate rotation is required
   ansible.builtin.command:
     cmd: "{{ __k3s_binary_dir }}/k3s certificate check -o table"
-  register: certificate_check
-  changed_when: certificate_check.stdout_lines | select('search', 'WARNING|EXPIRED') | list | length != 0
+  register: __k3s_certificate_check
+  changed_when: __k3s_certificate_check.stdout_lines | select('search', 'WARNING|EXPIRED') | list | length != 0
   notify: Restart k3s-{{ __k3s_role }}
 
 - name: Flush handlers

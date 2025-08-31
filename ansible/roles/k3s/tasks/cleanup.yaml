@@ -2,13 +2,13 @@
   ansible.builtin.find:
     paths: "{{ __k3s_staging_dir }}"
     patterns: "k3s-*.bin,images-*.tar.zst,selinux-*.rpm"
-  register: current_k3s_staging_dir
+  register: __k3s_current_staging_dir
 
 - name: Prune staging files
   ansible.builtin.file:
     path: "{{ __k3s_files_dir }}/{{ item }}"
     state: absent
-  loop: "{{ (current_k3s_staging_dir.files | map(attribute='path') | map('basename')) | difference(live_files | list) }}"
+  loop: "{{ (__k3s_current_staging_dir.files | map(attribute='path') | map('basename')) | difference(live_files | list) }}"
   vars:
     live_files:
     - k3s-{{ __k3s_version }}.bin

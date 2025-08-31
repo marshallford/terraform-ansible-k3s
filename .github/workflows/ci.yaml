@@ -19,12 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Setup uv
       uses: astral-sh/setup-uv@v6
       with:
         enable-cache: true
-        version: 0.7.20
+        version: 0.8.13
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
@@ -38,7 +38,7 @@ jobs:
     - name: Lint
       run: make lint
     - name: Check PR title
-      uses: amannn/action-semantic-pull-request@v5
+      uses: amannn/action-semantic-pull-request@v6
       env:
         GITHUB_TOKEN: ${{ github.token }}
   build:
@@ -46,14 +46,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Extract Makefile variables
       run: eval "$(make -q vars/github)"
     - name: Setup uv
       uses: astral-sh/setup-uv@v6
       with:
         enable-cache: true
-        version: 0.7.20
+        version: 0.8.13
     - name: Setup Python
       uses: actions/setup-python@v5
       with:

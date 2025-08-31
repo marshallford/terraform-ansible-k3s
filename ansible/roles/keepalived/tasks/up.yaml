@@ -12,7 +12,7 @@
     name: keepalived
   retries: 3
   delay: 30
-  when: "'keepalived' not in rpm_ostree_booted_packages"
+  when: "'keepalived' not in fcos_rpm_ostree_status_booted_packages"
   notify: Reboot
 
 - name: Flush handlers

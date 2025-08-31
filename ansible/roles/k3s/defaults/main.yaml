@@ -1,4 +1,4 @@
-__k3s_version: "1.33.3+k3s1"
+__k3s_version: "1.33.4+k3s1"
 __k3s_selinux_version: "1.6.1"
 __k3s_part: configure
 __k3s_config_dir: /etc/rancher/k3s

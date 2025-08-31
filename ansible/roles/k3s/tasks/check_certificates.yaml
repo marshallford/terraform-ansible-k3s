@@ -2,8 +2,8 @@
   ansible.builtin.command:
     cmd: "{{ __k3s_binary_dir }}/k3s certificate check -o table"
   changed_when: false
-  register: certificate_check
+  register: __k3s_certificate_check
 
 - name: Set certificate status fact
   ansible.builtin.set_fact:
-    k3s_certificates_ok: "{{ certificate_check.stdout_lines | select('search', 'WARNING|EXPIRED') | list | length == 0 }}"
+    k3s_certificates_ok: "{{ __k3s_certificate_check.stdout_lines | select('search', 'WARNING|EXPIRED') | list | length == 0 }}"

@@ -7,14 +7,14 @@ locals {
 output "credentials" {
   value = try(
     {
-      cluster_ca_certificate = local.data_facts.cluster_ca_certificate,
-      client_certificate     = local.data_facts.client_certificate,
-      client_key             = local.data_facts.client_key,
+      cluster_ca_certificate = local.data_facts.k3s_kubeconfig_cluster_ca_certificate,
+      client_certificate     = local.data_facts.k3s_kubeconfig_client_certificate,
+      client_key             = local.data_facts.k3s_kubeconfig_client_key,
     },
     {
-      cluster_ca_certificate = local.resource_facts.cluster_ca_certificate,
-      client_certificate     = local.resource_facts.client_certificate,
-      client_key             = local.resource_facts.client_key,
+      cluster_ca_certificate = local.resource_facts.k3s_kubeconfig_cluster_ca_certificate,
+      client_certificate     = local.resource_facts.k3s_kubeconfig_client_certificate,
+      client_key             = local.resource_facts.k3s_kubeconfig_client_key,
     },
     {
       cluster_ca_certificate = null,
@@ -27,7 +27,7 @@ output "credentials" {
 }
 
 output "kubeconfig_yaml" {
-  value       = try(local.data_facts.kubeconfig_yaml, local.resource_facts.kubeconfig_yaml, null)
+  value       = try(local.data_facts.k3s_kubeconfig_yaml, local.resource_facts.k3s_kubeconfig_yaml, null)
   sensitive   = true
   description = "Cluster admin kubeconfig."
 }
@@ -35,9 +35,9 @@ output "kubeconfig_yaml" {
 output "ephemeral_credentials" {
   value = try(
     {
-      cluster_ca_certificate = local.ephemeral_facts.cluster_ca_certificate,
-      client_certificate     = local.ephemeral_facts.client_certificate,
-      client_key             = local.ephemeral_facts.client_key,
+      cluster_ca_certificate = local.ephemeral_facts.k3s_kubeconfig_cluster_ca_certificate,
+      client_certificate     = local.ephemeral_facts.k3s_kubeconfig_client_certificate,
+      client_key             = local.ephemeral_facts.k3s_kubeconfig_client_key,
     },
     {
       cluster_ca_certificate = null,
@@ -51,7 +51,7 @@ output "ephemeral_credentials" {
 }
 
 output "ephemeral_kubeconfig_yaml" {
-  value       = try(local.ephemeral_facts.kubeconfig_yaml, null)
+  value       = try(local.ephemeral_facts.k3s_kubeconfig_yaml, null)
   sensitive   = true
   ephemeral   = true
   description = "Cluster admin kubeconfig."

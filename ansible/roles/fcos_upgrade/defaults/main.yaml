@@ -1,2 +1,2 @@
 __fcos_upgrade_part: upgrade
-__fcos_upgrade_trigger_file: "/etc/zincati/ansible-upgrade-trigger"
+__fcos_upgrade_trigger_file_path: "/etc/zincati/ansible-upgrade-trigger"

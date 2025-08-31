@@ -7,6 +7,6 @@
 - name: SIGKILL k3s containerd containers
   ansible.builtin.command:
     cmd: pkill -9 -f 'k3s/data/[^/]+/bin/containerd-shim-runc'
-  register: pkill_containerd_shim_runc
-  changed_when: pkill_containerd_shim_runc.rc == 0
+  register: __k3s_pkill_containerd_shim_runc
+  changed_when: __k3s_pkill_containerd_shim_runc.rc == 0
   failed_when: false

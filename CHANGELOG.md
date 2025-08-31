@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.5](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.4...v0.2.5) (2025-08-31)
+
+
+### Features
+
+* refactor playbook to streamline new machine configuration and ensure cluster-init server is configured first ([#31](https://github.com/marshallford/terraform-ansible-k3s/issues/31)) ([2fddbd0](https://github.com/marshallford/terraform-ansible-k3s/commit/2fddbd08c0deef725681b85c1eda240596eefcd7))
+* support for separate internal and external node networks, support for static route in butane submodule ([#29](https://github.com/marshallford/terraform-ansible-k3s/issues/29)) ([376b0c1](https://github.com/marshallford/terraform-ansible-k3s/commit/376b0c151924e9d0ff74897c69f648e09815a632))
+
+
+### Bug Fixes
+
+* address new ansible-lint issues, upgrade k3s, upgrade python deps ([#32](https://github.com/marshallford/terraform-ansible-k3s/issues/32)) ([1e8356a](https://github.com/marshallford/terraform-ansible-k3s/commit/1e8356a9ce94d8445531556a3119874183ec39a9))
+
 ## [0.2.4](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.3...v0.2.4) (2025-08-12)
 
 

@@ -3,42 +3,17 @@
     name: vm.max_map_count
     value: "{{ __k3s_max_map_count }}"
 
-- name: Ensure k3s config directory exists
+- name: Ensure k3s directories exists
   ansible.builtin.file:
-    path: "{{ __k3s_config_dir }}"
+    path: "{{ item }}"
     state: directory
     mode: u=rwx,g=rx,o=
-
-- name: Set k3s env file
-  ansible.builtin.template:
-    src: k3s.env.j2
-    dest: "{{ __k3s_config_dir }}/k3s.env"
-    mode: u=rw,g=,o=
-  no_log: true
-
-- name: Ensure k3s files directory exists
-  ansible.builtin.file:
-    path: "{{ __k3s_files_dir }}"
-    state: directory
-    mode: u=rwx,g=rx,o=
-
-- name: Ensure k3s images directory exists
-  ansible.builtin.file:
-    path: "{{ __k3s_images_dir }}"
-    state: directory
-    mode: u=rwx,g=rx,o=
-
-- name: Ensure k3s kubelet config directory exists
-  ansible.builtin.file:
-    path: "{{ __k3s_kubelet_config_dir }}"
-    state: directory
-    mode: u=rwx,g=rx,o=
-
-- name: Ensure k3s staging directory exists
-  ansible.builtin.file:
-    path: "{{ __k3s_staging_dir }}"
-    state: directory
-    mode: u=rwx,g=rx,o=
+  loop:
+  - "{{ __k3s_config_dir }}"
+  - "{{ __k3s_files_dir }}"
+  - "{{ __k3s_images_dir }}"
+  - "{{ __k3s_kubelet_config_dir }}"
+  - "{{ __k3s_staging_dir }}"
 
 - name: Ensure k3s manifests directory exists
   ansible.builtin.file:
@@ -46,6 +21,13 @@
     state: directory
     mode: u=rwx,g=,o=
   when: __k3s_role == "server"
+
+- name: Set k3s env file
+  ansible.builtin.template:
+    src: k3s.env.j2
+    dest: "{{ __k3s_config_dir }}/k3s.env"
+    mode: u=rw,g=,o=
+  no_log: true
 
 - name: Copy auto deployed manifests
   ansible.builtin.copy:

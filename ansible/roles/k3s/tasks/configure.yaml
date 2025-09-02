@@ -16,18 +16,18 @@
   ansible.builtin.include_role:
     name: fcos_upgrade
 
-- name: Link to k3s binary in staging
+- name: Link to k3s binary and images in staging
   ansible.builtin.file:
-    src: "{{ __k3s_staging_dir }}/{{ __k3s_binary }}"
+    src: "{{ __k3s_staging_dir }}/{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+  loop:
+  - src: "{{ __k3s_binary }}"
     dest: "{{ __k3s_binary_dir }}/k3s"
-    state: link
-  notify: Restart k3s-{{ __k3s_role }}
-
-- name: Link to k3s images in staging
-  ansible.builtin.file:
-    src: "{{ __k3s_staging_dir }}/{{ __k3s_images }}"
+  - src: "{{ __k3s_images }}"
     dest: "{{ __k3s_images_dir }}/images.tar.zst"
-    state: link
+  loop_control:
+    label: "{{ item.src }}"
   notify: Restart k3s-{{ __k3s_role }}
 
 # TODO https://github.com/coreos/rpm-ostree/issues/2127
@@ -103,18 +103,18 @@
     label: "{{ item | basename }}"
   notify: Restart k3s-{{ __k3s_role }}
 
-- name: Ensure k3s registries config
+- name: Ensure k3s config and registries config
   ansible.builtin.copy:
-    content: "{{ __k3s_registries_config | to_nice_yaml(indent=2, sort_keys=false) | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
-    dest: "{{ __k3s_config_dir }}/registries.yaml"
-    mode: u=rwx,g=rwx,o=
-  notify: Restart k3s-{{ __k3s_role }}
-
-- name: Ensure k3s config
-  ansible.builtin.copy:
-    content: "{{ __k3s_config | to_nice_yaml(indent=2, sort_keys=false) | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
-    dest: "{{ __k3s_config_dir }}/config.yaml"
-    mode: u=rwx,g=r,o=
+    content: "{{ item.content | to_nice_yaml(indent=2, sort_keys=false) | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
+    dest: "{{ __k3s_config_dir }}/{{ item.dest }}"
+    mode: u=rw,g=,o=
+  loop:
+  - content: "{{ __k3s_config }}"
+    dest: "config.yaml"
+  - content: "{{ __k3s_registries_config }}"
+    dest: "registries.yaml"
+  loop_control:
+    label: "{{ item.dest }}"
   notify: Restart k3s-{{ __k3s_role }}
 
 - name: Check if certificate rotation is required

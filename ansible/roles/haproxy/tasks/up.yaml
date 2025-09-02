@@ -41,7 +41,7 @@
     group: "{{ quadlet_user }}"
     mode: u=rwx,g=rx,o=rx
   notify:
-  - Reload systemd
+  - Reload user systemd
   - Restart haproxy
 
 - name: Start and enable haproxy service

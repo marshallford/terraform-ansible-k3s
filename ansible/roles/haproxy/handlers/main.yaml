@@ -1,3 +1,10 @@
+- name: Reload user systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: /run/user/{{ quadlet_user_uid }}
+
 - name: Reload haproxy
   ansible.builtin.systemd_service:
     name: haproxy.service

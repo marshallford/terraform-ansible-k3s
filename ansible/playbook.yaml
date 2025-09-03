@@ -136,6 +136,7 @@
       __k3s_files: "{{ k3s_files }}"
       __k3s_kubelet_configs: "{{ k3s_kubelet_configs }}"
       __k3s_registries_config: "{{ k3s_registries_config }}"
+      __k3s_drain_options: "{{ k3s_drain_options }}"
 - name: Configure existing k3s servers
   hosts: servers:!new_servers
   gather_facts: false
@@ -159,6 +160,7 @@
       __k3s_files: "{{ k3s_files }}"
       __k3s_kubelet_configs: "{{ k3s_kubelet_configs }}"
       __k3s_registries_config: "{{ k3s_registries_config }}"
+      __k3s_drain_options: "{{ k3s_drain_options }}"
 - name: Configure new k3s agents
   hosts: new_agents
   gather_facts: false
@@ -181,6 +183,7 @@
       __k3s_files: "{{ k3s_files }}"
       __k3s_kubelet_configs: "{{ k3s_kubelet_configs }}"
       __k3s_registries_config: "{{ k3s_registries_config }}"
+      __k3s_drain_options: "{{ k3s_drain_options }}"
 - name: Configure existing k3s agents
   hosts: agents:!new_agents
   gather_facts: false
@@ -204,6 +207,7 @@
       __k3s_files: "{{ k3s_files }}"
       __k3s_kubelet_configs: "{{ k3s_kubelet_configs }}"
       __k3s_registries_config: "{{ k3s_registries_config }}"
+      __k3s_drain_options: "{{ k3s_drain_options }}"
 - name: Cleanup machines
   hosts: servers:agents
   gather_facts: false

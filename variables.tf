@@ -65,7 +65,6 @@ variable "server_machines" {
     config = optional(object({
       cluster_init     = optional(bool, false)
       node_name        = optional(string)
-      with_node_id     = optional(bool, false)
       node_ip          = optional(string)
       node_external_ip = optional(string)
       node_label       = optional(map(string), {})
@@ -102,7 +101,6 @@ variable "agent_machine_groups" {
     })
     config = optional(object({
       node_name        = optional(string)
-      with_node_id     = optional(bool, false)
       node_ip          = optional(string)
       node_external_ip = optional(string)
       node_label       = optional(map(string), {})
@@ -246,6 +244,25 @@ variable "registries_config" {
   nullable    = false
   default     = {}
   description = "Registry configuration to be used by k3s when generating the containerd configuration."
+}
+
+variable "drain_options" {
+  type = object({
+    deletion_fallback = optional(bool, false)
+    eviction_timeout  = optional(string, "30m")
+    deletion_timeout  = optional(string, "10m")
+  })
+  nullable    = false
+  default     = {}
+  description = "Node drain options."
+  validation {
+    condition     = can(timeadd(timestamp(), var.drain_options.eviction_timeout))
+    error_message = "The eviction_timeout must be a valid duration (e.g., '10m', '30s', '1h30m')."
+  }
+  validation {
+    condition     = can(timeadd(timestamp(), var.drain_options.deletion_timeout))
+    error_message = "The deletion_timeout must be a valid duration (e.g., '10m', '30s', '1h30m')."
+  }
 }
 
 variable "system_upgrade_trigger" {

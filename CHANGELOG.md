@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.6](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.5...v0.2.6) (2025-09-03)
+
+
+### Features
+
+* handle node drain failure without manual intervention by uncordoning node ([#35](https://github.com/marshallford/terraform-ansible-k3s/issues/35)) ([554e2ac](https://github.com/marshallford/terraform-ansible-k3s/commit/554e2ac9ce7f069c33ad63af9b28fee4fa0d8aed))
+
+
+### Bug Fixes
+
+* no longer set sysctl param vm.max_map_count (fcos sets param to 1048576 out of the box) ([#36](https://github.com/marshallford/terraform-ansible-k3s/issues/36)) ([8fa5ee0](https://github.com/marshallford/terraform-ansible-k3s/commit/8fa5ee0144db352937c3b34ee23bc66edc12016b))
+* tweak ansible tasks to loop where possible, cleanup handler usage ([#33](https://github.com/marshallford/terraform-ansible-k3s/issues/33)) ([38815bb](https://github.com/marshallford/terraform-ansible-k3s/commit/38815bb9f7df206be2e5c83d4afe95d361f15544))
+
 ## [0.2.5](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.4...v0.2.5) (2025-08-31)
 
 

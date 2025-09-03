@@ -22,6 +22,7 @@ locals {
         k3s_kubelet_configs         = var.kubelet_configs
         k3s_registries_config       = var.registries_config
         k3s_cleanup                 = var.cleanup
+        k3s_drain_options           = var.drain_options
         system_upgrade_trigger      = var.system_upgrade_trigger
         haproxy_container_image     = var.haproxy_container_image
         haproxy_container_image_tag = var.haproxy_container_image_tag
@@ -117,9 +118,9 @@ resource "ansible_navigator_run" "this" {
     }
   }
   timeouts = {
-    create = "60m"
-    update = "60m"
-    delete = "60m"
+    create = "2h"
+    update = "4h"
+    delete = "1h"
   }
   run_on_destroy   = var.reset_on_destroy
   destroy_playbook = file("${path.module}/ansible/destroy_playbook.yaml")

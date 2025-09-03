@@ -26,5 +26,9 @@ __k3s_selinux_download_baseurl: "https://github.com/k3s-io/k3s-selinux/releases/
 __k3s_selinux_download_package: "k3s-selinux-{{ __k3s_selinux_major_minor }}-{{ __k3s_selinux_patch }}.coreos.noarch.rpm"
 __k3s_selinux_download_checksum: sha256sum-coreos-noarch.txt
 __k3s_selinux_rpm_ostree_package: "k3s-selinux-{{ __k3s_selinux_major_minor }}-{{ __k3s_selinux_patch }}.coreos.noarch"
-__k3s_drain_opts: --ignore-daemonsets --delete-emptydir-data --force --timeout 10m
+__k3s_drain_options:
+  deletion_fallback: false
+  eviction_timeout: "30m"
+  deletion_timeout: "10m"
+__k3s_drain_cli_options: --ignore-daemonsets --delete-emptydir-data --force
 __k3s_https_listen_port: 8443

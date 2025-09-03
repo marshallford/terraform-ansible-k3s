@@ -110,7 +110,5 @@ provider "kubernetes" {
 - [ ] Explore Keepalived `max_auto_priority` option
 - [ ] Assert podman version
 - [ ] Token rotation
-- [ ] Stop Zicanati at start of playbook and start at the end
+- [ ] Stop Zincati at start of playbook and start at the end
 - [ ] Knownhost management
-- [ ] Variables for fine-grained node draining (`--disable-eviction`, timeout, etc)
-- [ ] Handle node drain failure without manual intervention

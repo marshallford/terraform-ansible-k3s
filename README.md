@@ -5,6 +5,8 @@
 
 Deploy and manage a fully-featured Kubernetes cluster with the convenience of a managed cloud service. Ideal for homelab environments, on-premises deployments, and edge computing scenarios.
 
+![Architecture diagram](/diagram.png "Architecture diagram")
+
 ## Features
 
 1. Single-binary Kubernetes distribution ([k3s](https://docs.k3s.io/)) with support for `amd64`, `arm`, and `arm64` architectures

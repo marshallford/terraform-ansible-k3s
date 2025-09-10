@@ -125,17 +125,17 @@
       "groupIds": [
         "eY6jGzZJPozM2yxu211kx",
         "l1ysGYK-BE0ER9mC7exqA",
-        "_sdGnCsY0BtgI00qPpwg0"
+        "U6GZtXGzfvuyFv2sRabR_"
       ],
       "frameId": null,
-      "index": "b3c",
+      "index": "b3bG",
       "roundness": null,
       "seed": 330212813,
-      "version": 3560,
-      "versionNonce": 1287031468,
+      "version": 3563,
+      "versionNonce": 1576065580,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1757470770570,
+      "updated": 1757474323656,
       "link": null,
       "locked": false,
       "status": "pending",
@@ -164,17 +164,17 @@
       "groupIds": [
         "eY6jGzZJPozM2yxu211kx",
         "l1ysGYK-BE0ER9mC7exqA",
-        "_sdGnCsY0BtgI00qPpwg0"
+        "U6GZtXGzfvuyFv2sRabR_"
       ],
       "frameId": null,
-      "index": "b3d",
+      "index": "b3bV",
       "roundness": null,
       "seed": 196200620,
-      "version": 912,
-      "versionNonce": 426267948,
+      "version": 915,
+      "versionNonce": 1505898132,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1757470770570,
+      "updated": 1757474323656,
       "link": null,
       "locked": false,
       "text": "API Server",
@@ -204,16 +204,16 @@
       "opacity": 100,
       "groupIds": [
         "l1ysGYK-BE0ER9mC7exqA",
-        "_sdGnCsY0BtgI00qPpwg0"
+        "U6GZtXGzfvuyFv2sRabR_"
       ],
       "frameId": null,
-      "index": "b3e",
+      "index": "b3bl",
       "roundness": {
         "type": 3
       },
       "seed": 1942161684,
-      "version": 3565,
-      "versionNonce": 155324588,
+      "version": 3568,
+      "versionNonce": 1034728620,
       "isDeleted": false,
       "boundElements": [
         {
@@ -233,7 +233,7 @@
           "type": "arrow"
         }
       ],
-      "updated": 1757472665563,
+      "updated": 1757474323656,
       "link": null,
       "locked": false
     },
@@ -253,16 +253,17 @@
       "roughness": 1,
       "opacity": 100,
       "groupIds": [
-        "_sdGnCsY0BtgI00qPpwg0"
+        "RpMOlDwzZLP_yexjOhYSS",
+        "U6GZtXGzfvuyFv2sRabR_"
       ],
       "frameId": null,
-      "index": "b3f",
+      "index": "b3c",
       "roundness": {
         "type": 3
       },
       "seed": 1213583916,
-      "version": 3880,
-      "versionNonce": 1263196820,
+      "version": 3885,
+      "versionNonce": 1210530836,
       "isDeleted": false,
       "boundElements": [
         {
@@ -270,7 +271,7 @@
           "type": "arrow"
         }
       ],
-      "updated": 1757472939523,
+      "updated": 1757474323656,
       "link": null,
       "locked": false
     },
@@ -290,27 +291,27 @@
       "roughness": 1,
       "opacity": 100,
       "groupIds": [
-        "nfCh_YaVpySSqom2MHI58",
-        "_sdGnCsY0BtgI00qPpwg0"
+        "RpMOlDwzZLP_yexjOhYSS",
+        "U6GZtXGzfvuyFv2sRabR_"
       ],
       "frameId": null,
-      "index": "b3g",
+      "index": "b3cV",
       "roundness": null,
       "seed": 1727396884,
-      "version": 644,
-      "versionNonce": 892720300,
+      "version": 654,
+      "versionNonce": 503922476,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1757470770570,
+      "updated": 1757474323656,
       "link": null,
       "locked": false,
-      "text": "Virtual IP address\n(Keepalived)",
+      "text": "Virtual IP address\n(via Keepalived)",
       "fontSize": 20,
       "fontFamily": 5,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": null,
-      "originalText": "Virtual IP address\n(Keepalived)",
+      "originalText": "Virtual IP address\n(via Keepalived)",
       "autoResize": true,
       "lineHeight": 1.25
     },
@@ -330,18 +331,18 @@
       "roughness": 1,
       "opacity": 100,
       "groupIds": [
-        "nfCh_YaVpySSqom2MHI58",
-        "_sdGnCsY0BtgI00qPpwg0"
+        "RpMOlDwzZLP_yexjOhYSS",
+        "U6GZtXGzfvuyFv2sRabR_"
       ],
       "frameId": null,
-      "index": "b3h",
+      "index": "b3d",
       "roundness": null,
       "seed": 1949495572,
-      "version": 816,
-      "versionNonce": 124673836,
+      "version": 822,
+      "versionNonce": 294558100,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1757470770570,
+      "updated": 1757474323656,
       "link": null,
       "locked": false,
       "status": "pending",

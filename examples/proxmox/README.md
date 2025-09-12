@@ -21,3 +21,4 @@ This example demonstrates how to deploy a k3s cluster onto the Proxmox virtualiz
 1. Run `make` to install the `ansible-navigator` package into a Python virtual environment
 2. Copy `terraform.auto.tfvars.example` to `terraform.auto.tfvars` and update the values
 3. Run `terraform init` and `terraform apply`
+4. Retrieve the cluster admin kubeconfig from Terraform (e.g. `terraform output --raw kubeconfig_yaml > kubeconfig.yaml`) and use the kubeconfig file to access the cluster (e.g. `KUBECONFIG=kubeconfig.yaml kubectl get nodes`)

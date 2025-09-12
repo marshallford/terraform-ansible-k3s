@@ -17,7 +17,7 @@ Provision and operate a Kubernetes cluster with the convenience of a CSP-managed
 6. **Offers** curated [configuration options](https://docs.k3s.io/installation/configuration) including node taints/labels, cluster networking, and Kubernetes component flags
 7. **Integrates** with k3s’ [auto-deploying manifests](https://docs.k3s.io/installation/packaged-components#auto-deploying-manifests-addons) and [registry configuration](https://docs.k3s.io/installation/private-registry) features
 8. **Provides** recommendations for [CIS hardening](https://docs.k3s.io/security/hardening-guide) and [graceful node shutdown](https://kubernetes.io/docs/concepts/cluster-administration/node-shutdown/#graceful-node-shutdown), delivered via optional Terraform submodules
-9. **Performs** in-place [upgrades](https://docs.k3s.io/upgrades/manual#upgrade-k3s-using-the-binary) with orchestrated node draining and optional [system upgrades](https://coreos.github.io/rpm-ostree/)
+9. **Performs** in-place [upgrades](https://docs.k3s.io/upgrades/manual#upgrade-k3s-using-the-binary) with coordinated node draining and optional [system upgrades](https://coreos.github.io/rpm-ostree/)
 10. **Manages** day-2 node additions and [removals](https://docs.k3s.io/installation/uninstall)
 11. **Facilitates** Kubernetes certificate [rotation](https://docs.k3s.io/cli/certificate#checking-expiration-dates)
 12. **Enables** seamless Terraform-native [cluster access](https://docs.k3s.io/cluster-access), no manual steps required
@@ -27,6 +27,7 @@ Provision and operate a Kubernetes cluster with the convenience of a CSP-managed
 1. **Cloud-agnostic by design** -- provisions clusters without dependencies on cloud services (e.g. Load Balancers, PKI, KMS)
 2. **Day-2 friendly operations** -- avoids reliance on machine bootstrapping tools (e.g. Cloud-init, Ignition), simplifying troubleshooting and management at scale
 3. **Self-contained architecture** -- eliminates the need for an external Ansible control plane (e.g. AWX/Ansible Tower)
+4. **Open source** -- no paid tiers, proprietary unlocks, or per-node fees
 
 ## 📋 Requirements
 
@@ -37,14 +38,14 @@ Provision and operate a Kubernetes cluster with the convenience of a CSP-managed
 3. Container engine (`podman` or `docker`) with support for `amd64` or `arm64` images (Ansible execution environment)
 4. Access to `github.com` to download k3s release artifact tarballs
 
-### ⚙️ Machines (virtual or otherwise)
+### ⚙️ Machines (baremetal or virtual)
 
 1. [Fedora CoreOS](https://fedoraproject.org/coreos/) 42 or later (`amd64`, `arm`, or `arm64` architecture)
 2. Configured with a non-root [user](https://docs.fedoraproject.org/en-US/fedora-coreos/authentication/) with passwordless `sudo` access
 3. Reachable via SSH from the Terraform execution host/runner
 4. Network connectivity between all machines
 5. Python 3 installed on the [host](https://docs.fedoraproject.org/en-US/fedora-coreos/os-extensions/) (required by Ansible)
-6. Access to `quay.io` and the [Fedora repositories](https://docs.fedoraproject.org/en-US/quick-docs/fedora-repositories/) (via direct internet access, a configured proxy, or local mirror/container registry) for system upgrades and package downloads. Note: Using Zincati for automatic updates requires additional access.
+6. Access to `quay.io` and the [Fedora repositories](https://docs.fedoraproject.org/en-US/quick-docs/fedora-repositories/) (via direct internet access, a configured proxy, or local mirror/container registry) for system upgrades and package downloads. Note: Using Zincati for automatic updates requires additional access
 
 ## 🔍 Example
 
@@ -98,6 +99,14 @@ provider "kubernetes" {
   client_key             = module.k3s.ephemeral_credentials.client_key
 }
 ```
+
+## 🔒 Security Considerations
+
+1. **State file sensitivity** -- if `kubeconfig_block_type` is set to `data` or `resource`, the cluster admin kubeconfig will be persisted in both Terraform’s state file and any generated plan files. These files should be treated as sensitive and protected accordingly.
+2. **Certificate management** -- Kubernetes certificates are rotated as needed on module apply, but it is the operator’s responsibility to re-run Terraform before they expire. See the [k3s certificate docs](https://docs.k3s.io/cli/certificate) for details.
+3. **CIS Kubernetes benchmark** -- many controls are satisfied by default in k3s or via the provided `cis-harden` submodule. Controls outside this scope remain the operator’s responsibility.
+4. **Machine updates** -- use Zincati for automatic updates or configure `system_upgrade_trigger` for coordinated updates and reboots through this module.
+5. **Access control** -- exposing machines or the Kubernetes API server directly to the internet increases risk. Access should be restricted through VPN, bastion, or firewall controls.
 
 ## ⚠️ Limitations
 

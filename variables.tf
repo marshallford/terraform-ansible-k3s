@@ -257,11 +257,11 @@ variable "drain_options" {
   description = "Node drain options."
   validation {
     condition     = can(timeadd(timestamp(), var.drain_options.eviction_timeout))
-    error_message = "The eviction_timeout must be a valid duration (e.g., '10m', '30s', '1h30m')."
+    error_message = "The eviction_timeout must be a valid duration (e.g. '10m', '30s', '1h30m')."
   }
   validation {
     condition     = can(timeadd(timestamp(), var.drain_options.deletion_timeout))
-    error_message = "The deletion_timeout must be a valid duration (e.g., '10m', '30s', '1h30m')."
+    error_message = "The deletion_timeout must be a valid duration (e.g. '10m', '30s', '1h30m')."
   }
 }
 

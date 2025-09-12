@@ -1,0 +1,204 @@
+resource "proxmox_virtual_environment_download_file" "fcos" {
+  for_each                = toset([for node in var.proxmox_nodes : node.name])
+  content_type            = "iso"
+  datastore_id            = var.proxmox_file_storage
+  file_name               = "k8s-${var.cluster_name}-fedora-coreos-42.20250803.3.0-proxmoxve.x86_64.img"
+  node_name               = each.value
+  url                     = "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/42.20250803.3.0/x86_64/fedora-coreos-42.20250803.3.0-proxmoxve.x86_64.qcow2.xz"
+  checksum                = "f6de0194baae167c9545e0d9174c24c78aa361d1ce538a1d2a7d7dc934aa9fcd"
+  checksum_algorithm      = "sha256"
+  decompression_algorithm = "zst"
+}
+
+resource "tls_private_key" "machine" {
+  algorithm = "ED25519"
+}
+
+locals {
+  server_machines = { for i in range(var.server_nodes) : format("%02d", i) => {
+    full_name         = "k8s-${var.cluster_name}-server-${format("%02d", i)}"
+    proxmox_node      = var.proxmox_nodes[i % length(var.proxmox_nodes)].name
+    availability_zone = var.proxmox_nodes[i % length(var.proxmox_nodes)].availability_zone
+  } }
+  agent_machines = { for i in range(var.agent_nodes) : format("%02d", i) => {
+    full_name         = "k8s-${var.cluster_name}-agent-${format("%02d", i)}"
+    proxmox_node      = var.proxmox_nodes[i % length(var.proxmox_nodes)].name
+    availability_zone = var.proxmox_nodes[i % length(var.proxmox_nodes)].availability_zone
+  } }
+}
+
+module "server_butane_hostname" {
+  for_each = local.server_machines
+  source   = "../../modules/butane-hostname"
+
+  hostname = each.value.full_name
+}
+
+module "agent_butane_hostname" {
+  for_each = local.agent_machines
+  source   = "../../modules/butane-hostname"
+
+  hostname = each.value.full_name
+}
+
+module "butane_python" {
+  source = "../../modules/butane-python"
+}
+
+module "butane_qemu_ga" {
+  source = "../../modules/butane-qemu-ga"
+}
+
+module "butane_ssh_authorized_key" {
+  source = "../../modules/butane-ssh-authorized-key"
+
+  ssh_authorized_key = tls_private_key.machine.public_key_openssh
+}
+
+module "butane_dhcp" {
+  source = "../../modules/butane-dhcp"
+
+  interface = "ens18"
+}
+
+module "butane_zincati_disable" {
+  source = "../../modules/butane-zincati-disable"
+}
+
+data "ct_config" "server" {
+  for_each = local.server_machines
+  content  = module.server_butane_hostname[each.key].snippet
+  snippets = [
+    module.butane_python.snippet,
+    module.butane_qemu_ga.snippet,
+    module.butane_ssh_authorized_key.snippet,
+    module.butane_dhcp.snippet,
+    module.butane_zincati_disable.snippet,
+  ]
+  strict       = true
+  pretty_print = true
+}
+
+data "ct_config" "agent" {
+  for_each = local.agent_machines
+  content  = module.agent_butane_hostname[each.key].snippet
+  snippets = [
+    module.butane_python.snippet,
+    module.butane_qemu_ga.snippet,
+    module.butane_ssh_authorized_key.snippet,
+    module.butane_dhcp.snippet,
+    module.butane_zincati_disable.snippet,
+  ]
+  strict       = true
+  pretty_print = true
+}
+
+resource "proxmox_virtual_environment_file" "server_ignition" {
+  for_each     = data.ct_config.server
+  content_type = "snippets"
+  datastore_id = var.proxmox_file_storage
+  node_name    = local.server_machines[each.key].proxmox_node
+
+  source_raw {
+    data      = each.value.rendered
+    file_name = "${local.server_machines[each.key].full_name}.ign"
+  }
+}
+
+resource "proxmox_virtual_environment_file" "agent_ignition" {
+  for_each     = data.ct_config.agent
+  content_type = "snippets"
+  datastore_id = var.proxmox_file_storage
+  node_name    = local.agent_machines[each.key].proxmox_node
+
+  source_raw {
+    data      = each.value.rendered
+    file_name = "${local.agent_machines[each.key].full_name}.ign"
+  }
+}
+
+resource "proxmox_virtual_environment_vm" "server" {
+  for_each  = local.server_machines
+  name      = each.value.full_name
+  node_name = each.value.proxmox_node
+  machine   = "q35"
+
+  agent {
+    enabled = true
+  }
+
+  cpu {
+    cores = 4
+    type  = "x86-64-v3"
+    flags = ["+aes"]
+  }
+
+  memory {
+    dedicated = 4 * 1024
+  }
+
+  disk {
+    datastore_id = var.proxmox_block_storage
+    file_id      = proxmox_virtual_environment_download_file.fcos[each.value.proxmox_node].id
+    interface    = "virtio0"
+    iothread     = true
+    discard      = "on"
+    size         = 20
+  }
+
+  network_device {
+    bridge = var.proxmox_bridge
+  }
+
+  initialization {
+    datastore_id      = var.proxmox_block_storage
+    user_data_file_id = proxmox_virtual_environment_file.server_ignition[each.key].id
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "proxmox_virtual_environment_vm" "agent" {
+  for_each  = local.agent_machines
+  name      = each.value.full_name
+  node_name = each.value.proxmox_node
+  machine   = "q35"
+
+  agent {
+    enabled = true
+  }
+
+  cpu {
+    cores = 4
+    type  = "x86-64-v3"
+    flags = ["+aes"]
+  }
+
+  memory {
+    dedicated = 2 * 1024
+  }
+
+  disk {
+    datastore_id = var.proxmox_block_storage
+    file_id      = proxmox_virtual_environment_download_file.fcos[each.value.proxmox_node].id
+    interface    = "virtio0"
+    iothread     = true
+    discard      = "on"
+    size         = 20
+  }
+
+  network_device {
+    bridge = var.proxmox_bridge
+  }
+
+  initialization {
+    datastore_id      = var.proxmox_block_storage
+    user_data_file_id = proxmox_virtual_environment_file.agent_ignition[each.key].id
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}

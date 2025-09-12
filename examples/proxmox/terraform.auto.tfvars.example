@@ -1,0 +1,10 @@
+proxmox_endpoint = "https://your-proxmox_endpoint"
+proxmox_username = "root@pam"
+proxmox_password = "your-proxmox-password"
+proxmox_nodes = [
+  {
+    name              = "pve"
+    availability_zone = "a"
+  }
+]
+api_server_virtual_ip = "192.168.1.100"

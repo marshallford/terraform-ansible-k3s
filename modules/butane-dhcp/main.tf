@@ -10,7 +10,7 @@ variable "interface" {
 
 output "snippet" {
   value = templatefile("${path.module}/dhcp.tftpl.yaml", {
-    interface      = var.interface,
+    interface = var.interface,
   })
   description = "Butane snippet."
 }

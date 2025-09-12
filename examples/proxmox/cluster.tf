@@ -9,11 +9,13 @@ resource "time_rotating" "system_upgrade" {
 }
 
 module "k3s_cis_hardening" {
-  source = "../../modules/cis-hardening"
+  source  = "marshallford/k3s/ansible//modules/cis-hardening"
+  version = "0.2.7" # x-release-please-version
 }
 
 module "k3s" {
-  source = "../.."
+  source  = "marshallford/k3s/ansible"
+  version = "0.2.7" # x-release-please-version
 
   ansible_navigator_binary = ".venv/bin/ansible-navigator"
   ssh_private_keys = [

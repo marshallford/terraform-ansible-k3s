@@ -1,6 +1,6 @@
 # Proxmox Example
 
-This complete example demonstrates how to deploy a k3s cluster onto the Proxmox virtualization platform using the [`bpg/proxmox`](https://registry.terraform.io/providers/bpg/proxmox/latest/docs) provider.
+This example demonstrates how to deploy a k3s cluster onto the Proxmox virtualization platform using the [`bpg/proxmox`](https://registry.terraform.io/providers/bpg/proxmox/latest/docs) provider.
 
 ## Prerequisites
 

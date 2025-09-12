@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.7](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.6...v0.2.7) (2025-09-12)
+
+
+### Features
+
+* adds tf submodule for dhcp butane snippet, overhauls the README ([#39](https://github.com/marshallford/terraform-ansible-k3s/issues/39)) ([d33dbe0](https://github.com/marshallford/terraform-ansible-k3s/commit/d33dbe061cf1e6805bb19c04899203ce4ff25e10))
+
+
+### Bug Fixes
+
+* adds architecture diagram ([#37](https://github.com/marshallford/terraform-ansible-k3s/issues/37)) ([b719359](https://github.com/marshallford/terraform-ansible-k3s/commit/b7193590294a6234bcacdd4d850e97a3186b9a8d))
+
 ## [0.2.6](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.5...v0.2.6) (2025-09-03)
 
 

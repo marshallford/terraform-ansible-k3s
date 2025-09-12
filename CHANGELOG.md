@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.8](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.7...v0.2.8) (2025-09-12)
+
+
+### Bug Fixes
+
+* adds security considerations to readme, tweak wording ([#42](https://github.com/marshallford/terraform-ansible-k3s/issues/42)) ([f753cda](https://github.com/marshallford/terraform-ansible-k3s/commit/f753cdaf5955cd4d9a4cabab0a304318a5ea8d7f))
+* switch proxmox example to use proper module refs ([#40](https://github.com/marshallford/terraform-ansible-k3s/issues/40)) ([bcd94a2](https://github.com/marshallford/terraform-ansible-k3s/commit/bcd94a2b10eb504c8c0cad2418173767e12b53d1))
+
 ## [0.2.7](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.6...v0.2.7) (2025-09-12)
 
 

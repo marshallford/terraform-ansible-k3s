@@ -1,0 +1,23 @@
+variant: fcos
+version: 1.5.0
+storage:
+  files:
+  - path: /etc/NetworkManager/conf.d/noauto.conf
+    mode: 0600
+    overwrite: true
+    contents:
+      inline: |
+        [main]
+        no-auto-default=*
+  - path: /etc/NetworkManager/system-connections/${interface}.nmconnection
+    mode: 0600
+    overwrite: true
+    contents:
+      inline: |
+        [connection]
+        id=${interface}
+        type=ethernet
+        interface-name=${interface}
+        [ipv4]
+        may-fail=false
+        method=auto

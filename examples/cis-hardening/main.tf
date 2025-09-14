@@ -1,11 +1,11 @@
 module "k3s_cis_hardening" {
   source  = "marshallford/k3s/ansible//modules/cis-hardening"
-  version = "0.2.7" # x-release-please-version
+  version = "0.2.8" # x-release-please-version
 }
 
 module "k3s" {
   source  = "marshallford/k3s/ansible"
-  version = "0.2.7" # x-release-please-version
+  version = "0.2.8" # x-release-please-version
 
   api_server = {
     virtual_ip        = "192.168.1.99"

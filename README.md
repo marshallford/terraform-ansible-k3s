@@ -5,7 +5,7 @@
 
 Provision and operate a Kubernetes cluster with the convenience of a CSP-managed Kubernetes service. Designed for homelabs, on-premises, and edge environments.
 
-![Architecture diagram](/diagram.png "Architecture diagram")
+![Architecture diagram](docs/diagram.png "Architecture diagram")
 
 ## 📦 Features
 

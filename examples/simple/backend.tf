@@ -3,7 +3,7 @@ terraform {
   required_providers {
     ansible = {
       source  = "marshallford/ansible"
-      version = "0.32.0"
+      version = "0.33.0"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"

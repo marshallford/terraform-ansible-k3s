@@ -61,17 +61,17 @@
 - name: Check if k3s binary exists
   ansible.builtin.stat:
     path: "{{ __k3s_staging_dir }}/{{ __k3s_binary }}"
-  register: __k3s_binary
+  register: __k3s_binary_check
 
 - name: Check if k3s images exists
   ansible.builtin.stat:
     path: "{{ __k3s_staging_dir }}/{{ __k3s_images }}"
-  register: __k3s_images
+  register: __k3s_images_check
 
 - name: Check if k3s selinux package exists
   ansible.builtin.stat:
     path: "{{ __k3s_staging_dir }}/{{ __k3s_selinux_package }}"
-  register: __k3s_selinux_package
+  register: __k3s_selinux_package_check
 
 - name: Check if k3s service is enabled
   ansible.builtin.command:
@@ -82,6 +82,6 @@
 
 - name: Set k3s facts
   ansible.builtin.set_fact:
-    k3s_staged: "{{ __k3s_binary.stat.exists and __k3s_images.stat.exists and __k3s_selinux_package.stat.exists }}"
+    k3s_staged: "{{ __k3s_binary_check.stat.exists and __k3s_images_check.stat.exists and __k3s_selinux_package_check.stat.exists }}"
     k3s_installed: "{{ __k3s_service_enabled.rc == 0 }}"
     k3s_arch: "{{ 'arm64' if ansible_facts.architecture == 'aarch64' else 'arm' if ansible_facts.architecture == 'armv7l' else 'amd64' }}"

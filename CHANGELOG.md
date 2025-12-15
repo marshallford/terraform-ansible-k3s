@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.9](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.8...v0.2.9) (2025-12-15)
+
+
+### Features
+
+* upgrade to k3s 1.34, quadlet improvements, py/tf/gha version bumps ([#46](https://github.com/marshallford/terraform-ansible-k3s/issues/46)) ([a209b13](https://github.com/marshallford/terraform-ansible-k3s/commit/a209b13c7a9e380dc00d74d9bf47750261450b12))
+
+
+### Bug Fixes
+
+* bump example providers to match module constraints ([#44](https://github.com/marshallford/terraform-ansible-k3s/issues/44)) ([0013930](https://github.com/marshallford/terraform-ansible-k3s/commit/00139302f8642ac9c99b62acebc3baaacb556e21))
+
 ## [0.2.8](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.7...v0.2.8) (2025-09-14)
 
 

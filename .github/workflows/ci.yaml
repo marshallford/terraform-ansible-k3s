@@ -19,14 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
     - name: Setup uv
-      uses: astral-sh/setup-uv@v6
-      with:
-        enable-cache: true
-        version: 0.8.13
+      uses: astral-sh/setup-uv@v7
     - name: Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version-file: .python-version
     - name: Setup Terraform
@@ -46,16 +43,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
     - name: Extract Makefile variables
       run: eval "$(make -q vars/github)"
     - name: Setup uv
-      uses: astral-sh/setup-uv@v6
-      with:
-        enable-cache: true
-        version: 0.8.13
+      uses: astral-sh/setup-uv@v7
     - name: Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version-file: .python-version
     - name: Create container image context

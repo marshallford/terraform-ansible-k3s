@@ -25,4 +25,4 @@ storage:
         days = [ ${join(", ", formatlist("\"%s\"", window.days))} ]
         start_time = "${window.start_time}"
         length_minutes = ${window.length_minutes}
-        %{ endfor ~}
+        %{ endfor }

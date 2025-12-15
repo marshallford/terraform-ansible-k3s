@@ -4,7 +4,7 @@ terraform {
 
 variable "test_dns_host" {
   type        = string
-  default     = "mirrors.fedoraproject.org"
+  default     = "quay.io"
   nullable    = false
   description = "DNS host for connectivity test before rpm-ostree install."
 }

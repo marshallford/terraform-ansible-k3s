@@ -3,19 +3,19 @@ terraform {
   required_providers {
     ansible = {
       source  = "marshallford/ansible"
-      version = "0.33.0"
+      version = "0.35.0"
     }
     proxmox = {
       source  = "bpg/proxmox"
-      version = "0.83.1"
+      version = "0.89.1"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "2.38.0"
+      version = "3.0.1"
     }
     ct = {
       source  = "poseidon/ct"
-      version = "0.13.0"
+      version = "0.14.0"
     }
     tls = {
       source  = "hashicorp/tls"

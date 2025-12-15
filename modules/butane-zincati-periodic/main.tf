@@ -25,6 +25,10 @@ variable "windows" {
   }))
   nullable    = false
   description = "Maintenance windows."
+  validation {
+    condition     = length(var.windows) > 0
+    error_message = "At least one window must be specified."
+  }
 }
 
 output "snippet" {

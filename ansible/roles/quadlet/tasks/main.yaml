@@ -3,7 +3,7 @@
     that:
     - ansible_version.full is version_compare('2.18.0', '>=')
     - ansible_facts.distribution == 'Fedora'
-    - ansible_facts.distribution_major_version | int >= 42
+    - ansible_facts.distribution_major_version | int >= 43
     quiet: true
 
 - name: Set unprivileged port start
@@ -11,17 +11,6 @@
     name: net.ipv4.ip_unprivileged_port_start
     value: "{{ __quadlet_ipv4_unprivileged_port_start }}"
   become: true
-
-- name: Create user systemd directories
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ __quadlet_user }}"
-    group: "{{ __quadlet_user }}"
-    mode: u=rwx,g=rx,o=rx
-  loop:
-  - "{{ __quadlet_systemd_user_dir }}/default.target.wants"
-  - "{{ __quadlet_systemd_user_dir }}/timers.target.wants"
 
 - name: Create quadlet user config directory
   ansible.builtin.file:

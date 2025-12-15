@@ -60,7 +60,7 @@ runs:
       tags: ${{ steps.meta.outputs.tags }}
   - name: Attestation
     if: ${{ fromJSON(inputs.push) }}
-    uses: actions/attest-build-provenance@v2
+    uses: actions/attest-build-provenance@v3
     with:
       subject-name: ${{ inputs.image }}
       subject-digest: ${{ steps.build.outputs.digest }}

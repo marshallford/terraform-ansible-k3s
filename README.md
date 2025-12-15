@@ -40,7 +40,7 @@ Provision and operate a Kubernetes cluster with the convenience of a CSP-managed
 
 ### ⚙️ Machines (baremetal or virtual)
 
-1. [Fedora CoreOS](https://fedoraproject.org/coreos/) 42 or later (`amd64`, `arm`, or `arm64` architecture)
+1. [Fedora CoreOS](https://fedoraproject.org/coreos/) 43 or later (`amd64`, `arm`, or `arm64` architecture)
 2. Configured with a non-root [user](https://docs.fedoraproject.org/en-US/fedora-coreos/authentication/) with passwordless `sudo` access
 3. Reachable via SSH from the Terraform execution host/runner
 4. Network connectivity between all machines

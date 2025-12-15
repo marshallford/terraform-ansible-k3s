@@ -132,6 +132,9 @@ resource "proxmox_virtual_environment_vm" "server" {
 
   agent {
     enabled = true
+    wait_for_ip {
+      ipv4 = true
+    }
   }
 
   cpu {
@@ -175,6 +178,9 @@ resource "proxmox_virtual_environment_vm" "agent" {
 
   agent {
     enabled = true
+    wait_for_ip {
+      ipv4 = true
+    }
   }
 
   cpu {

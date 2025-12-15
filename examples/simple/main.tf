@@ -13,7 +13,7 @@ locals {
 
 module "k3s" {
   source  = "marshallford/k3s/ansible"
-  version = "0.2.8" # x-release-please-version
+  version = "0.2.9" # x-release-please-version
 
   ssh_private_keys = [
     {

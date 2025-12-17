@@ -53,3 +53,23 @@
     scope: user
   environment:
     XDG_RUNTIME_DIR: /run/user/{{ quadlet_user_uid }}
+
+- name: Create haproxy socket
+  ansible.builtin.template:
+    src: haproxy.socket.j2
+    dest: "{{ quadlet_systemd_user_dir }}/haproxy.socket"
+    owner: "{{ quadlet_user }}"
+    group: "{{ quadlet_user }}"
+    mode: u=rwx,g=rx,o=rx
+  notify:
+  - Reload user systemd
+
+- name: Start and enable haproxy socket
+  ansible.builtin.systemd_service:
+    name: haproxy.socket
+    daemon_reload: true
+    state: started
+    enabled: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: /run/user/{{ quadlet_user_uid }}

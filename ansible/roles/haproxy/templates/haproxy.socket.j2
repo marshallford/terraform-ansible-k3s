@@ -1,0 +1,6 @@
+[Socket]
+BindIPv6Only=both
+ListenStream={{ __haproxy_keepalived_virtual_ip_address }}:{{ __haproxy_listen_port }}
+
+[Install]
+WantedBy=sockets.target

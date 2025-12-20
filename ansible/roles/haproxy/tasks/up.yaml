@@ -5,7 +5,7 @@
     dest: "{{ quadlet_containers_dir }}/haproxy.volume"
     owner: "{{ quadlet_user }}"
     group: "{{ quadlet_user }}"
-    mode: u=rwx,g=rx,o=rx
+    mode: u=rw,g=r,o=r
 
 - name: Start haproxy volume
   ansible.builtin.systemd_service:
@@ -31,8 +31,19 @@
     dest: /etc/keepalived/conf.d/haproxy.conf
     owner: "{{ quadlet_user }}"
     group: "{{ quadlet_user }}"
-    mode: u=rw,g=rw,o=
+    mode: u=rw,g=,o=
   notify: Restart keepalived
+
+- name: Create haproxy socket
+  ansible.builtin.template:
+    src: haproxy.socket.j2
+    dest: "{{ quadlet_systemd_user_dir }}/haproxy.socket"
+    owner: "{{ quadlet_user }}"
+    group: "{{ quadlet_user }}"
+    mode: u=rw,g=r,o=r
+  notify:
+  - Reload user systemd
+  - Restart haproxy
 
 - name: Create haproxy quadlet container
   ansible.builtin.template:
@@ -40,7 +51,7 @@
     dest: "{{ quadlet_containers_dir }}/haproxy.container"
     owner: "{{ quadlet_user }}"
     group: "{{ quadlet_user }}"
-    mode: u=rwx,g=rx,o=rx
+    mode: u=rw,g=r,o=r
   notify:
   - Reload user systemd
   - Restart haproxy
@@ -50,26 +61,6 @@
     name: haproxy.service
     daemon_reload: true
     state: started
-    scope: user
-  environment:
-    XDG_RUNTIME_DIR: /run/user/{{ quadlet_user_uid }}
-
-- name: Create haproxy socket
-  ansible.builtin.template:
-    src: haproxy.socket.j2
-    dest: "{{ quadlet_systemd_user_dir }}/haproxy.socket"
-    owner: "{{ quadlet_user }}"
-    group: "{{ quadlet_user }}"
-    mode: u=rwx,g=rx,o=rx
-  notify:
-  - Reload user systemd
-
-- name: Start and enable haproxy socket
-  ansible.builtin.systemd_service:
-    name: haproxy.socket
-    daemon_reload: true
-    state: started
-    enabled: true
     scope: user
   environment:
     XDG_RUNTIME_DIR: /run/user/{{ quadlet_user_uid }}

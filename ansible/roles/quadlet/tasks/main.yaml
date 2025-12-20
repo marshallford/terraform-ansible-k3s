@@ -12,7 +12,15 @@
     value: "{{ __quadlet_ipv4_unprivileged_port_start }}"
   become: true
 
-- name: Create quadlet user config directory
+- name: Create systemd user directory
+  ansible.builtin.file:
+    path: "{{ __quadlet_systemd_user_dir }}"
+    state: directory
+    owner: "{{ __quadlet_user }}"
+    group: "{{ __quadlet_user }}"
+    mode: u=rwx,g=rx,o=rx
+
+- name: Create quadlet user directory
   ansible.builtin.file:
     path: "{{ __quadlet_containers_dir }}"
     state: directory

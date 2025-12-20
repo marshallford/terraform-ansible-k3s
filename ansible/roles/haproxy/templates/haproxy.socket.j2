@@ -1,0 +1,8 @@
+#jinja2: lstrip_blocks: True
+[Unit]
+PartOf=%N.service
+
+[Socket]
+BindIPv6Only=both
+FreeBind=true
+ListenStream={{ __haproxy_keepalived_virtual_ip_address }}:{{ __haproxy_listen_port }}

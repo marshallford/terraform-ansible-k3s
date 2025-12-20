@@ -1,23 +1,18 @@
 #jinja2: lstrip_blocks: True
 global
   log stdout format raw local0 notice
-  ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
-  ssl-default-bind-options prefer-client-ciphers no-sslv3 no-tlsv10 no-tlsv11 no-tlsv12 no-tls-tickets
-  ssl-default-server-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
-  ssl-default-server-options no-sslv3 no-tlsv10 no-tlsv11 no-tlsv12 no-tls-tickets
 
 defaults
   mode tcp
-  timeout client 30s
-  timeout connect 10s
-  timeout server 30s
-  timeout http-request 10s
   log global
+  option tcplog
+  timeout connect 10s
+  timeout client 1m
+  timeout server 1m
+  timeout tunnel 4h
 
 frontend main
-  tcp-request inspect-delay 5s
-  tcp-request content accept if { req.ssl_hello_type 1 }
-  bind *:{{ __haproxy_bind_port }}
+  bind fd@3
   default_backend machines
 
 backend machines

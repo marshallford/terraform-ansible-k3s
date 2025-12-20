@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.10](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.9...v0.2.10) (2025-12-20)
+
+
+### Features
+
+* use systemd socket activation for haproxy ([#49](https://github.com/marshallford/terraform-ansible-k3s/issues/49)) ([db93bf1](https://github.com/marshallford/terraform-ansible-k3s/commit/db93bf116c59973812a7e712a4773819bd231131))
+
+
+### Bug Fixes
+
+* add reboot delay workaround for fcos43 ([#50](https://github.com/marshallford/terraform-ansible-k3s/issues/50)) ([601c08f](https://github.com/marshallford/terraform-ansible-k3s/commit/601c08fa69d753519819511603d0c014a4c2dd5c))
+* release please issue with proxmox example ([#47](https://github.com/marshallford/terraform-ansible-k3s/issues/47)) ([acd48f4](https://github.com/marshallford/terraform-ansible-k3s/commit/acd48f4eb66cba20a654fef34e021a0d2f62383c))
+
 ## [0.2.9](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.8...v0.2.9) (2025-12-15)
 
 

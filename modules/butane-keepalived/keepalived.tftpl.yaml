@@ -1,0 +1,25 @@
+# https://github.com/coreos/fedora-coreos-tracker/issues/681#issuecomment-974301872
+variant: fcos
+version: 1.5.0
+systemd:
+  units:
+  - name: rpm-ostree-install-keepalived.service
+    enabled: true
+    contents: |
+      [Unit]
+      Description=Layer keepalived with rpm-ostree
+      Wants=network-online.target
+      After=network-online.target
+      Before=zincati.service
+      ConditionPathExists=!/var/lib/%N.stamp
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=true
+      ExecStartPre=/bin/sh -c 'for i in $(seq 1 300); do getent hosts ${test_dns_host} >/dev/null && exit 0 || sleep 1; done; exit 1'
+      ExecStart=/bin/sh -c '\
+        flock /var/lib/rpm-ostree.lock rpm-ostree install --apply-live --assumeyes --allow-inactive --idempotent keepalived && \
+        touch /var/lib/%N.stamp'
+
+      [Install]
+      WantedBy=multi-user.target

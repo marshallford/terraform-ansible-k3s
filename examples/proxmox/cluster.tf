@@ -10,12 +10,12 @@ resource "time_rotating" "system_upgrade" {
 
 module "k3s_cis_hardening" {
   source  = "marshallford/k3s/ansible//modules/cis-hardening"
-  version = "0.2.10" # x-release-please-version
+  version = "0.2.11" # x-release-please-version
 }
 
 module "k3s_authentication_config" {
   source  = "marshallford/k3s/ansible//modules/authentication-config"
-  version = "0.2.10" # x-release-please-version
+  version = "0.2.11" # x-release-please-version
   anonymous = {
     enabled = true
     conditions = [
@@ -41,7 +41,7 @@ locals {
 
 module "k3s" {
   source  = "marshallford/k3s/ansible"
-  version = "0.2.10" # x-release-please-version
+  version = "0.2.11" # x-release-please-version
 
   ansible_navigator_binary = ".venv/bin/ansible-navigator"
   ssh_private_keys = [

@@ -1,6 +1,6 @@
 module "k3s" {
   source  = "marshallford/k3s/ansible"
-  version = "0.2.10" # x-release-please-version
+  version = "0.2.11" # x-release-please-version
 
   api_server = {
     virtual_ip        = "192.168.1.99"

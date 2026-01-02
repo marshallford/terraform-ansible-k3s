@@ -164,8 +164,8 @@ variable "all_nodes_config" {
   type = object({
     protect_kernel_defaults = optional(bool)
     selinux                 = optional(bool)
-    kubelet_arg             = optional(map(any), {})
-    kube_proxy_arg          = optional(map(any), {})
+    kubelet_arg             = optional(map(string), {})
+    kube_proxy_arg          = optional(map(string), {})
   })
   nullable    = false
   default     = {}
@@ -188,13 +188,13 @@ variable "server_nodes_config" {
     disable_kube_proxy                = optional(bool)
     disable_network_policy            = optional(bool)
     disable_helm_controller           = optional(bool)
-    etcd_arg                          = optional(map(any), {})
-    kube_apiserver_arg                = optional(map(any), {})
-    kube_scheduler_arg                = optional(map(any), {})
-    kube_controller_manager_arg       = optional(map(any), {})
-    kube_cloud_controller_manager_arg = optional(map(any), {})
-    kubelet_arg                       = optional(map(any), {})
-    kube_proxy_arg                    = optional(map(any), {})
+    etcd_arg                          = optional(map(string), {})
+    kube_apiserver_arg                = optional(map(string), {})
+    kube_scheduler_arg                = optional(map(string), {})
+    kube_controller_manager_arg       = optional(map(string), {})
+    kube_cloud_controller_manager_arg = optional(map(string), {})
+    kubelet_arg                       = optional(map(string), {})
+    kube_proxy_arg                    = optional(map(string), {})
     disable_agent                     = optional(bool)
   })
   nullable    = false
@@ -218,9 +218,13 @@ variable "files" {
 
 # https://docs.k3s.io/installation/configuration#kubelet-configuration-files
 variable "kubelet_configs" {
-  type     = list(map(any))
+  type     = list(any)
   nullable = false
   default  = []
+  validation {
+    condition     = alltrue([for v in var.kubelet_configs : can(keys(v))])
+    error_message = "The kubelet_configs variable must be a list of objects or maps."
+  }
   validation {
     condition = alltrue([
       for config in var.kubelet_configs :
@@ -244,6 +248,10 @@ variable "registries_config" {
   nullable    = false
   default     = {}
   description = "Registry configuration to be used by k3s when generating the containerd configuration."
+  validation {
+    condition     = can(keys(var.registries_config))
+    error_message = "The registries_config variable must be an object or map."
+  }
 }
 
 variable "drain_options" {

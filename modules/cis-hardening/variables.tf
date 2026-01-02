@@ -54,10 +54,14 @@ variable "event_rate_limits" {
 }
 
 variable "audit_policy_rules" {
-  type = list(map(any))
+  type = list(any)
   default = [{
     level = "Metadata"
   }]
   nullable    = false
   description = "Audit policy rules."
+  validation {
+    condition     = alltrue([for v in var.audit_policy_rules : can(keys(v))])
+    error_message = "The audit_policy_rules variable must be a list of objects or maps."
+  }
 }

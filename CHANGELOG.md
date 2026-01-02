@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.11](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.10...v0.2.11) (2026-01-02)
+
+
+### Features
+
+* authentication configuration submodule, improve variable flexibility ([#51](https://github.com/marshallford/terraform-ansible-k3s/issues/51)) ([ca1d934](https://github.com/marshallford/terraform-ansible-k3s/commit/ca1d93436a331d208b9a9f85d12607fb1778103e))
+
 ## [0.2.10](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.9...v0.2.10) (2025-12-20)
 
 

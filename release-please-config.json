@@ -9,7 +9,8 @@
         "examples/cis-hardening/main.tf",
         "examples/graceful-node-shutdown/main.tf",
         "examples/kubeconfig/main.tf",
-        "examples/proxmox/main.tf",
+        "examples/proxmox/cluster.tf",
+        "examples/proxmox/machines.tf",
         "examples/simple/main.tf",
         "modules/kubeconfig/variables.tf",
         "variables.tf"

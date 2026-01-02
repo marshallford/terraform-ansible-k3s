@@ -10,12 +10,38 @@ resource "time_rotating" "system_upgrade" {
 
 module "k3s_cis_hardening" {
   source  = "marshallford/k3s/ansible//modules/cis-hardening"
-  version = "0.2.9" # x-release-please-version
+  version = "0.2.10" # x-release-please-version
+}
+
+module "k3s_authentication_config" {
+  source  = "marshallford/k3s/ansible//modules/authentication-config"
+  version = "0.2.10" # x-release-please-version
+  anonymous = {
+    enabled = true
+    conditions = [
+      { path = "/livez" },
+      { path = "/readyz" },
+      { path = "/healthz" },
+    ]
+  }
+}
+
+locals {
+  server_nodes_config_merged = merge(
+    module.k3s_cis_hardening.server_nodes_config,
+    module.k3s_authentication_config.server_nodes_config,
+    {
+      kube_apiserver_arg = merge(
+        try(module.k3s_cis_hardening.server_nodes_config.kube_apiserver_arg, {}),
+        try(module.k3s_authentication_config.server_nodes_config.kube_apiserver_arg, {})
+      )
+    }
+  )
 }
 
 module "k3s" {
   source  = "marshallford/k3s/ansible"
-  version = "0.2.9" # x-release-please-version
+  version = "0.2.10" # x-release-please-version
 
   ansible_navigator_binary = ".venv/bin/ansible-navigator"
   ssh_private_keys = [
@@ -63,8 +89,8 @@ module "k3s" {
     } }
   }
   all_nodes_config    = module.k3s_cis_hardening.all_nodes_config
-  server_nodes_config = module.k3s_cis_hardening.server_nodes_config
-  files               = module.k3s_cis_hardening.files
+  server_nodes_config = local.server_nodes_config_merged
+  files               = merge(module.k3s_cis_hardening.files, module.k3s_authentication_config.files)
   kubelet_configs = [
     {
       apiVersion                      = "kubelet.config.k8s.io/v1beta1"

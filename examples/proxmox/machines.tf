@@ -49,7 +49,7 @@ module "butane_python" {
 }
 
 module "butane_keepalived" {
-  source = "marshallford/k3s/ansible//modules/butane-keepalived"
+  source  = "marshallford/k3s/ansible//modules/butane-keepalived"
   version = "0.2.11" # x-release-please-version
 }
 

@@ -2,10 +2,10 @@ resource "proxmox_virtual_environment_download_file" "fcos" {
   for_each                = toset([for node in var.proxmox_nodes : node.name])
   content_type            = "iso"
   datastore_id            = var.proxmox_file_storage
-  file_name               = "k8s-${var.cluster_name}-fedora-coreos-43.20251110.3.1-proxmoxve.x86_64.img"
+  file_name               = "k8s-${var.cluster_name}-fedora-coreos-43.20251120.3.0-proxmoxve.x86_64.img"
   node_name               = each.value
-  url                     = "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/43.20251110.3.1/x86_64/fedora-coreos-43.20251110.3.1-proxmoxve.x86_64.qcow2.xz"
-  checksum                = "9040dc722f4ed8a9f46d1752e4aa0b758d246e9bedf9e4eda2dcf8f83dd5333d"
+  url                     = "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/43.20251120.3.0/x86_64/fedora-coreos-43.20251120.3.0-proxmoxve.x86_64.qcow2.xz"
+  checksum                = "56391f7a92792c932179ea089ef6f2bbc30e3f031caf584eabb27e7fbf2175fd"
   checksum_algorithm      = "sha256"
   decompression_algorithm = "zst"
 }
@@ -48,6 +48,11 @@ module "butane_python" {
   version = "0.2.11" # x-release-please-version
 }
 
+module "butane_keepalived" {
+  source  = "marshallford/k3s/ansible//modules/butane-keepalived"
+  version = "0.2.11" # x-release-please-version
+}
+
 module "butane_qemu_ga" {
   source  = "marshallford/k3s/ansible//modules/butane-qemu-ga"
   version = "0.2.11" # x-release-please-version
@@ -77,6 +82,7 @@ data "ct_config" "server" {
   content  = module.server_butane_hostname[each.key].snippet
   snippets = [
     module.butane_python.snippet,
+    module.butane_keepalived.snippet,
     module.butane_qemu_ga.snippet,
     module.butane_ssh_authorized_key.snippet,
     module.butane_dhcp.snippet,

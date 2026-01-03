@@ -10,13 +10,10 @@
 - name: Install keepalived
   community.general.rpm_ostree_pkg:
     name: keepalived
+    apply_live: true
   retries: 3
   delay: 30
-  when: "'keepalived' not in fcos_rpm_ostree_status_booted_packages"
-  notify: Reboot
-
-- name: Flush handlers
-  ansible.builtin.meta: flush_handlers
+  when: "'keepalived' not in fcos_rpm_ostree_status_packages"
 
 - name: Create keepalived conf.d directory
   ansible.builtin.file:

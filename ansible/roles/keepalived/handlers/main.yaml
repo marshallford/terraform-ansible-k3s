@@ -1,8 +1,3 @@
-- name: Reboot
-  ansible.builtin.reboot:
-    reboot_timeout: 1800 # 30m
-    post_reboot_delay: 60 # 1m, https://github.com/ansible/ansible/issues/86122
-
 - name: Restart keepalived
   ansible.builtin.service:
     name: keepalived

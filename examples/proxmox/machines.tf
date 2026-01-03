@@ -30,7 +30,7 @@ locals {
 module "server_butane_hostname" {
   for_each = local.server_machines
   source   = "marshallford/k3s/ansible//modules/butane-hostname"
-  version  = "0.2.11" # x-release-please-version
+  version  = "0.2.12" # x-release-please-version
 
   hostname = each.value.full_name
 }
@@ -38,43 +38,43 @@ module "server_butane_hostname" {
 module "agent_butane_hostname" {
   for_each = local.agent_machines
   source   = "marshallford/k3s/ansible//modules/butane-hostname"
-  version  = "0.2.11" # x-release-please-version
+  version  = "0.2.12" # x-release-please-version
 
   hostname = each.value.full_name
 }
 
 module "butane_python" {
   source  = "marshallford/k3s/ansible//modules/butane-python"
-  version = "0.2.11" # x-release-please-version
+  version = "0.2.12" # x-release-please-version
 }
 
 module "butane_keepalived" {
   source  = "marshallford/k3s/ansible//modules/butane-keepalived"
-  version = "0.2.11" # x-release-please-version
+  version = "0.2.12" # x-release-please-version
 }
 
 module "butane_qemu_ga" {
   source  = "marshallford/k3s/ansible//modules/butane-qemu-ga"
-  version = "0.2.11" # x-release-please-version
+  version = "0.2.12" # x-release-please-version
 }
 
 module "butane_ssh_authorized_key" {
   source  = "marshallford/k3s/ansible//modules/butane-ssh-authorized-key"
-  version = "0.2.11" # x-release-please-version
+  version = "0.2.12" # x-release-please-version
 
   ssh_authorized_key = tls_private_key.machine.public_key_openssh
 }
 
 module "butane_dhcp" {
   source  = "marshallford/k3s/ansible//modules/butane-dhcp"
-  version = "0.2.11" # x-release-please-version
+  version = "0.2.12" # x-release-please-version
 
   interface = "ens18"
 }
 
 module "butane_zincati_disable" {
   source  = "marshallford/k3s/ansible//modules/butane-zincati-disable"
-  version = "0.2.11" # x-release-please-version
+  version = "0.2.12" # x-release-please-version
 }
 
 data "ct_config" "server" {

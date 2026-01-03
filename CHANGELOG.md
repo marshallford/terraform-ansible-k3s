@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.12](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.11...v0.2.12) (2026-01-03)
+
+
+### Features
+
+* adds submodule for butane keepalived install, removes reboot requirement for keepalived ([#53](https://github.com/marshallford/terraform-ansible-k3s/issues/53)) ([8fb5b0a](https://github.com/marshallford/terraform-ansible-k3s/commit/8fb5b0a9564fdf66bba52f5c086f2d35f89cea6a))
+
 ## [0.2.11](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.10...v0.2.11) (2026-01-02)
 
 

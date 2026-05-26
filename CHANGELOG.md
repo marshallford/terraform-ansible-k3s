@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.12...v0.3.0) (2026-05-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* replaces rpm-ostree keepalived install with podman quadlet, modernizes haproxy config ([#55](https://github.com/marshallford/terraform-ansible-k3s/issues/55))
+
+### Features
+
+* replaces rpm-ostree keepalived install with podman quadlet, modernizes haproxy config ([#55](https://github.com/marshallford/terraform-ansible-k3s/issues/55)) ([0dea560](https://github.com/marshallford/terraform-ansible-k3s/commit/0dea5608b63e22636fcb5c3674ee9b9fb80637a0))
+
 ## [0.2.12](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.11...v0.2.12) (2026-01-03)
 
 

@@ -1,7 +1,9 @@
 #jinja2: lstrip_blocks: True
 vrrp_script check_haproxy {
-  script "/usr/bin/pgrep haproxy"
+  script "/usr/bin/wget -q --spider -T 1 http://127.0.0.1:{{ __haproxy_monitor_port }}/healthz"
   interval 1
+  fall 2
+  rise 2
 }
 
 vrrp_instance HAPROXY {

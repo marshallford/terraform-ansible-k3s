@@ -40,7 +40,8 @@
       apply:
         become: true
     vars:
-      __keepalived_script_user: "{{ quadlet_user }}"
+      __keepalived_container_image: "{{ keepalived_container_image }}"
+      __keepalived_container_image_tag: "{{ keepalived_container_image_tag }}"
   - name: HAProxy
     ansible.builtin.include_role:
       name: haproxy

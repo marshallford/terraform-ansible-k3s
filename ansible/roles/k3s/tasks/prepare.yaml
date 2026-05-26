@@ -1,4 +1,4 @@
-- name: Ensure k3s directories exists
+- name: Ensure k3s directories exist
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory

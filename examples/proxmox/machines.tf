@@ -1,13 +1,14 @@
-resource "proxmox_virtual_environment_download_file" "fcos" {
+resource "proxmox_download_file" "fcos" {
   for_each                = toset([for node in var.proxmox_nodes : node.name])
   content_type            = "iso"
   datastore_id            = var.proxmox_file_storage
-  file_name               = "k8s-${var.cluster_name}-fedora-coreos-43.20251120.3.0-proxmoxve.x86_64.img"
+  file_name               = "k8s-${var.cluster_name}-fedora-coreos-44.20260419.3.1-proxmoxve.x86_64.img"
   node_name               = each.value
-  url                     = "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/43.20251120.3.0/x86_64/fedora-coreos-43.20251120.3.0-proxmoxve.x86_64.qcow2.xz"
-  checksum                = "56391f7a92792c932179ea089ef6f2bbc30e3f031caf584eabb27e7fbf2175fd"
+  url                     = "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/44.20260419.3.1/x86_64/fedora-coreos-44.20260419.3.1-proxmoxve.x86_64.qcow2.xz"
+  checksum                = "985ac19443adf25db55d25c2090d915452ce3c9849f9a6b2c634749439b3e4b0"
   checksum_algorithm      = "sha256"
   decompression_algorithm = "zst"
+  overwrite               = false
 }
 
 resource "tls_private_key" "machine" {
@@ -48,11 +49,6 @@ module "butane_python" {
   version = "0.2.12" # x-release-please-version
 }
 
-module "butane_keepalived" {
-  source  = "marshallford/k3s/ansible//modules/butane-keepalived"
-  version = "0.2.12" # x-release-please-version
-}
-
 module "butane_qemu_ga" {
   source  = "marshallford/k3s/ansible//modules/butane-qemu-ga"
   version = "0.2.12" # x-release-please-version
@@ -82,7 +78,6 @@ data "ct_config" "server" {
   content  = module.server_butane_hostname[each.key].snippet
   snippets = [
     module.butane_python.snippet,
-    module.butane_keepalived.snippet,
     module.butane_qemu_ga.snippet,
     module.butane_ssh_authorized_key.snippet,
     module.butane_dhcp.snippet,
@@ -155,7 +150,7 @@ resource "proxmox_virtual_environment_vm" "server" {
 
   disk {
     datastore_id = var.proxmox_block_storage
-    file_id      = proxmox_virtual_environment_download_file.fcos[each.value.proxmox_node].id
+    file_id      = proxmox_download_file.fcos[each.value.proxmox_node].id
     interface    = "virtio0"
     iothread     = true
     discard      = "on"
@@ -201,7 +196,7 @@ resource "proxmox_virtual_environment_vm" "agent" {
 
   disk {
     datastore_id = var.proxmox_block_storage
-    file_id      = proxmox_virtual_environment_download_file.fcos[each.value.proxmox_node].id
+    file_id      = proxmox_download_file.fcos[each.value.proxmox_node].id
     interface    = "virtio0"
     iothread     = true
     discard      = "on"

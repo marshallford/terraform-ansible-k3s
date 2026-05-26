@@ -6,3 +6,4 @@ PartOf=%N.service
 BindIPv6Only=both
 FreeBind=true
 ListenStream={{ __haproxy_keepalived_virtual_ip_address }}:{{ __haproxy_listen_port }}
+NoDelay=true

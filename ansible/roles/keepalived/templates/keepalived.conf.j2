@@ -3,7 +3,7 @@ global_defs {
   vrrp_version 3
   vrrp_skip_check_adv_addr
   enable_script_security
-  script_user {{ __keepalived_script_user }}
+  script_user root
 }
 
 include conf.d/*.conf

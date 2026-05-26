@@ -1,0 +1,11 @@
+#jinja2: lstrip_blocks: True
+[Container]
+ContainerName=keepalived
+Image={{ __keepalived_container_image }}:{{ __keepalived_container_image_tag }}
+Network=host
+AddCapability=NET_ADMIN NET_BROADCAST NET_RAW
+Volume=keepalived.volume:/etc/keepalived:ro,Z
+Retry=5
+
+[Install]
+WantedBy=default.target

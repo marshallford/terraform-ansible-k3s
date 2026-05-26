@@ -9,12 +9,12 @@
 - name: Set unprivileged port start
   ansible.posix.sysctl:
     name: net.ipv4.ip_unprivileged_port_start
-    value: "{{ __quadlet_ipv4_unprivileged_port_start }}"
+    value: "{{ __quadlet_unprivileged_port_start }}"
   become: true
 
 - name: Create systemd user directory
   ansible.builtin.file:
-    path: "{{ __quadlet_systemd_user_dir }}"
+    path: "{{ __quadlet_user_systemd_dir }}"
     state: directory
     owner: "{{ __quadlet_user }}"
     group: "{{ __quadlet_user }}"
@@ -22,11 +22,20 @@
 
 - name: Create quadlet user directory
   ansible.builtin.file:
-    path: "{{ __quadlet_containers_dir }}"
+    path: "{{ __quadlet_user_containers_dir }}"
     state: directory
     owner: "{{ __quadlet_user }}"
     group: "{{ __quadlet_user }}"
     mode: u=rwx,g=rx,o=rx
+
+- name: Create quadlet system directory
+  ansible.builtin.file:
+    path: "{{ __quadlet_system_containers_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+  become: true
 
 - name: Ensure lingering for user is enabled
   ansible.builtin.command:
@@ -35,9 +44,13 @@
 
 - name: Set quadlet facts
   ansible.builtin.set_fact:
-    quadlet_user_uid: "{{ __quadlet_user_id }}"
-    quadlet_user: "{{ __quadlet_user }}"
-    quadlet_user_home: "{{ __quadlet_user_home }}"
-    quadlet_systemd_user_dir: "{{ __quadlet_systemd_user_dir }}"
-    quadlet_containers_dir: "{{ __quadlet_containers_dir }}"
-    quadlet_volumes_dir: "{{ __quadlet_volumes_dir }}"
+    quadlet_user_info:
+      name: "{{ __quadlet_user }}"
+      xdg_runtime_dir: "/run/user/{{ ansible_facts.user_uid }}"
+      systemd_dir: "{{ __quadlet_user_systemd_dir }}"
+      containers_dir: "{{ __quadlet_user_containers_dir }}"
+      volumes_dir: "{{ __quadlet_user_volumes_dir }}"
+    quadlet_system_info:
+      systemd_dir: "{{ __quadlet_system_systemd_dir }}"
+      containers_dir: "{{ __quadlet_system_containers_dir }}"
+      volumes_dir: "{{ __quadlet_system_volumes_dir }}"

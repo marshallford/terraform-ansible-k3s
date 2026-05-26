@@ -2,9 +2,9 @@
   ansible.builtin.copy:
     content: |
       [Volume]
-    dest: "{{ quadlet_containers_dir }}/haproxy.volume"
-    owner: "{{ quadlet_user }}"
-    group: "{{ quadlet_user }}"
+    dest: "{{ quadlet_user_info.containers_dir }}/haproxy.volume"
+    owner: "{{ quadlet_user_info.name }}"
+    group: "{{ quadlet_user_info.name }}"
     mode: u=rw,g=r,o=r
 
 - name: Start haproxy volume
@@ -14,47 +14,49 @@
     state: started
     scope: user
   environment:
-    XDG_RUNTIME_DIR: /run/user/{{ quadlet_user_uid }}
+    XDG_RUNTIME_DIR: "{{ quadlet_user_info.xdg_runtime_dir }}"
 
 - name: Create haproxy config
   ansible.builtin.template:
     src: haproxy.cfg.j2
-    dest: "{{ quadlet_volumes_dir }}/systemd-haproxy/_data/haproxy.cfg"
-    owner: "{{ quadlet_user }}"
-    group: "{{ quadlet_user }}"
+    dest: "{{ quadlet_user_info.volumes_dir }}/systemd-haproxy/_data/haproxy.cfg"
+    owner: "{{ quadlet_user_info.name }}"
+    group: "{{ quadlet_user_info.name }}"
     mode: u=rw,g=,o=
   notify: Reload haproxy
 
 - name: Create haproxy keepalived config
   ansible.builtin.template:
     src: keepalived.conf.j2
-    dest: /etc/keepalived/conf.d/haproxy.conf
-    owner: "{{ quadlet_user }}"
-    group: "{{ quadlet_user }}"
-    mode: u=rw,g=,o=
+    dest: "{{ keepalived_conf_dir }}/haproxy.conf"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=
+  become: true
   notify: Restart keepalived
 
-- name: Create haproxy socket
+- name: Create haproxy sockets
   ansible.builtin.template:
-    src: haproxy.socket.j2
-    dest: "{{ quadlet_systemd_user_dir }}/haproxy.socket"
-    owner: "{{ quadlet_user }}"
-    group: "{{ quadlet_user }}"
+    src: "{{ item }}.socket.j2"
+    dest: "{{ quadlet_user_info.systemd_dir }}/{{ item }}.socket"
+    owner: "{{ quadlet_user_info.name }}"
+    group: "{{ quadlet_user_info.name }}"
     mode: u=rw,g=r,o=r
-  notify:
-  - Reload user systemd
-  - Restart haproxy
+  loop:
+  - haproxy
+  - haproxy-monitor
+  loop_control:
+    label: "{{ item }}"
+  notify: Restart haproxy
 
 - name: Create haproxy quadlet container
   ansible.builtin.template:
     src: haproxy.container.j2
-    dest: "{{ quadlet_containers_dir }}/haproxy.container"
-    owner: "{{ quadlet_user }}"
-    group: "{{ quadlet_user }}"
+    dest: "{{ quadlet_user_info.containers_dir }}/haproxy.container"
+    owner: "{{ quadlet_user_info.name }}"
+    group: "{{ quadlet_user_info.name }}"
     mode: u=rw,g=r,o=r
-  notify:
-  - Reload user systemd
-  - Restart haproxy
+  notify: Restart haproxy
 
 - name: Start haproxy service
   ansible.builtin.systemd_service:
@@ -63,4 +65,4 @@
     state: started
     scope: user
   environment:
-    XDG_RUNTIME_DIR: /run/user/{{ quadlet_user_uid }}
+    XDG_RUNTIME_DIR: "{{ quadlet_user_info.xdg_runtime_dir }}"

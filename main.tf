@@ -3,7 +3,7 @@ terraform {
   required_providers {
     ansible = {
       source  = "marshallford/ansible"
-      version = ">= 0.35.0, < 1.0.0"
+      version = ">= 0.36.0, < 1.0.0"
     }
   }
 }
@@ -12,20 +12,22 @@ locals {
   inventory = yamlencode({
     all = {
       vars = {
-        ansible_ssh_common_args     = provider::ansible::ssh_args(true)
-        ansible_python_interpreter  = "/usr/bin/python3"
-        k3s_api_server              = var.api_server
-        k3s_version                 = var.k3s_version
-        k3s_selinux_version         = var.selinux_version
-        k3s_tokens                  = var.tokens
-        k3s_files                   = var.files
-        k3s_kubelet_configs         = var.kubelet_configs
-        k3s_registries_config       = var.registries_config
-        k3s_cleanup                 = var.cleanup
-        k3s_drain_options           = var.drain_options
-        system_upgrade_trigger      = var.system_upgrade_trigger
-        haproxy_container_image     = var.haproxy_container_image
-        haproxy_container_image_tag = var.haproxy_container_image_tag
+        ansible_ssh_common_args        = provider::ansible::ssh_args(true)
+        ansible_python_interpreter     = "/usr/bin/python3"
+        k3s_api_server                 = var.api_server
+        k3s_version                    = var.k3s_version
+        k3s_selinux_version            = var.selinux_version
+        k3s_tokens                     = var.tokens
+        k3s_files                      = var.files
+        k3s_kubelet_configs            = var.kubelet_configs
+        k3s_registries_config          = var.registries_config
+        k3s_cleanup                    = var.cleanup
+        k3s_drain_options              = var.drain_options
+        system_upgrade_trigger         = var.system_upgrade_trigger
+        keepalived_container_image     = var.keepalived_container_image
+        keepalived_container_image_tag = var.keepalived_container_image_tag
+        haproxy_container_image        = var.haproxy_container_image
+        haproxy_container_image_tag    = var.haproxy_container_image_tag
         k3s_all_nodes_config = { for k, v in merge(var.all_nodes_config, {
           kubelet_arg    = [for k, v in var.all_nodes_config.kubelet_arg : "${k}=${v}"]
           kube_proxy_arg = [for k, v in var.all_nodes_config.kube_proxy_arg : "${k}=${v}"]

@@ -8,7 +8,10 @@ ReloadSignal=SIGHUP
 Retry=5
 
 [Unit]
-Requires=%N.socket
+Requires=%N.socket haproxy-monitor.socket
+
+[Service]
+Sockets=haproxy-monitor.socket
 
 [Install]
 WantedBy=default.target

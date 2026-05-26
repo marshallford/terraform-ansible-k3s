@@ -5,4 +5,4 @@
     enabled: false
     scope: user
   environment:
-    XDG_RUNTIME_DIR: /run/user/{{ quadlet_user_uid }}
+    XDG_RUNTIME_DIR: "{{ quadlet_user_info.xdg_runtime_dir }}"

@@ -1,0 +1,8 @@
+#jinja2: lstrip_blocks: True
+[Unit]
+PartOf=haproxy.service
+
+[Socket]
+ListenStream=127.0.0.1:{{ __haproxy_monitor_port }}
+Service=haproxy.service
+NoDelay=true

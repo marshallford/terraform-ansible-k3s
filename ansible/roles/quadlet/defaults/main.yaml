@@ -1,7 +1,8 @@
 __quadlet_user: "{{ ansible_user | default(ansible_facts.env.USER) }}"
-__quadlet_user_id: "{{ ansible_facts.user_uid }}"
-__quadlet_user_home: "{{ ansible_facts.env.HOME }}"
-__quadlet_systemd_user_dir: "{{ __quadlet_user_home }}/.config/systemd/user"
-__quadlet_containers_dir: "{{ __quadlet_user_home }}/.config/containers/systemd"
-__quadlet_volumes_dir: "{{ __quadlet_user_home }}/.local/share/containers/storage/volumes"
-__quadlet_ipv4_unprivileged_port_start: 1024
+__quadlet_user_systemd_dir: "{{ ansible_facts.env.HOME }}/.config/systemd/user"
+__quadlet_user_containers_dir: "{{ ansible_facts.env.HOME }}/.config/containers/systemd"
+__quadlet_user_volumes_dir: "{{ ansible_facts.env.HOME }}/.local/share/containers/storage/volumes"
+__quadlet_system_systemd_dir: /etc/systemd/system
+__quadlet_system_containers_dir: /etc/containers/systemd
+__quadlet_system_volumes_dir: /var/lib/containers/storage/volumes
+__quadlet_unprivileged_port_start: 1024

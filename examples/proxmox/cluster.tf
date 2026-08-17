@@ -9,13 +9,11 @@ resource "time_rotating" "system_upgrade" {
 }
 
 module "k3s_cis_hardening" {
-  source  = "marshallford/k3s/ansible//modules/cis-hardening"
-  version = "0.3.0" # x-release-please-version
+  source = "../../modules/cis-hardening"
 }
 
 module "k3s_authentication_config" {
-  source  = "marshallford/k3s/ansible//modules/authentication-config"
-  version = "0.3.0" # x-release-please-version
+  source = "../../modules/authentication-config"
   anonymous = {
     enabled = true
     conditions = [
@@ -40,8 +38,7 @@ locals {
 }
 
 module "k3s" {
-  source  = "marshallford/k3s/ansible"
-  version = "0.3.0" # x-release-please-version
+  source = "../../"
 
   ansible_navigator_binary = ".venv/bin/ansible-navigator"
   ssh_private_keys = [
@@ -61,32 +58,31 @@ module "k3s" {
     server = random_password.token["server"].result
   }
 
-  server_machines = { for key, vm in proxmox_virtual_environment_vm.server : key => {
-    name = key
-    ssh = {
+  server_machines = {
+    machines = { for key, vm in proxmox_virtual_environment_vm.server : key => {
+      name    = key
       address = vm.ipv4_addresses[1][0]
-    }
-    config = {
-      cluster_init = key == "00",
-      node_label = {
-        "topology.kubernetes.io/region" = var.region
-        "topology.kubernetes.io/zone"   = "${var.region}-${local.server_machines[key].availability_zone}"
-      }
-    }
-  } }
-  agent_machine_groups = {
-    "primary" = { for key, vm in proxmox_virtual_environment_vm.agent : key => {
-      name = key
-      ssh = {
-        address = vm.ipv4_addresses[1][0]
-      }
       config = {
         node_label = {
           "topology.kubernetes.io/region" = var.region
-          "topology.kubernetes.io/zone"   = "${var.region}-${local.agent_machines[key].availability_zone}"
+          "topology.kubernetes.io/zone"   = "${var.region}-${local.server_machines[key].availability_zone}"
         }
       }
     } }
+  }
+  agent_machine_groups = {
+    "primary" = {
+      machines = { for key, vm in proxmox_virtual_environment_vm.agent : key => {
+        name    = key
+        address = vm.ipv4_addresses[1][0]
+        config = {
+          node_label = {
+            "topology.kubernetes.io/region" = var.region
+            "topology.kubernetes.io/zone"   = "${var.region}-${local.agent_machines[key].availability_zone}"
+          }
+        }
+      } }
+    }
   }
   all_nodes_config    = module.k3s_cis_hardening.all_nodes_config
   server_nodes_config = local.server_nodes_config_merged
@@ -101,6 +97,7 @@ module "k3s" {
   ]
   system_upgrade_trigger = time_rotating.system_upgrade.id
   kubeconfig_block_type  = "data"
+  reset_on_destroy       = true
 }
 
 resource "kubernetes_namespace_v1" "example" {

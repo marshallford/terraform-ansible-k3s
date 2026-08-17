@@ -7,18 +7,22 @@ locals {
       }
       children = {
         servers = {
-          hosts = { for machine in var.server_machines : "server-${machine.name}" => {
-            ansible_user = machine.ssh.user
-            ansible_host = machine.ssh.address
-            ansible_port = machine.ssh.port
+          vars = {
+            ansible_user = var.server_machines.ssh.user
+            ansible_port = var.server_machines.ssh.port
+          }
+          hosts = { for machine in var.server_machines.machines : "server-${machine.name}" => {
+            ansible_host = machine.address
           } }
         }
         agents = {
-          children = { for group_name, group_machines in var.agent_machine_groups : "agents_${group_name}" => {
-            hosts = { for machine in group_machines : "agent-${group_name}-${machine.name}" => {
-              ansible_user = machine.ssh.user
-              ansible_host = machine.ssh.address
-              ansible_port = machine.ssh.port
+          children = { for group_name, group in var.agent_machine_groups : "agents_${group_name}" => {
+            vars = {
+              ansible_user = group.ssh.user
+              ansible_port = group.ssh.port
+            }
+            hosts = { for machine in group.machines : "agent-${group_name}-${machine.name}" => {
+              ansible_host = machine.address
             } }
           } }
         }
@@ -49,12 +53,13 @@ data "ansible_navigator_run" "certificates" {
     },
   }
   timeouts = {
-    read = "1m"
+    read = "5m"
   }
 }
 
 locals {
   certificates_ok_results = data.ansible_navigator_run.certificates.artifact_queries.certificates_ok.results
-  certificates_ok = (jsondecode(local.certificates_ok_results[0]) == null ?
-  true : alltrue([for result in local.certificates_ok_results : jsondecode(result)]))
+  certificates_ok = alltrue([
+    for result in local.certificates_ok_results : coalesce(jsondecode(result), true)
+  ])
 }

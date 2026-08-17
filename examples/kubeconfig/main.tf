@@ -3,13 +3,10 @@ locals {
 }
 
 module "k3s_kubeconfig" {
-  source  = "marshallford/k3s/ansible//modules/kubeconfig"
-  version = "0.3.0" # x-release-please-version
+  source = "../../modules/kubeconfig"
 
   server_machine = {
-    ssh = {
-      address = "some-host"
-    }
+    address = "192.168.1.100"
   }
   server     = local.server
   block_type = "data"

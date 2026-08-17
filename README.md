@@ -15,12 +15,13 @@ Provision and operate a Kubernetes cluster with the convenience of a CSP-managed
 4. **Delivers** a [highly available](https://docs.k3s.io/architecture#high-availability-k3s) control plane with load-balanced server nodes (powered by [HAProxy](https://www.haproxy.org/))
 5. **Includes** built-in [SELinux support](https://docs.k3s.io/advanced#selinux-support) using the SELinux policy package
 6. **Offers** curated [configuration options](https://docs.k3s.io/installation/configuration) including node taints/labels, cluster networking, and Kubernetes component flags
-7. **Integrates** with k3s’ [auto-deploying manifests](https://docs.k3s.io/installation/packaged-components#auto-deploying-manifests-addons) and [registry configuration](https://docs.k3s.io/installation/private-registry) features
-8. **Provides** recommendations for [CIS hardening](https://docs.k3s.io/security/hardening-guide) and [graceful node shutdown](https://kubernetes.io/docs/concepts/cluster-administration/node-shutdown/#graceful-node-shutdown), delivered via optional Terraform submodules
-9. **Performs** in-place [upgrades](https://docs.k3s.io/upgrades/manual#upgrade-k3s-using-the-binary) with coordinated node draining and optional [system upgrades](https://coreos.github.io/rpm-ostree/)
-10. **Manages** day-2 node additions and [removals](https://docs.k3s.io/installation/uninstall)
-11. **Facilitates** Kubernetes certificate [rotation](https://docs.k3s.io/cli/certificate#checking-expiration-dates)
-12. **Enables** seamless Terraform-native [cluster access](https://docs.k3s.io/cluster-access), no manual steps required
+7. **Integrates** with k3s' [auto-deploying manifests](https://docs.k3s.io/installation/packaged-components#auto-deploying-manifests-addons) and [registry configuration](https://docs.k3s.io/installation/private-registry) features
+8. **Provides** recommendations for [CIS hardening](https://docs.k3s.io/security/hardening-guide) via an optional Terraform submodule and [graceful node shutdown](https://kubernetes.io/docs/concepts/cluster-administration/node-shutdown/#graceful-node-shutdown) via a worked example
+9. **Secures** the Kubernetes API server with a [structured authentication configuration file](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#anonymous-authenticator-configuration) covering anonymous authenticator restrictions and JWT authenticators, delivered via an optional Terraform submodule
+10. **Performs** in-place [upgrades](https://docs.k3s.io/upgrades/manual#upgrade-k3s-using-the-binary) with coordinated node draining and optional [system upgrades](https://coreos.github.io/rpm-ostree/)
+11. **Manages** day-2 node additions and [removals](https://docs.k3s.io/installation/uninstall)
+12. **Facilitates** Kubernetes certificate [rotation](https://docs.k3s.io/cli/certificate#checking-expiration-dates)
+13. **Enables** seamless Terraform-native [cluster access](https://docs.k3s.io/cluster-access), no manual steps required
 
 ## 🚀 Key Differentiators
 
@@ -33,14 +34,14 @@ Provision and operate a Kubernetes cluster with the convenience of a CSP-managed
 
 ### 🛠️ Terraform execution host/runner
 
-1. [Terraform](https://developer.hashicorp.com/terraform/install) installed (version 1.12 or later)
-2. [`ansible-navigator`](https://ansible.readthedocs.io/projects/navigator/installation/) installed (version 25.4.0 or later)
+1. [Terraform](https://developer.hashicorp.com/terraform/install) installed (version 1.13 or later)
+2. [`ansible-navigator`](https://ansible.readthedocs.io/projects/navigator/installation/) installed (version 26.8.0 or later)
 3. Container engine (`podman` or `docker`) with support for `amd64` or `arm64` images (Ansible execution environment)
 4. Access to `github.com` to download k3s release artifact tarballs
 
 ### ⚙️ Machines (baremetal or virtual)
 
-1. [Fedora CoreOS](https://fedoraproject.org/coreos/) 43 or later (`amd64`, `arm`, or `arm64` architecture)
+1. [Fedora CoreOS](https://fedoraproject.org/coreos/) 44 or later (`amd64`, `arm`, or `arm64` architecture)
 2. Configured with a non-root [user](https://docs.fedoraproject.org/en-US/fedora-coreos/authentication/) with passwordless `sudo` access
 3. Reachable via SSH from the Terraform execution host/runner
 4. Network connectivity between all machines
@@ -49,11 +50,12 @@ Provision and operate a Kubernetes cluster with the convenience of a CSP-managed
 
 ## 🔍 Example
 
-Additional [examples](/examples) available.
+Additional [examples](/examples) available. Note that they reference the module by relative path (`source = "../../"`) so they can be validated against the working tree -- substitute the registry source and version shown below when copying one.
 
 ```terraform
 module "k3s" {
   source  = "marshallford/k3s/ansible"
+  version = "0.3.0" # x-release-please-version
 
   ssh_private_keys = [
     {
@@ -72,23 +74,20 @@ module "k3s" {
     agent  = "some-token"
   }
 
-  server_machines = { for name, addr in local.server_machines : name => {
-    name = name
-    ssh = {
+  server_machines = {
+    machines = { for name, addr in local.server_machines : name => {
+      name    = name
       address = addr
-    }
-    config = {
-      cluster_init = name == "a",
-    }
-  } }
+    } }
+  }
 
   agent_machine_groups = {
-    "example" = { for name, addr in local.agent_machines : name => {
-      name = name
-      ssh = {
+    "example" = {
+      machines = { for name, addr in local.agent_machines : name => {
+        name    = name
         address = addr
-      }
-    } }
+      } }
+    }
   }
 }
 
@@ -102,9 +101,9 @@ provider "kubernetes" {
 
 ## 🔒 Security Considerations
 
-1. **State file sensitivity** -- if `kubeconfig_block_type` is set to `data` or `resource`, the cluster admin kubeconfig will be persisted in both Terraform’s state file and any generated plan files. These files should be treated as sensitive and protected accordingly.
-2. **Certificate management** -- Kubernetes certificates are rotated as needed on module apply, but it is the operator’s responsibility to re-run Terraform before they expire. See the [k3s certificate docs](https://docs.k3s.io/cli/certificate) for details.
-3. **CIS Kubernetes benchmark** -- many controls are satisfied by default in k3s or via the provided `cis-harden` submodule. Controls outside this scope remain the operator’s responsibility.
+1. **State file sensitivity** -- if `kubeconfig_block_type` is set to `data` or `resource`, the cluster admin kubeconfig will be persisted in both Terraform's state file and any generated plan files. These files should be treated as sensitive and protected accordingly.
+2. **Certificate management** -- Kubernetes certificates are rotated as needed on module apply, but it is the operator's responsibility to re-run Terraform before they expire. See the [k3s certificate docs](https://docs.k3s.io/cli/certificate) for details.
+3. **CIS Kubernetes benchmark** -- many controls are satisfied by default in k3s or via the provided `cis-hardening` submodule. Controls outside this scope remain the operator's responsibility.
 4. **Machine updates** -- use Zincati for automatic updates or configure `system_upgrade_trigger` for coordinated updates and reboots through this module.
 5. **Access control** -- exposing machines or the Kubernetes API server directly to the internet increases risk. Access should be restricted through VPN, bastion, or firewall controls.
 
@@ -112,9 +111,8 @@ provider "kubernetes" {
 
 1. Only tested with `amd64` machines on an IPv4 network
 2. SELinux package cannot be upgraded ([upstream issue](https://github.com/coreos/rpm-ostree/issues/2127))
-3. Removal of the `cluster-init` server node is untested
-4. Machines removed must be fully wiped or have their disks reprovisioned prior to rejoining the cluster
-5. Terraform-managed machine resources must set lifecycle `create_before_destroy = true` to ensure correct ordering during node removal
+3. Machines removed must be fully wiped or have their disks reprovisioned prior to rejoining the cluster
+4. Terraform-managed machine resources must set lifecycle `create_before_destroy = true` to ensure correct ordering during node removal
 
 ## 🚧 To-do
 
@@ -122,7 +120,6 @@ provider "kubernetes" {
 - [ ] Support for custom Ansible plays (pre, post, etc)
 - [ ] Butane snippet for NTP
 - [ ] Firewall rules
-- [ ] Keepalived `max_auto_priority` option
 - [ ] Assert podman version
 - [ ] k3s token rotation
 - [ ] Stop Zincati at start of playbook and start at the end

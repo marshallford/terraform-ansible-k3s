@@ -32,11 +32,11 @@ variable "ssh_private_keys" {
 
 variable "server_machine" {
   type = object({
-    ssh = object({
-      user    = optional(string, "core")
-      address = string
-      port    = optional(number, 22)
-    })
+    ssh = optional(object({
+      user = optional(string, "core")
+      port = optional(number, 22)
+    }), {})
+    address = string
   })
   nullable    = false
   description = "Machine that has been configured as a server node."
@@ -51,13 +51,6 @@ variable "block_type" {
     error_message = "The block_type must be either 'ephemeral', 'data', or 'resource'."
   }
   description = "Terraform block type to use for retrieving cluster kubeconfig and credentials."
-}
-
-variable "cluster_reference" {
-  type        = string
-  nullable    = true
-  default     = null
-  description = "Cluster reference to ensure correct dependency ordering."
 }
 
 variable "server" {

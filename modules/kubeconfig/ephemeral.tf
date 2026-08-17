@@ -13,6 +13,6 @@ ephemeral "ansible_navigator_run" "this" {
   }
   artifact_queries = local.artifact_queries
   timeouts = {
-    read = "1m"
+    read = "5m"
   }
 }

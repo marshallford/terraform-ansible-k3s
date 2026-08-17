@@ -1,6 +1,5 @@
 module "k3s" {
-  source  = "marshallford/k3s/ansible"
-  version = "0.3.0" # x-release-please-version
+  source = "../../"
 
   api_server = {
     virtual_ip        = "192.168.1.99"
@@ -13,13 +12,10 @@ module "k3s" {
   }
 
   server_machines = {
-    a = {
-      name = "a"
-      ssh = {
+    machines = {
+      a = {
+        name    = "a"
         address = "192.168.1.100"
-      }
-      config = {
-        cluster_init = true
       }
     }
   }

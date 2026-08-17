@@ -28,6 +28,22 @@
     vars:
       __inventory_difference_previous_inventory_file: "{{ lookup('env', 'ANSIBLE_TF_PREVIOUS_INVENTORY') }}"
       __inventory_difference_current_inventory_file: "{{ lookup('env', 'ANSIBLE_TF_INVENTORY') }}"
+- name: Validate k3s server topology
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+  - name: Validate
+    ansible.builtin.include_role:
+      name: k3s
+    vars:
+      __k3s_part: validate
+      __k3s_removed_servers: "{{ groups['removed_servers'] | default([]) }}"
+      __k3s_retained_servers: "{{ groups['servers'] | default([]) | difference(groups['new_servers'] | default([])) }}"
+  - name: Select control server
+    ansible.builtin.add_host:
+      name: "{{ (groups['servers'] | default([]) | difference(groups['new_servers'] | default([])) | sort | first) | default(groups['bootstrap_server'] | first) }}"
+      groups: control_server
 - name: Configure API server load balancer
   hosts: servers
   gather_facts: false
@@ -96,8 +112,7 @@
       __k3s_version: "{{ k3s_version }}"
       __k3s_selinux_version: "{{ k3s_selinux_version }}"
       __k3s_arch: "{{ item }}"
-    loop: "{{ groups.all | map('extract', hostvars, 'k3s_arch') | unique | list }}"
-    when: groups.all | map('extract', hostvars, 'k3s_staged') | list is not all
+    loop: "{{ query('inventory_hostnames', 'servers:agents') | map('extract', hostvars) | rejectattr('k3s_staged') | map(attribute='k3s_arch') | unique | list }}"
 - name: Stage downloads on machines
   hosts: servers:agents
   gather_facts: false
@@ -112,32 +127,46 @@
       __k3s_selinux_version: "{{ k3s_selinux_version }}"
       __k3s_arch: "{{ k3s_arch }}"
     when: not k3s_staged
-- name: Configure new k3s servers
-  hosts: new_cluster_init_server:new_servers
+- name: Bootstrap k3s cluster
+  hosts: bootstrap_server
   gather_facts: false
   become: true
-  serial:
-  - 1
-  - 100%
+  tasks:
+  - name: Configure
+    ansible.builtin.include_role:
+      name: k3s
+    when:
+    - lookup('ansible.builtin.env', 'ANSIBLE_TF_OPERATION') == 'create'
+    - groups['servers'] | map('extract', hostvars, 'k3s_etcd_initialized') | list is not any
+    vars:
+      <<: &k3s_configure_vars
+        __k3s_role: "{{ k3s_role }}"
+        __k3s_version: "{{ k3s_version }}"
+        __k3s_selinux_version: "{{ k3s_selinux_version }}"
+        __k3s_installed: "{{ k3s_installed }}"
+        __k3s_server: "https://{{ k3s_api_server.virtual_ip }}:6443"
+        __k3s_tls_san: "{{ [k3s_api_server.virtual_ip] + k3s_api_server.hosts }}"
+        __k3s_all_nodes_config: "{{ k3s_all_nodes_config }}"
+        __k3s_server_nodes_config: "{{ k3s_server_nodes_config }}"
+        __k3s_node_config: "{{ k3s_node_config }}"
+        __k3s_files: "{{ k3s_files }}"
+        __k3s_kubelet_configs: "{{ k3s_kubelet_configs }}"
+        __k3s_registries_config: "{{ k3s_registries_config }}"
+        __k3s_drain_options: "{{ k3s_drain_options }}"
+      __k3s_cluster_init: true
+      __k3s_delegated_server_host: "{{ inventory_hostname }}"
+- name: Configure new k3s servers
+  hosts: new_servers
+  gather_facts: false
+  become: true
+  serial: 1
   tasks:
   - name: Configure
     ansible.builtin.include_role:
       name: k3s
     vars:
-      __k3s_role: "{{ k3s_role }}"
-      __k3s_version: "{{ k3s_version }}"
-      __k3s_selinux_version: "{{ k3s_selinux_version }}"
-      __k3s_installed: "{{ k3s_installed }}"
-      __k3s_delegated_server_host: "{{ groups.cluster_init_server | first }}"
-      __k3s_server: "https://{{ k3s_api_server.virtual_ip }}:6443"
-      __k3s_tls_san: "{{ [k3s_api_server.virtual_ip] + k3s_api_server.hosts }}"
-      __k3s_all_nodes_config: "{{ k3s_all_nodes_config }}"
-      __k3s_server_nodes_config: "{{ k3s_server_nodes_config }}"
-      __k3s_node_config: "{{ k3s_node_config }}"
-      __k3s_files: "{{ k3s_files }}"
-      __k3s_kubelet_configs: "{{ k3s_kubelet_configs }}"
-      __k3s_registries_config: "{{ k3s_registries_config }}"
-      __k3s_drain_options: "{{ k3s_drain_options }}"
+      <<: *k3s_configure_vars
+      __k3s_delegated_server_host: "{{ groups.control_server | first }}"
 - name: Configure existing k3s servers
   hosts: servers:!new_servers
   gather_facts: false
@@ -148,20 +177,8 @@
     ansible.builtin.include_role:
       name: k3s
     vars:
-      __k3s_role: "{{ k3s_role }}"
-      __k3s_version: "{{ k3s_version }}"
-      __k3s_selinux_version: "{{ k3s_selinux_version }}"
-      __k3s_installed: "{{ k3s_installed }}"
-      __k3s_delegated_server_host: "{{ groups.cluster_init_server | first }}"
-      __k3s_server: "https://{{ k3s_api_server.virtual_ip }}:6443"
-      __k3s_tls_san: "{{ [k3s_api_server.virtual_ip] + k3s_api_server.hosts }}"
-      __k3s_all_nodes_config: "{{ k3s_all_nodes_config }}"
-      __k3s_server_nodes_config: "{{ k3s_server_nodes_config }}"
-      __k3s_node_config: "{{ k3s_node_config }}"
-      __k3s_files: "{{ k3s_files }}"
-      __k3s_kubelet_configs: "{{ k3s_kubelet_configs }}"
-      __k3s_registries_config: "{{ k3s_registries_config }}"
-      __k3s_drain_options: "{{ k3s_drain_options }}"
+      <<: *k3s_configure_vars
+      __k3s_delegated_server_host: "{{ groups.control_server | first }}"
 - name: Configure new k3s agents
   hosts: new_agents
   gather_facts: false
@@ -171,20 +188,8 @@
     ansible.builtin.include_role:
       name: k3s
     vars:
-      __k3s_role: "{{ k3s_role }}"
-      __k3s_version: "{{ k3s_version }}"
-      __k3s_selinux_version: "{{ k3s_selinux_version }}"
-      __k3s_installed: "{{ k3s_installed }}"
-      __k3s_delegated_server_host: "{{ groups.cluster_init_server | first }}"
-      __k3s_server: "https://{{ k3s_api_server.virtual_ip }}:6443"
-      __k3s_tls_san: "{{ [k3s_api_server.virtual_ip] + k3s_api_server.hosts }}"
-      __k3s_all_nodes_config: "{{ k3s_all_nodes_config }}"
-      __k3s_server_nodes_config: "{{ k3s_server_nodes_config }}"
-      __k3s_node_config: "{{ k3s_node_config }}"
-      __k3s_files: "{{ k3s_files }}"
-      __k3s_kubelet_configs: "{{ k3s_kubelet_configs }}"
-      __k3s_registries_config: "{{ k3s_registries_config }}"
-      __k3s_drain_options: "{{ k3s_drain_options }}"
+      <<: *k3s_configure_vars
+      __k3s_delegated_server_host: "{{ groups.control_server | first }}"
 - name: Configure existing k3s agents
   hosts: agents:!new_agents
   gather_facts: false
@@ -195,20 +200,8 @@
     ansible.builtin.include_role:
       name: k3s
     vars:
-      __k3s_role: "{{ k3s_role }}"
-      __k3s_version: "{{ k3s_version }}"
-      __k3s_selinux_version: "{{ k3s_selinux_version }}"
-      __k3s_installed: "{{ k3s_installed }}"
-      __k3s_delegated_server_host: "{{ groups.cluster_init_server | first }}"
-      __k3s_server: "https://{{ k3s_api_server.virtual_ip }}:6443"
-      __k3s_tls_san: "{{ [k3s_api_server.virtual_ip] + k3s_api_server.hosts }}"
-      __k3s_all_nodes_config: "{{ k3s_all_nodes_config }}"
-      __k3s_server_nodes_config: "{{ k3s_server_nodes_config }}"
-      __k3s_node_config: "{{ k3s_node_config }}"
-      __k3s_files: "{{ k3s_files }}"
-      __k3s_kubelet_configs: "{{ k3s_kubelet_configs }}"
-      __k3s_registries_config: "{{ k3s_registries_config }}"
-      __k3s_drain_options: "{{ k3s_drain_options }}"
+      <<: *k3s_configure_vars
+      __k3s_delegated_server_host: "{{ groups.control_server | first }}"
 - name: Cleanup machines
   hosts: servers:agents
   gather_facts: false
@@ -251,7 +244,7 @@
       name: k3s
       apply:
         become: true
-        delegate_to: "{{ groups.cluster_init_server | first }}"
+        delegate_to: "{{ groups.control_server | first }}"
     vars:
       __k3s_part: drain
       __k3s_node_config: "{{ k3s_node_config }}"
@@ -268,7 +261,7 @@
       name: k3s
       apply:
         become: true
-        delegate_to: "{{ groups.cluster_init_server | first }}"
+        delegate_to: "{{ groups.control_server | first }}"
     vars:
       __k3s_part: delete
       __k3s_node_config: "{{ k3s_node_config }}"

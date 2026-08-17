@@ -1,9 +1,9 @@
 terraform {
-  required_version = ">= 1.12.0"
+  required_version = ">= 1.13.0"
   required_providers {
     ansible = {
       source  = "marshallford/ansible"
-      version = ">= 0.36.0, < 1.0.0"
+      version = ">= 0.38.0, < 1.0.0"
     }
   }
 }
@@ -14,7 +14,6 @@ locals {
       vars = {
         ansible_ssh_common_args    = provider::ansible::ssh_args(true)
         ansible_python_interpreter = "/usr/bin/python3"
-        cluster_reference          = var.cluster_reference
         k3s_server                 = var.server
         k3s_cluster_name           = var.cluster_name
         k3s_user_name              = var.user_name
@@ -23,7 +22,7 @@ locals {
       hosts = {
         server = {
           ansible_user = var.server_machine.ssh.user
-          ansible_host = var.server_machine.ssh.address
+          ansible_host = var.server_machine.address
           ansible_port = var.server_machine.ssh.port
         }
       }

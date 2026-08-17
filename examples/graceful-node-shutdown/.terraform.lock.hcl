@@ -2,23 +2,23 @@
 # Manual edits may be lost in future updates.
 
 provider "registry.terraform.io/marshallford/ansible" {
-  version     = "0.36.0"
-  constraints = ">= 0.35.0, 0.36.0, < 1.0.0"
+  version     = "0.38.0"
+  constraints = ">= 0.38.0, 0.38.0, < 1.0.0"
   hashes = [
-    "h1:kl0JW3UORJyvZkyGCkrfK2cQhNwrcTXwjiUcPpFOkAA=",
-    "zh:2c16026e03bbc3b721b520fb47905593c8d5d69b5e4ea1ddc8905068a25c675c",
-    "zh:3e3a78072d22ed0616719a564f8aa4ba3e595debca9bd735f6c00530abe4e246",
-    "zh:658bca01835ecd0ee2870531f7af5e7ecdc664c45760932724fcd8cf0c265a13",
-    "zh:6f48d880add1325b1dda146494935c184d713314806f65af0222d55e7762eb5a",
-    "zh:7b58133b0412fc9798f691ab53e5ea3e3c9442b355618d796cfda494b86dbc7e",
-    "zh:8eda210ae9e785eb3409a56f831b7e55f4085080b9a14749b866bfab763ee126",
-    "zh:98e5a5de039d8fb9f73a3d85cbd713ce78a6becf1603b3c505e89a89dc0aff90",
-    "zh:ab8c6b547d062da46c081fc275057b4cb01347c82d22d7fa935206b6aac10362",
-    "zh:b7234ab3777ac89aaf2738d2c2ecb3a8c4c6cef0d199297f5bb3f39dc2a5c526",
-    "zh:c7f2cb6b9bb5a1a60fb0eecc4e6ce7ba2e67c61192e51bf0c8852467181599f2",
+    "h1:stfEj1Hv+sh2vxvaBzu/MzYJ08kwrHXI/ziFl+BevBc=",
+    "zh:0dfc8c404816789145b294dffd28fc9cdb0caa8fa04d58156b0eb000fc290901",
+    "zh:37af30392c240a2760c39e2f00473aeb4691c96b3cb80f58d79b89e670efce22",
+    "zh:53df6e1311a3bb55fe8560fafa2096bd3523d4f6ee3ed0a0d10883c35ddffbd6",
+    "zh:582dee82a6b789193c478e6dd12ca4302dbb5dafa02426cb6c1201c0ad3fc209",
+    "zh:5d7602f8c726b715dc89cc37a53e3a9be242fddb9c750a247a038a61bac1ce28",
+    "zh:8485cdee3b31e24cc0037f2c60ef3b3bcd9f373f4121dbb88be8ab37aed8db7b",
+    "zh:9ba29d078732cf1e6bc7e8614695e70f8cfaf4c6832740c66a25fe1d1ea1bf5c",
+    "zh:a6e6ec373ea4627b312289d5a1b4e475e76d753c578c3a2cfea897f76aa92fef",
+    "zh:a975beaffc7a37cf2f4acf44e2ddf9bc81c3329f04d645b8a6ffaecb22f5d1e1",
+    "zh:be43dd386c46aedc1113c702f005bd12afea2207b1802db3456e45c4c39c5530",
+    "zh:c85553a91e729b81f1201a754be347cdd30efbf87c33dcb91e1b13cceff484e1",
     "zh:ca38a2be48eaa34088415b49d7c2b5b1819daf8cf378898224842a28569b43dd",
-    "zh:cb370bb05d540fa9b10e272a2dcea52098d3c4c5333d7da84cbaa368867f507d",
-    "zh:ebd3d4fbf738430f23248c7c9bfc83a823de27cee96c395d119a9b26bad3bbed",
-    "zh:ed6b2e76b80e6f6925e8a8a5582e9898e8be0f3a45306405e5afad129e0d1837",
+    "zh:e29595b9685ec69a54c1da487611424321052d78a18348393ccff846e5f5a264",
+    "zh:e83d916b0766a27a7dc47cf007dca71eddfb524d9e288adad3ae2cc50f731436",
   ]
 }

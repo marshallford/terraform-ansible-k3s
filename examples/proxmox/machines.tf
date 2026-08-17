@@ -2,10 +2,10 @@ resource "proxmox_download_file" "fcos" {
   for_each                = toset([for node in var.proxmox_nodes : node.name])
   content_type            = "iso"
   datastore_id            = var.proxmox_file_storage
-  file_name               = "k8s-${var.cluster_name}-fedora-coreos-44.20260419.3.1-proxmoxve.x86_64.img"
+  file_name               = "k8s-${var.cluster_name}-fedora-coreos-44.20260720.3.1-proxmoxve.x86_64.img"
   node_name               = each.value
-  url                     = "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/44.20260419.3.1/x86_64/fedora-coreos-44.20260419.3.1-proxmoxve.x86_64.qcow2.xz"
-  checksum                = "985ac19443adf25db55d25c2090d915452ce3c9849f9a6b2c634749439b3e4b0"
+  url                     = "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/44.20260720.3.1/x86_64/fedora-coreos-44.20260720.3.1-proxmoxve.x86_64.qcow2.xz"
+  checksum                = "a9cfeba79c279056637f71a797c4aeda6c44d6e2576812d1a0a39093ac5ddb6b"
   checksum_algorithm      = "sha256"
   decompression_algorithm = "zst"
   overwrite               = false
@@ -30,47 +30,44 @@ locals {
 
 module "server_butane_hostname" {
   for_each = local.server_machines
-  source   = "marshallford/k3s/ansible//modules/butane-hostname"
-  version  = "0.3.0" # x-release-please-version
+  source   = "../../modules/butane-hostname"
 
   hostname = each.value.full_name
 }
 
 module "agent_butane_hostname" {
   for_each = local.agent_machines
-  source   = "marshallford/k3s/ansible//modules/butane-hostname"
-  version  = "0.3.0" # x-release-please-version
+  source   = "../../modules/butane-hostname"
 
   hostname = each.value.full_name
 }
 
 module "butane_python" {
-  source  = "marshallford/k3s/ansible//modules/butane-python"
-  version = "0.3.0" # x-release-please-version
+  source = "../../modules/butane-python"
 }
 
 module "butane_qemu_ga" {
-  source  = "marshallford/k3s/ansible//modules/butane-qemu-ga"
-  version = "0.3.0" # x-release-please-version
+  source = "../../modules/butane-qemu-ga"
 }
 
 module "butane_ssh_authorized_key" {
-  source  = "marshallford/k3s/ansible//modules/butane-ssh-authorized-key"
-  version = "0.3.0" # x-release-please-version
+  source = "../../modules/butane-ssh-authorized-key"
 
   ssh_authorized_key = tls_private_key.machine.public_key_openssh
 }
 
+module "butane_count_me_opt_out" {
+  source = "../../modules/butane-count-me-opt-out"
+}
+
 module "butane_dhcp" {
-  source  = "marshallford/k3s/ansible//modules/butane-dhcp"
-  version = "0.3.0" # x-release-please-version
+  source = "../../modules/butane-dhcp"
 
   interface = "ens18"
 }
 
 module "butane_zincati_disable" {
-  source  = "marshallford/k3s/ansible//modules/butane-zincati-disable"
-  version = "0.3.0" # x-release-please-version
+  source = "../../modules/butane-zincati-disable"
 }
 
 data "ct_config" "server" {
@@ -80,6 +77,7 @@ data "ct_config" "server" {
     module.butane_python.snippet,
     module.butane_qemu_ga.snippet,
     module.butane_ssh_authorized_key.snippet,
+    module.butane_count_me_opt_out.snippet,
     module.butane_dhcp.snippet,
     module.butane_zincati_disable.snippet,
   ]
@@ -94,6 +92,7 @@ data "ct_config" "agent" {
     module.butane_python.snippet,
     module.butane_qemu_ga.snippet,
     module.butane_ssh_authorized_key.snippet,
+    module.butane_count_me_opt_out.snippet,
     module.butane_dhcp.snippet,
     module.butane_zincati_disable.snippet,
   ]

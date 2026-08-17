@@ -1,9 +1,9 @@
 terraform {
-  required_version = ">= 1.12.0"
+  required_version = ">= 1.13.0"
   required_providers {
     ansible = {
       source  = "marshallford/ansible"
-      version = ">= 0.36.0, < 1.0.0"
+      version = ">= 0.38.0, < 1.0.0"
     }
   }
 }
@@ -43,38 +43,40 @@ locals {
         }) : replace(k, "_", "-") => v if v != null && v != [] }
       }
       children = {
-        cluster_init_server = {
-          hosts = { for machine in var.server_machines : "server-${machine.name}" => {} if machine.config.cluster_init }
+        bootstrap_server = {
+          hosts = { "server-${local.first_server_machine.name}" = {} }
         }
         servers = {
-          hosts = { for machine in var.server_machines : "server-${machine.name}" => {
-            ansible_user = machine.ssh.user
-            ansible_host = machine.ssh.address
-            ansible_port = machine.ssh.port
+          hosts = { for machine in var.server_machines.machines : "server-${machine.name}" => {
+            ansible_host = machine.address
             k3s_node_config = { for k, v in merge(machine.config, {
               node_name        = coalesce(machine.config.node_name, "server-${machine.name}"),
-              node_ip          = coalesce(machine.config.node_ip, machine.ssh.address),
-              node_external_ip = coalesce(machine.config.node_external_ip, machine.ssh.address),
+              node_ip          = coalesce(machine.config.node_ip, machine.address),
+              node_external_ip = coalesce(machine.config.node_external_ip, machine.address),
               node_label       = [for k, v in machine.config.node_label : "${k}=${v}"]
               node_taint       = [for k, v in machine.config.node_taint : "${k}=${v}"]
             }) : replace(k, "_", "-") => v if v != null && v != [] }
           } }
           vars = {
+            ansible_user  = var.server_machines.ssh.user
+            ansible_port  = var.server_machines.ssh.port
             k3s_role      = "server"
             k3s_manifests = var.manifests
           }
         }
         agents = {
           vars = { k3s_role = "agent" }
-          children = { for group_name, group_machines in var.agent_machine_groups : "agents_${group_name}" => {
-            hosts = { for machine in group_machines : "agent-${group_name}-${machine.name}" => {
-              ansible_user = machine.ssh.user
-              ansible_host = machine.ssh.address
-              ansible_port = machine.ssh.port
+          children = { for group_name, group in var.agent_machine_groups : "agents_${group_name}" => {
+            vars = {
+              ansible_user = group.ssh.user
+              ansible_port = group.ssh.port
+            }
+            hosts = { for machine in group.machines : "agent-${group_name}-${machine.name}" => {
+              ansible_host = machine.address
               k3s_node_config = { for k, v in merge(machine.config, {
                 node_name        = coalesce(machine.config.node_name, "agent-${group_name}-${machine.name}"),
-                node_ip          = coalesce(machine.config.node_ip, machine.ssh.address),
-                node_external_ip = coalesce(machine.config.node_external_ip, machine.ssh.address),
+                node_ip          = coalesce(machine.config.node_ip, machine.address),
+                node_external_ip = coalesce(machine.config.node_external_ip, machine.address),
                 node_label       = [for k, v in machine.config.node_label : "${k}=${v}"]
                 node_taint       = [for k, v in machine.config.node_taint : "${k}=${v}"]
               }) : replace(k, "_", "-") => v if v != null && v != [] }
@@ -88,7 +90,24 @@ locals {
     for file_path in fileset("${path.module}/ansible/roles", "**/*.{yaml,j2}") :
     file_path => filebase64sha512("${path.module}/ansible/roles/${file_path}")
   }
-  server = "https://${coalesce(try(var.api_server.hosts[0], null), var.api_server.virtual_ip)}:6443"
+  server               = "https://${coalesce(try(var.api_server.hosts[0], null), var.api_server.virtual_ip)}:6443"
+  first_server_machine = one([for machine in var.server_machines.machines : machine if machine.name == sort([for m in var.server_machines.machines : m.name])[0]])
+  immutable = {
+    api_server_virtual_ip        = var.api_server.virtual_ip
+    api_server_virtual_router_id = var.api_server.virtual_router_id
+    selinux_version              = var.selinux_version
+  }
+}
+
+resource "terraform_data" "immutable" {
+  input = local.immutable
+  lifecycle {
+    ignore_changes = [input]
+    postcondition {
+      condition     = alltrue([for key, value in local.immutable : try(self.output[key], value) == value])
+      error_message = "These values cannot be changed after the cluster is created: ${join(", ", [for key, value in local.immutable : key if try(self.output[key], value) != value])}."
+    }
+  }
 }
 
 resource "ansible_navigator_run" "this" {
@@ -114,10 +133,10 @@ resource "ansible_navigator_run" "this" {
       config              = filebase64sha512("${path.module}/ansible/ansible.cfg")
       rotate_certificates = local.certificates_ok ? null : plantimestamp()
     }
-    known_hosts = {
-      server_machines      = base64sha256(jsonencode({ for k, v in var.server_machines : k => v.ssh }))
-      agent_machine_groups = base64sha256(jsonencode({ for group_name, group_machines in var.agent_machine_groups : group_name => { for k, v in group_machines : k => v.ssh } }))
-    }
+    known_hosts = base64sha256(jsonencode(concat(
+      [for machine in var.server_machines.machines : "${machine.address}:${var.server_machines.ssh.port}"],
+      flatten([for group in var.agent_machine_groups : [for machine in group.machines : "${machine.address}:${group.ssh.port}"]]),
+    )))
   }
   timeouts = {
     create = "2h"

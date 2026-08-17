@@ -5,13 +5,7 @@
     ".": {
       "release-type": "terraform-module",
       "extra-files": [
-        "examples/cilium-cni/main.tf",
-        "examples/cis-hardening/main.tf",
-        "examples/graceful-node-shutdown/main.tf",
-        "examples/kubeconfig/main.tf",
-        "examples/proxmox/cluster.tf",
-        "examples/proxmox/machines.tf",
-        "examples/simple/main.tf",
+        "README.md",
         "modules/kubeconfig/variables.tf",
         "variables.tf"
       ]

@@ -55,7 +55,7 @@ Additional [examples](/examples) available. Note that they reference the module 
 ```terraform
 module "k3s" {
   source  = "marshallford/k3s/ansible"
-  version = "0.3.0" # x-release-please-version
+  version = "0.4.0" # x-release-please-version
 
   ssh_private_keys = [
     {

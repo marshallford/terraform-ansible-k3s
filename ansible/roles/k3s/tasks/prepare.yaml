@@ -80,8 +80,15 @@
   failed_when: false
   changed_when: false
 
+- name: Check if k3s etcd is initialized
+  ansible.builtin.stat:
+    path: "{{ __k3s_etcd_wal_dir }}"
+  register: __k3s_etcd_check
+  when: __k3s_role == "server"
+
 - name: Set k3s facts
   ansible.builtin.set_fact:
     k3s_staged: "{{ __k3s_binary_check.stat.exists and __k3s_images_check.stat.exists and __k3s_selinux_package_check.stat.exists }}"
     k3s_installed: "{{ __k3s_service_enabled.rc == 0 }}"
+    k3s_etcd_initialized: "{{ __k3s_etcd_check.stat.exists | default(false) }}"
     k3s_arch: "{{ 'arm64' if ansible_facts.architecture == 'aarch64' else 'arm' if ansible_facts.architecture == 'armv7l' else 'amd64' }}"

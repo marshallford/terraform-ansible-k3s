@@ -1,10 +1,12 @@
-__k3s_version: "1.36.1+k3s1"
+__k3s_version: "1.36.3+k3s1"
 __k3s_selinux_version: "1.6.1"
 __k3s_part: configure
+__k3s_cluster_init: false
 __k3s_config_dir: /etc/rancher/k3s
 __k3s_files_dir: "{{ __k3s_config_dir }}/files"
 __k3s_kubeconfig: "{{ __k3s_config_dir }}/k3s.yaml"
 __k3s_data_dir: /var/lib/rancher/k3s
+__k3s_etcd_wal_dir: "{{ __k3s_data_dir }}/server/db/etcd/member/wal"
 __k3s_images_dir: "{{ __k3s_data_dir }}/agent/images"
 __k3s_kubelet_config_dir: "{{ __k3s_data_dir }}/agent/etc/kubelet.conf.d"
 __k3s_binary_dir: /usr/local/bin

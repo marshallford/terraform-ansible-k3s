@@ -12,8 +12,7 @@ locals {
 }
 
 module "k3s" {
-  source  = "marshallford/k3s/ansible"
-  version = "0.3.0" # x-release-please-version
+  source = "../../"
 
   ssh_private_keys = [
     {
@@ -32,23 +31,20 @@ module "k3s" {
     agent  = "some-token"
   }
 
-  server_machines = { for name, addr in local.server_machines : name => {
-    name = name
-    ssh = {
+  server_machines = {
+    machines = { for name, addr in local.server_machines : name => {
+      name    = name
       address = addr
-    }
-    config = {
-      cluster_init = name == "a",
-    }
-  } }
+    } }
+  }
 
   agent_machine_groups = {
-    "example" = { for name, addr in local.agent_machines : name => {
-      name = name
-      ssh = {
+    "example" = {
+      machines = { for name, addr in local.agent_machines : name => {
+        name    = name
         address = addr
-      }
-    } }
+      } }
+    }
   }
 }
 

@@ -1,9 +1,8 @@
 - name: Assertions
   ansible.builtin.assert:
     that:
-    - ansible_version.full is version_compare('2.18.0', '>=')
     - ansible_facts.distribution == 'Fedora'
-    - ansible_facts.distribution_major_version | int >= 43
+    - ansible_facts.distribution_major_version | int >= 44
     quiet: true
 
 - name: Set unprivileged port start

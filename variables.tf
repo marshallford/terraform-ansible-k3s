@@ -55,72 +55,82 @@ variable "tokens" {
 }
 
 variable "server_machines" {
-  type = map(object({
-    name = string
-    ssh = object({
-      user    = optional(string, "core")
-      address = string
-      port    = optional(number, 22)
-    })
-    config = optional(object({
-      cluster_init     = optional(bool, false)
-      node_name        = optional(string)
-      node_ip          = optional(string)
-      node_external_ip = optional(string)
-      node_label       = optional(map(string), {})
-      node_taint       = optional(map(string), {})
+  type = object({
+    ssh = optional(object({
+      user = optional(string, "core")
+      port = optional(number, 22)
     }), {})
-  }))
+    machines = map(object({
+      name    = string
+      address = string
+      config = optional(object({
+        node_name        = optional(string)
+        node_ip          = optional(string)
+        node_external_ip = optional(string)
+        node_label       = optional(map(string), {})
+        node_taint       = optional(map(string), {})
+      }), {})
+    }))
+  })
   nullable = false
   validation {
-    condition     = length(var.server_machines) > 0
+    condition     = length(var.server_machines.machines) > 0
     error_message = "At least one server machine must be defined."
   }
   validation {
-    condition     = length([for server in var.server_machines : server if server.config.cluster_init]) == 1
-    error_message = "Exactly one server machine must have cluster_init set to 'true'."
+    condition     = length(distinct([for machine in var.server_machines.machines : machine.name])) == length(var.server_machines.machines)
+    error_message = "Each server machine must have a unique name."
   }
   validation {
     condition = alltrue([
-      for machine in var.server_machines :
+      for machine in var.server_machines.machines :
       machine.config.node_name == null ||
       (can(regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$", machine.config.node_name)) && try(length(machine.config.node_name), 0) <= 63)
     ])
     error_message = "The node_name must be a valid RFC1123 DNS label: max 63 characters, lowercase alphanumeric or '-', must start and end with alphanumeric."
   }
-  description = "Machines to be configured as server nodes."
+  description = "Machines to be configured as server nodes. The ssh user/port apply to every server machine, including when retrieving the kubeconfig."
 }
 
 variable "agent_machine_groups" {
-  type = map(map(object({
-    name = string
-    ssh = object({
-      user    = optional(string, "core")
-      address = string
-      port    = optional(number, 22)
-    })
-    config = optional(object({
-      node_name        = optional(string)
-      node_ip          = optional(string)
-      node_external_ip = optional(string)
-      node_label       = optional(map(string), {})
-      node_taint       = optional(map(string), {})
+  type = map(object({
+    ssh = optional(object({
+      user = optional(string, "core")
+      port = optional(number, 22)
     }), {})
-  })))
+    machines = map(object({
+      name    = string
+      address = string
+      config = optional(object({
+        node_name        = optional(string)
+        node_ip          = optional(string)
+        node_external_ip = optional(string)
+        node_label       = optional(map(string), {})
+        node_taint       = optional(map(string), {})
+      }), {})
+    }))
+  }))
   nullable = false
   default  = {}
   validation {
     condition = alltrue([
-      for machines in var.agent_machine_groups :
+      for group in var.agent_machine_groups :
+      length(distinct([for machine in group.machines : machine.name])) == length(group.machines)
+    ])
+    error_message = "Each agent machine must have a unique name within its group."
+  }
+  validation {
+    condition = alltrue([
+      for group in var.agent_machine_groups :
       alltrue([
-        for machine in machines :
+        for machine in group.machines :
         machine.config.node_name == null ||
         (can(regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$", machine.config.node_name)) && try(length(machine.config.node_name), 0) <= 63)
       ])
     ])
     error_message = "The node_name must be a valid RFC1123 DNS label: max 63 characters, lowercase alphanumeric or '-', must start and end with alphanumeric."
   }
-  description = "Machines to be configured as agent nodes."
+  description = "Machines to be configured as agent nodes, grouped. The ssh user/port apply to every machine within a group."
 }
 
 variable "k3s_version" {
@@ -130,7 +140,7 @@ variable "k3s_version" {
     condition     = var.k3s_version == null || can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+.*$", var.k3s_version))
     error_message = "The k3s_version must be a valid semantic version starting with x.y.z (e.g. '1.30.0') without a 'v' prefix."
   }
-  default     = "1.36.1+k3s1"
+  default     = "1.36.3+k3s1"
   description = "The version of k3s to install."
 }
 
@@ -169,7 +179,7 @@ variable "haproxy_container_image" {
 variable "haproxy_container_image_tag" {
   type        = string
   nullable    = false
-  default     = "3.3.10"
+  default     = "3.4.3"
   description = "HAProxy container image tag used for API server load balancing."
 }
 

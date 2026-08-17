@@ -1,7 +1,8 @@
 __k3s_all_nodes_config_base:
   server: "{{ __k3s_server }}"
 __k3s_server_nodes_config_base:
-  server: "{{ none if (__k3s_node_config['cluster-init'] | default(false)) else __k3s_server }}"
+  cluster-init: "{{ __k3s_cluster_init }}"
+  server: "{{ none if __k3s_cluster_init else __k3s_server }}"
   https-listen-port: "{{ __k3s_https_listen_port }}"
   tls-san: "{{ __k3s_tls_san }}"
 __k3s_config: >-

@@ -1,4 +1,7 @@
+.PHONY: default
 default: lint
+
+.DELETE_ON_ERROR:
 
 EXISTING_VARS := $(.VARIABLES)
 GITHUB_ORG := marshallford
@@ -11,17 +14,18 @@ ifeq ($(shell tty > /dev/null && echo 1 || echo 0), 1)
 DOCKER_FLAGS += -i
 endif
 
-DOCKER := docker
+DOCKER ?= docker
+DOCKER_MOUNT_FLAGS := ro,z
 DOCKER_RUN := $(DOCKER) run $(DOCKER_FLAGS)
 DOCKER_PULL := $(DOCKER) pull -q
 
-EDITORCONFIG_CHECKER_VERSION ?= 3.6.1
+EDITORCONFIG_CHECKER_VERSION ?= 3.11.1
 EDITORCONFIG_CHECKER_IMAGE ?= docker.io/mstruebing/editorconfig-checker:v$(EDITORCONFIG_CHECKER_VERSION)
-EDITORCONFIG_CHECKER := $(DOCKER_RUN) -v=$(CURDIR):/check $(EDITORCONFIG_CHECKER_IMAGE)
+EDITORCONFIG_CHECKER := $(DOCKER_RUN) -v=$(CURDIR):/check:$(DOCKER_MOUNT_FLAGS) $(EDITORCONFIG_CHECKER_IMAGE)
 
-YAMLLINT_VERSION ?= 0.35.9
+YAMLLINT_VERSION ?= 0.35.13
 YAMLLINT_IMAGE ?= docker.io/pipelinecomponents/yamllint:$(YAMLLINT_VERSION)
-YAMLLINT := $(DOCKER_RUN) -v=$(CURDIR):/code $(YAMLLINT_IMAGE) yamllint
+YAMLLINT := $(DOCKER_RUN) -v=$(CURDIR):/code:$(DOCKER_MOUNT_FLAGS) $(YAMLLINT_IMAGE) yamllint
 
 UV ?= uv
 VENV := .venv
@@ -64,6 +68,23 @@ lint/yamllint:
 lint/ansible: $(VENV_STAMP)
 	$(ACTIVATE); ansible-lint
 
+.PHONY: fmt fmt/terraform
+fmt: fmt/terraform
+
+fmt/terraform:
+	terraform fmt -recursive
+
+TEST_EXAMPLES := $(patsubst examples/%/,test/terraform/%,$(wildcard examples/*/))
+
+.PHONY: test test/terraform $(TEST_EXAMPLES)
+test: test/terraform
+
+test/terraform: $(TEST_EXAMPLES)
+
+$(TEST_EXAMPLES): test/terraform/%:
+	terraform -chdir=examples/$* init -backend=false -input=false
+	terraform -chdir=examples/$* validate
+
 .PHONY: build build/context build/image
 build: build/image
 
@@ -79,7 +100,25 @@ $(BUILD_IMAGE_STAMP): $(BUILD_CONTEXT_STAMP) $(wildcard $(BUILD_CONTEXT)/*)  $(w
 
 build/image: $(BUILD_IMAGE_STAMP)
 
+.PHONY: clean clean/python clean/terraform clean/ansible clean/context clean/image
+clean: clean/python clean/terraform clean/ansible clean/context clean/image
+
+clean/python:
+	rm -rf $(VENV)
+
+clean/terraform:
+	rm -rf examples/*/.terraform
+
+clean/ansible:
+	rm -rf .ansible
+
+clean/context:
+	rm -rf $(BUILD_CONTEXT) $(BUILD_CONTEXT_STAMP)
+
+clean/image:
+	rm -f $(BUILD_IMAGE_STAMP)
+
 .PHONY: vars/github
 vars/github:
-	$(foreach v, $(filter-out $(EXISTING_VARS) EXISTING_VARS,$(.VARIABLES)), \
+	$(foreach v, $(filter-out $(EXISTING_VARS) EXISTING_VARS .SHELLSTATUS,$(.VARIABLES)), \
 	$(info echo "MAKEFILE_$(v)=$($(v))" >> $$GITHUB_ENV))

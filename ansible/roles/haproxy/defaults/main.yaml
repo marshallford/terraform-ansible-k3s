@@ -1,6 +1,6 @@
 __haproxy_part: up
 __haproxy_container_image: docker.io/library/haproxy
-__haproxy_container_image_tag: 3.3.10
+__haproxy_container_image_tag: 3.4.3
 __haproxy_keepalived_virtual_router_id: 1
 __haproxy_listen_port: 6443
 __haproxy_backend_port: 8443

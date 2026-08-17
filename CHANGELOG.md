@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.3.0...v0.4.0) (2026-08-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* removes cluster_init variable, restructures machine variables ([#57](https://github.com/marshallford/terraform-ansible-k3s/issues/57))
+
+### Features
+
+* removes cluster_init variable, restructures machine variables ([#57](https://github.com/marshallford/terraform-ansible-k3s/issues/57)) ([5d70ca5](https://github.com/marshallford/terraform-ansible-k3s/commit/5d70ca5f14c2f4e8f3ae6bb43377f69ad2c97f94))
+
 ## [0.3.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.2.12...v0.3.0) (2026-05-26)
 
 

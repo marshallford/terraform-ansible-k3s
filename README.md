@@ -115,7 +115,7 @@ The Ansible execution environment image is built and published by the [release w
 make verify VERIFY_CONTAINER_IMAGE=ghcr.io/marshallford/terraform-ansible-k3s:v0.4.1 # x-release-please-version
 ```
 
-`verify/image` checks the cosign signature and the build provenance, `verify/sbom` checks the SBOM attestation. Run `make -n verify` to print the underlying `cosign` and `gh attestation verify` invocations, which require [`cosign`](https://docs.sigstore.dev/cosign/system_config/installation/) and [`gh`](https://cli.github.com/). The SBOM is also attached to each [release](https://github.com/marshallford/terraform-ansible-k3s/releases), along with the published image digest and the generated build context (`Dockerfile` plus the `ansible-builder` scripts it executes, sufficient to rebuild the image).
+`verify/image` checks that the image was produced by the release workflow, via both a Sigstore bundle in the registry and GitHub's provenance attestation. `verify/sbom` checks the SBOM attestation. Run `make -n verify` to print the underlying `cosign` and `gh attestation verify` invocations, which require [`cosign`](https://docs.sigstore.dev/cosign/system_config/installation/) and [`gh`](https://cli.github.com/). Each [release](https://github.com/marshallford/terraform-ansible-k3s/releases) also carries a package-level SBOM, the published image digest, and the generated build context (`Dockerfile` plus the `ansible-builder` scripts it executes, sufficient to rebuild the image). The image itself carries a fuller SBOM that also inventories every file.
 
 ## ⚠️ Limitations
 

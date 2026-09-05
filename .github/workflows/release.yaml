@@ -4,18 +4,25 @@ on: # yamllint disable-line rule:truthy
   push:
     branches:
     - main
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag of the draft release to finish publishing
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release:
     name: Release
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      issues: write
     steps:
-    - name: Checkout
-      uses: actions/checkout@v7
     - name: Create GitHub app token
       uses: actions/create-github-app-token@v3
       id: app-token
@@ -24,27 +31,65 @@ jobs:
         private-key: ${{ secrets.PRIVATE_KEY }}
     - name: Release Please
       id: release
+      continue-on-error: true
       uses: googleapis/release-please-action@v5
       with:
         token: ${{ steps.app-token.outputs.token }}
+    - name: Check Release Please outcome
+      if: ${{ steps.release.outcome == 'failure' && steps.release.outputs.releases_created != 'true' }}
+      run: exit 1
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
-      version: ${{ steps.release.outputs.version }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
   publish:
     name: Publish
     needs: release
-    if: ${{ fromJSON(needs.release.outputs.releases_created) }}
+    if: >-
+      ${{
+        !cancelled() && (
+          needs.release.outputs.releases_created == 'true' ||
+          github.event_name == 'workflow_dispatch'
+        )
+      }}
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
       attestations: write
       id-token: write
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || needs.release.outputs.tag_name }}
     steps:
+    - name: Check ref and tag
+      run: |
+        [ "$GITHUB_REF_NAME" = main ] || { echo "::error::run from main, not $GITHUB_REF_NAME"; exit 1; }
+        [ -n "$RELEASE_TAG" ] || { echo "::error::release tag is empty"; exit 1; }
     - name: Checkout
       uses: actions/checkout@v7
+      with:
+        ref: ${{ env.RELEASE_TAG }}
     - name: Extract Makefile variables
       run: eval "$(make -q vars/github)"
+    - name: Login
+      uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+    - name: Check published image
+      id: published
+      env:
+        IMAGE: ${{ env.MAKEFILE_CONTAINER_IMAGE }}
+      run: |
+        digest="$(docker buildx imagetools inspect "$IMAGE:$RELEASE_TAG" --format '{{.Manifest.Digest}}' 2>/dev/null || true)"
+        if [ -n "$digest" ] && [ "$GITHUB_EVENT_NAME" = push ]; then
+          echo "::error::$IMAGE:$RELEASE_TAG is already published, refusing to overwrite it"
+          exit 1
+        fi
+        if [ -n "$digest" ]; then
+          echo "::notice::$IMAGE:$RELEASE_TAG is already published, reusing $digest"
+        fi
+        echo "digest=$digest" >> "$GITHUB_OUTPUT"
     - name: Setup uv
       uses: astral-sh/setup-uv@v10.0.1
     - name: Setup Python
@@ -54,12 +99,31 @@ jobs:
     - name: Create container image context
       run: make build/context
     - name: Publish container image
+      id: publish
       uses: ./.github/actions/container-image
       with:
         push: true
         image: ${{ env.MAKEFILE_CONTAINER_IMAGE }}
         tags: |
-          v${{ needs.release.outputs.version }}
+          ${{ env.RELEASE_TAG }}
           latest
         context: ${{ env.MAKEFILE_BUILD_CONTEXT }}
         platforms: linux/amd64,linux/arm64
+        digest: ${{ steps.published.outputs.digest }}
+    - name: Publish release
+      env:
+        GH_TOKEN: ${{ github.token }}
+        IMAGE: ${{ env.MAKEFILE_CONTAINER_IMAGE }}
+        DIGEST: ${{ steps.publish.outputs.digest }}
+        SBOM: ${{ steps.publish.outputs.sbom-path }}
+        CONTEXT: ${{ env.MAKEFILE_BUILD_CONTEXT }}
+      run: |
+        draft="$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)"
+        if [ "$draft" != true ]; then
+          echo "::notice::release $RELEASE_TAG is already published"
+          exit 0
+        fi
+        echo "$IMAGE@$DIGEST" > "$RUNNER_TEMP/digest.txt"
+        tar -czf "$RUNNER_TEMP/container-image-context.tar.gz" -C "$(dirname "$CONTEXT")" "$(basename "$CONTEXT")"
+        gh release upload "$RELEASE_TAG" "$RUNNER_TEMP/digest.txt" "$SBOM" "$RUNNER_TEMP/container-image-context.tar.gz" --clobber
+        gh release edit "$RELEASE_TAG" --draft=false

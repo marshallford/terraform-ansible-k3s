@@ -4,6 +4,8 @@
   "packages": {
     ".": {
       "release-type": "terraform-module",
+      "draft": true,
+      "force-tag-creation": true,
       "extra-files": [
         "README.md",
         "modules/kubeconfig/variables.tf",

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.4.1...v0.4.2) (2026-09-05)
+
+
+### Bug Fixes
+
+* trims the attested SBOM, corrects build cache gating ([#61](https://github.com/marshallford/terraform-ansible-k3s/issues/61)) ([913ac15](https://github.com/marshallford/terraform-ansible-k3s/commit/913ac15fed035b71efcce50a3dacb1b4ba9a6441))
+
 ## [0.4.1](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.4.0...v0.4.1) (2026-09-05)
 
 

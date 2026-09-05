@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.4.0...v0.4.1) (2026-09-05)
+
+
+### Features
+
+* signs and attests container image, hardens release workflow ([#59](https://github.com/marshallford/terraform-ansible-k3s/issues/59)) ([37ca18d](https://github.com/marshallford/terraform-ansible-k3s/commit/37ca18dc7d0adb635682fde6e51cc52ba1b1a63e))
+
 ## [0.4.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.3.0...v0.4.0) (2026-08-17)
 
 

@@ -21,17 +21,33 @@ inputs:
   build-args:
     required: false
     type: string
+  digest:
+    description: reuse an already pushed image instead of building one
+    required: false
+    type: string
+    default: ''
 
 runs:
   using: composite
   steps:
   - name: Setup QEMU
+    if: ${{ inputs.digest == '' }}
     uses: docker/setup-qemu-action@v4
   - name: Setup Buildx
+    if: ${{ inputs.digest == '' }}
     uses: docker/setup-buildx-action@v4
+  - name: Setup cosign
+    if: ${{ fromJSON(inputs.push) }}
+    uses: sigstore/cosign-installer@v4.1.2
+  - name: Extract Git commit timestamp
+    if: ${{ inputs.digest == '' }}
+    shell: bash
+    run: echo "TIMESTAMP=$(git log -1 --pretty=%ct)" >> $GITHUB_ENV
   - name: Meta
     id: meta
     uses: docker/metadata-action@v6
+    env:
+      DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
     with:
       images: ${{ inputs.image }}
       tags: ${{ inputs.tags }}
@@ -45,27 +61,80 @@ runs:
       username: ${{ github.actor }}
       password: ${{ github.token }}
   - name: Build${{ fromJSON(inputs.push) && ' and push' || '' }}
+    if: ${{ inputs.digest == '' }}
     id: build
     uses: docker/build-push-action@v7
+    env:
+      SOURCE_DATE_EPOCH: ${{ env.TIMESTAMP }}
     with:
       context: ${{ inputs.context }}
       platforms: ${{ inputs.platforms }}
       pull: true
       push: ${{ fromJSON(inputs.push) }}
       load: ${{ ! fromJSON(inputs.push) }}
-      cache-from: type=gha
-      cache-to: type=gha,mode=min
+      provenance: ${{ fromJSON(inputs.push) && 'mode=max' || 'false' }}
+      sbom: ${{ inputs.push }}
+      no-cache: ${{ inputs.push }}
+      cache-from: ${{ fromJSON(inputs.push) && '' || 'type=gha' }}
+      cache-to: ${{ fromJSON(inputs.push) && '' || 'type=gha,mode=max' }}
       build-args: ${{ inputs.build-args }}
       labels: ${{ steps.meta.outputs.labels }}
+      annotations: ${{ fromJSON(inputs.push) && steps.meta.outputs.annotations || '' }}
       tags: ${{ steps.meta.outputs.tags }}
-  - name: Attestation
+  - name: Extract SBOM
     if: ${{ fromJSON(inputs.push) }}
-    uses: actions/attest-build-provenance@v4
+    shell: bash
+    env:
+      IMAGE: ${{ inputs.image }}
+      DIGEST: ${{ inputs.digest || steps.build.outputs.digest }}
+      PLATFORMS: ${{ inputs.platforms }}
+      SBOM_PATH: ${{ runner.temp }}/sbom.spdx.json
+    run: |
+      if [ -n "$PLATFORMS" ]; then
+        format="{{ json (index .SBOM \"${PLATFORMS%%,*}\").SPDX }}"
+      else
+        format='{{ json .SBOM.SPDX }}'
+      fi
+      docker buildx imagetools inspect "$IMAGE@$DIGEST" --format "$format" > "$SBOM_PATH"
+  - name: Attest build provenance
+    if: ${{ fromJSON(inputs.push) }}
+    uses: actions/attest@v4
     with:
       subject-name: ${{ inputs.image }}
-      subject-digest: ${{ steps.build.outputs.digest }}
+      subject-digest: ${{ inputs.digest || steps.build.outputs.digest }}
       push-to-registry: true
+  - name: Attest SBOM
+    if: ${{ fromJSON(inputs.push) }}
+    uses: actions/attest@v4
+    with:
+      subject-name: ${{ inputs.image }}
+      subject-digest: ${{ inputs.digest || steps.build.outputs.digest }}
+      sbom-path: ${{ runner.temp }}/sbom.spdx.json
+      push-to-registry: true
+  - name: Sign
+    if: ${{ fromJSON(inputs.push) }}
+    shell: bash
+    env:
+      IMAGE: ${{ inputs.image }}
+      DIGEST: ${{ inputs.digest || steps.build.outputs.digest }}
+    run: cosign sign --yes "$IMAGE@$DIGEST"
+  - name: Verify
+    if: ${{ fromJSON(inputs.push) }}
+    shell: bash
+    env:
+      IMAGE: ${{ inputs.image }}
+      DIGEST: ${{ inputs.digest || steps.build.outputs.digest }}
+      GH_TOKEN: ${{ github.token }}
+    run: |
+      cosign verify "$IMAGE@$DIGEST" \
+        --certificate-identity "$GITHUB_SERVER_URL/$GITHUB_WORKFLOW_REF" \
+        --certificate-oidc-issuer https://token.actions.githubusercontent.com > /dev/null
+      gh attestation verify "oci://$IMAGE@$DIGEST" --repo "$GITHUB_REPOSITORY"
 
 outputs:
   json:
     value: ${{ steps.meta.outputs.json }}
+  digest:
+    value: ${{ inputs.digest || steps.build.outputs.digest }}
+  sbom-path:
+    value: ${{ runner.temp }}/sbom.spdx.json

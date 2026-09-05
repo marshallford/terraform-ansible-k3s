@@ -6,6 +6,7 @@ default: lint
 EXISTING_VARS := $(.VARIABLES)
 GITHUB_ORG := marshallford
 GITHUB_REPO := terraform-ansible-k3s
+RELEASE_WORKFLOW := .github/workflows/release.yaml
 CONTAINER_IMAGE := ghcr.io/$(GITHUB_ORG)/$(GITHUB_REPO)
 CI_IMAGE_TAG := ci
 
@@ -18,6 +19,14 @@ DOCKER ?= docker
 DOCKER_MOUNT_FLAGS := ro,z
 DOCKER_RUN := $(DOCKER) run $(DOCKER_FLAGS)
 DOCKER_PULL := $(DOCKER) pull -q
+
+COSIGN ?= cosign
+GH ?= gh
+VERIFY_CONTAINER_IMAGE ?= $(CONTAINER_IMAGE):latest
+VERIFY_CERT_IDENTITY := https://github.com/$(GITHUB_ORG)/$(GITHUB_REPO)/$(RELEASE_WORKFLOW)@refs/heads/main
+VERIFY_OIDC_ISSUER := https://token.actions.githubusercontent.com
+VERIFY_SIGNER_WORKFLOW := $(GITHUB_ORG)/$(GITHUB_REPO)/$(RELEASE_WORKFLOW)
+VERIFY_SBOM_PREDICATE_TYPE ?= https://spdx.dev/Document/v2.3
 
 EDITORCONFIG_CHECKER_VERSION ?= 3.11.1
 EDITORCONFIG_CHECKER_IMAGE ?= docker.io/mstruebing/editorconfig-checker:v$(EDITORCONFIG_CHECKER_VERSION)
@@ -32,6 +41,7 @@ VENV := .venv
 VENV_STAMP := $(VENV)/stamp
 ACTIVATE := . $(VENV)/bin/activate
 
+EE_DEFINITION := container-image/execution-environment.yaml
 BUILD_CONTEXT := container-image/context
 BUILD_CONTEXT_STAMP := container-image/context.stamp
 BUILD_IMAGE_STAMP := container-image/build.stamp
@@ -85,11 +95,28 @@ $(TEST_EXAMPLES): test/terraform/%:
 	terraform -chdir=examples/$* init -backend=false -input=false
 	terraform -chdir=examples/$* validate
 
+.PHONY: verify verify/image verify/sbom
+verify: verify/image verify/sbom
+
+verify/image:
+	$(COSIGN) verify $(VERIFY_CONTAINER_IMAGE) \
+		--certificate-identity $(VERIFY_CERT_IDENTITY) \
+		--certificate-oidc-issuer $(VERIFY_OIDC_ISSUER) > /dev/null
+	$(GH) attestation verify oci://$(VERIFY_CONTAINER_IMAGE) \
+		--repo $(GITHUB_ORG)/$(GITHUB_REPO) \
+		--signer-workflow $(VERIFY_SIGNER_WORKFLOW)
+
+verify/sbom:
+	$(GH) attestation verify oci://$(VERIFY_CONTAINER_IMAGE) \
+		--repo $(GITHUB_ORG)/$(GITHUB_REPO) \
+		--signer-workflow $(VERIFY_SIGNER_WORKFLOW) \
+		--predicate-type $(VERIFY_SBOM_PREDICATE_TYPE)
+
 .PHONY: build build/context build/image
 build: build/image
 
-$(BUILD_CONTEXT_STAMP): $(VENV_STAMP) container-image/execution-environment.yaml
-	$(ACTIVATE); ansible-builder create -f container-image/execution-environment.yaml -c $(BUILD_CONTEXT) --output-filename Dockerfile
+$(BUILD_CONTEXT_STAMP): $(VENV_STAMP) $(EE_DEFINITION)
+	$(ACTIVATE); ansible-builder create -f $(EE_DEFINITION) -c $(BUILD_CONTEXT) --output-filename Dockerfile
 	touch $(BUILD_CONTEXT_STAMP)
 
 build/context: $(BUILD_CONTEXT_STAMP)

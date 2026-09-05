@@ -75,8 +75,8 @@ runs:
       provenance: ${{ fromJSON(inputs.push) && 'mode=max' || 'false' }}
       sbom: ${{ inputs.push }}
       no-cache: ${{ inputs.push }}
-      cache-from: ${{ fromJSON(inputs.push) && '' || 'type=gha' }}
-      cache-to: ${{ fromJSON(inputs.push) && '' || 'type=gha,mode=max' }}
+      cache-from: ${{ !fromJSON(inputs.push) && 'type=gha' || '' }}
+      cache-to: type=gha,mode=max
       build-args: ${{ inputs.build-args }}
       labels: ${{ steps.meta.outputs.labels }}
       annotations: ${{ fromJSON(inputs.push) && steps.meta.outputs.annotations || '' }}
@@ -95,7 +95,8 @@ runs:
       else
         format='{{ json .SBOM.SPDX }}'
       fi
-      docker buildx imagetools inspect "$IMAGE@$DIGEST" --format "$format" > "$SBOM_PATH"
+      docker buildx imagetools inspect "$IMAGE@$DIGEST" --format "$format" \
+        | jq -c 'del(.files) | .relationships |= map(select((.spdxElementId | startswith("SPDXRef-File")) or (.relatedSpdxElement | startswith("SPDXRef-File")) | not))' > "$SBOM_PATH"
   - name: Attest build provenance
     if: ${{ fromJSON(inputs.push) }}
     uses: actions/attest@v4

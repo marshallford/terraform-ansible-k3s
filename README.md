@@ -55,7 +55,7 @@ Additional [examples](/examples) available. Note that they reference the module 
 ```terraform
 module "k3s" {
   source  = "marshallford/k3s/ansible"
-  version = "0.4.1" # x-release-please-version
+  version = "0.4.2" # x-release-please-version
 
   ssh_private_keys = [
     {
@@ -112,7 +112,7 @@ provider "kubernetes" {
 The Ansible execution environment image is built and published by the [release workflow](.github/workflows/release.yaml). Every published image is signed with [cosign](https://docs.sigstore.dev/cosign/signing/overview/) (keyless, via the workflow's OIDC identity) and carries SLSA build provenance and an SPDX SBOM as attestations stored alongside it in the registry. Version tags (`vX.Y.Z`) are never overwritten, the release workflow refuses to publish over one, while `latest` moves with each release.
 
 ```shell
-make verify VERIFY_CONTAINER_IMAGE=ghcr.io/marshallford/terraform-ansible-k3s:v0.4.1 # x-release-please-version
+make verify VERIFY_CONTAINER_IMAGE=ghcr.io/marshallford/terraform-ansible-k3s:v0.4.2 # x-release-please-version
 ```
 
 `verify/image` checks that the image was produced by the release workflow, via both a Sigstore bundle in the registry and GitHub's provenance attestation. `verify/sbom` checks the SBOM attestation. Run `make -n verify` to print the underlying `cosign` and `gh attestation verify` invocations, which require [`cosign`](https://docs.sigstore.dev/cosign/system_config/installation/) and [`gh`](https://cli.github.com/). Each [release](https://github.com/marshallford/terraform-ansible-k3s/releases) also carries a package-level SBOM, the published image digest, and the generated build context (`Dockerfile` plus the `ansible-builder` scripts it executes, sufficient to rebuild the image). The image itself carries a fuller SBOM that also inventories every file.

@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Create GitHub app token
-      uses: actions/create-github-app-token@v3
+      uses: actions/create-github-app-token@v3.3.0
       id: app-token
       with:
         app-id: ${{ vars.APP_ID }}
@@ -32,7 +32,7 @@ jobs:
     - name: Release Please
       id: release
       continue-on-error: true
-      uses: googleapis/release-please-action@v5
+      uses: googleapis/release-please-action@v5.0.0
       with:
         token: ${{ steps.app-token.outputs.token }}
     - name: Check Release Please outcome
@@ -65,13 +65,13 @@ jobs:
         [ "$GITHUB_REF_NAME" = main ] || { echo "::error::run from main, not $GITHUB_REF_NAME"; exit 1; }
         [ -n "$RELEASE_TAG" ] || { echo "::error::release tag is empty"; exit 1; }
     - name: Checkout
-      uses: actions/checkout@v7
+      uses: actions/checkout@v7.0.1
       with:
         ref: ${{ env.RELEASE_TAG }}
     - name: Extract Makefile variables
       run: eval "$(make -q vars/github)"
     - name: Login
-      uses: docker/login-action@v4
+      uses: docker/login-action@v4.8.0
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -91,16 +91,16 @@ jobs:
         fi
         echo "digest=$digest" >> "$GITHUB_OUTPUT"
     - name: Setup uv
-      uses: astral-sh/setup-uv@v10.0.1
+      uses: astral-sh/setup-uv@v10.3.3
     - name: Setup Python
-      uses: actions/setup-python@v7
+      uses: actions/setup-python@v7.1.0
       with:
         python-version-file: .python-version
     - name: Create container image context
       run: make build/context
     - name: Publish container image
       id: publish
-      uses: ./.github/actions/container-image
+      uses: $/.github/actions/container-image
       with:
         push: true
         image: ${{ env.MAKEFILE_CONTAINER_IMAGE }}

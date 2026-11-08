@@ -1,11 +1,11 @@
 [project]
 name = "terraform-ansible-k3s"
 version = "0.1.0"
-requires-python = ">=3.14.7"
+requires-python = ">=3.14.10"
 dependencies = [
-    "ansible>=14.3.1",
-    "ansible-builder>=3.1.1",
-    "ansible-lint>=26.8.0",
+    "ansible>=14.6.0",
+    "ansible-builder>=3.2.0",
+    "ansible-lint>=26.11.0",
 ]
 [tool.uv]
-required-version = ">=0.12.5"
+required-version = ">=0.13.0"

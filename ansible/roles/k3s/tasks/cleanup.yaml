@@ -6,7 +6,7 @@
 
 - name: Prune staging files
   ansible.builtin.file:
-    path: "{{ __k3s_files_dir }}/{{ item }}"
+    path: "{{ __k3s_staging_dir }}/{{ item }}"
     state: absent
   loop: "{{ (__k3s_current_staging_dir.files | map(attribute='path') | map('basename')) | difference(live_files | list) }}"
   vars:

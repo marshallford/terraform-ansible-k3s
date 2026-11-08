@@ -1,3 +1,9 @@
+- name: Pull keepalived image
+  ansible.builtin.systemd_service:
+    name: keepalived-image.service
+    daemon_reload: true
+    state: restarted
+
 - name: Restart keepalived
   ansible.builtin.systemd_service:
     name: keepalived.service

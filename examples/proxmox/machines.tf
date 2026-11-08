@@ -2,10 +2,10 @@ resource "proxmox_download_file" "fcos" {
   for_each                = toset([for node in var.proxmox_nodes : node.name])
   content_type            = "iso"
   datastore_id            = var.proxmox_file_storage
-  file_name               = "k8s-${var.cluster_name}-fedora-coreos-44.20260720.3.1-proxmoxve.x86_64.img"
+  file_name               = "k8s-${var.cluster_name}-fedora-coreos-44.20261023.3.1-proxmoxve.x86_64.img"
   node_name               = each.value
-  url                     = "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/44.20260720.3.1/x86_64/fedora-coreos-44.20260720.3.1-proxmoxve.x86_64.qcow2.xz"
-  checksum                = "a9cfeba79c279056637f71a797c4aeda6c44d6e2576812d1a0a39093ac5ddb6b"
+  url                     = "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/44.20261023.3.1/x86_64/fedora-coreos-44.20261023.3.1-proxmoxve.x86_64.qcow2.xz"
+  checksum                = "8182e2b95824b4e6c42eaaab791685bbfcb1b704fe55758aeff0a2a14a319648"
   checksum_algorithm      = "sha256"
   decompression_algorithm = "zst"
   overwrite               = false
@@ -160,6 +160,10 @@ resource "proxmox_virtual_environment_vm" "server" {
     bridge = var.proxmox_bridge
   }
 
+  serial_device {
+    device = "socket"
+  }
+
   initialization {
     datastore_id      = var.proxmox_block_storage
     user_data_file_id = proxmox_virtual_environment_file.server_ignition[each.key].id
@@ -167,6 +171,7 @@ resource "proxmox_virtual_environment_vm" "server" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes        = [disk[0].file_id]
   }
 }
 
@@ -206,6 +211,10 @@ resource "proxmox_virtual_environment_vm" "agent" {
     bridge = var.proxmox_bridge
   }
 
+  serial_device {
+    device = "socket"
+  }
+
   initialization {
     datastore_id      = var.proxmox_block_storage
     user_data_file_id = proxmox_virtual_environment_file.agent_ignition[each.key].id
@@ -213,5 +222,6 @@ resource "proxmox_virtual_environment_vm" "agent" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes        = [disk[0].file_id]
   }
 }

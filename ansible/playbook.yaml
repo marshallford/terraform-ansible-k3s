@@ -76,6 +76,8 @@
         }}
       __haproxy_keepalived_virtual_ip_address: "{{ k3s_api_server.virtual_ip }}"
       __haproxy_keepalived_virtual_router_id: "{{ k3s_api_server.virtual_router_id }}"
+      __haproxy_keepalived_unicast_src_ip: "{{ k3s_node_config['node-ip'] }}"
+      __haproxy_keepalived_unicast_peers: "{{ ansible_play_hosts_all | reject('equalto', inventory_hostname) | map('extract', hostvars, ['k3s_node_config', 'node-ip']) }}"
       __haproxy_backend_servers: "{{ ansible_play_hosts_all | zip(ansible_play_hosts_all | map('extract', hostvars, ['k3s_node_config', 'node-ip'])) }}"
 - name: Prepare machines for k3s
   hosts: servers:agents
@@ -207,6 +209,7 @@
   gather_facts: false
   become: true
   tasks:
+  # TODO prune old keepalived (root) and haproxy (rootless) images, e.g. podman image prune --all
   - name: Cleanup
     ansible.builtin.include_role:
       name: k3s

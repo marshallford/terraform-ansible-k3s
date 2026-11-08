@@ -1,0 +1,8 @@
+#jinja2: lstrip_blocks: True
+[Image]
+Image={{ __keepalived_container_image }}:{{ __keepalived_container_image_tag }}
+Policy=missing
+Retry=5
+
+[Service]
+TimeoutStartSec=15min

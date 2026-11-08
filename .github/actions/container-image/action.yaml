@@ -26,12 +26,24 @@ inputs:
     required: false
     type: string
     default: ''
+  registry:
+    required: false
+    type: string
+    default: ghcr.io
+  registry-username:
+    required: false
+    type: string
+    default: ${{ github.actor }}
+  registry-password:
+    required: false
+    type: string
+    default: ${{ github.token }}
 
 runs:
   using: composite
   steps:
   - name: Setup QEMU
-    if: ${{ inputs.digest == '' }}
+    if: ${{ inputs.digest == '' && inputs.platforms != '' }}
     uses: docker/setup-qemu-action@v4
   - name: Setup Buildx
     if: ${{ inputs.digest == '' }}
@@ -42,7 +54,7 @@ runs:
   - name: Extract Git commit timestamp
     if: ${{ inputs.digest == '' }}
     shell: bash
-    run: echo "TIMESTAMP=$(git log -1 --pretty=%ct)" >> $GITHUB_ENV
+    run: echo "TIMESTAMP=$(git log -1 --pretty=%ct)" >> "$GITHUB_ENV"
   - name: Meta
     id: meta
     uses: docker/metadata-action@v6
@@ -57,9 +69,9 @@ runs:
     if: ${{ fromJSON(inputs.push) }}
     uses: docker/login-action@v4
     with:
-      registry: ghcr.io
-      username: ${{ github.actor }}
-      password: ${{ github.token }}
+      registry: ${{ inputs.registry }}
+      username: ${{ inputs.registry-username }}
+      password: ${{ inputs.registry-password }}
   - name: Build${{ fromJSON(inputs.push) && ' and push' || '' }}
     if: ${{ inputs.digest == '' }}
     id: build
@@ -70,8 +82,7 @@ runs:
       context: ${{ inputs.context }}
       platforms: ${{ inputs.platforms }}
       pull: true
-      push: ${{ fromJSON(inputs.push) }}
-      load: ${{ ! fromJSON(inputs.push) }}
+      outputs: ${{ fromJSON(inputs.push) && 'type=image,push=true,rewrite-timestamp=true' || 'type=docker,rewrite-timestamp=true' }}
       provenance: ${{ fromJSON(inputs.push) && 'mode=max' || 'false' }}
       sbom: ${{ inputs.push }}
       no-cache: ${{ inputs.push }}

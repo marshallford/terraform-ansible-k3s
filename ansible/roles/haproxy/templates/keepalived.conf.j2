@@ -9,6 +9,15 @@ vrrp_script check_haproxy {
 vrrp_instance HAPROXY {
   state BACKUP
   interface {{ __haproxy_keepalived_vrrp_interface }}
+  {% if __haproxy_keepalived_unicast_peers %}
+  unicast_src_ip {{ __haproxy_keepalived_unicast_src_ip }}
+  unicast_peer {
+    {% for peer in __haproxy_keepalived_unicast_peers %}
+    {{ peer }}
+    {% endfor %}
+  }
+  check_unicast_src
+  {% endif %}
   virtual_router_id {{ __haproxy_keepalived_virtual_router_id }}
   priority 100
   advert_int 1

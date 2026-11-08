@@ -1,11 +1,17 @@
 #jinja2: lstrip_blocks: True
 [Container]
 ContainerName=keepalived
-Image={{ __keepalived_container_image }}:{{ __keepalived_container_image_tag }}
+Image=keepalived.image
 Network=host
-AddCapability=NET_ADMIN NET_BROADCAST NET_RAW
+DropCapability=all
+AddCapability=NET_ADMIN NET_BROADCAST NET_RAW SETUID SETGID
+NoNewPrivileges=true
+ReadOnly=true
 Volume=keepalived.volume:/etc/keepalived:ro,Z
-Retry=5
+
+[Service]
+Restart=on-failure
+RestartSec=10s
 
 [Install]
 WantedBy=default.target

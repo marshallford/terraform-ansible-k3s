@@ -1,17 +1,19 @@
 #jinja2: lstrip_blocks: True
 [Container]
 ContainerName=haproxy
-Image={{ __haproxy_container_image }}:{{ __haproxy_container_image_tag }}
+Image=haproxy.image
 UserNS=keep-id:uid=99,gid=99
+NoNewPrivileges=true
+ReadOnly=true
 Volume=haproxy.volume:/usr/local/etc/haproxy:ro,Z
 ReloadSignal=SIGHUP
-Retry=5
 
 [Unit]
-Requires=%N.socket haproxy-monitor.socket
+Requires=%N.socket
 
 [Service]
-Sockets=haproxy-monitor.socket
+Restart=on-failure
+RestartSec=10s
 
 [Install]
 WantedBy=default.target

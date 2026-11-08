@@ -140,7 +140,7 @@ variable "k3s_version" {
     condition     = var.k3s_version == null || can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+.*$", var.k3s_version))
     error_message = "The k3s_version must be a valid semantic version starting with x.y.z (e.g. '1.30.0') without a 'v' prefix."
   }
-  default     = "1.36.3+k3s1"
+  default     = "1.37.2+k3s1"
   description = "The version of k3s to install."
 }
 
@@ -165,7 +165,7 @@ variable "keepalived_container_image" {
 variable "keepalived_container_image_tag" {
   type        = string
   nullable    = false
-  default     = "2.3.4"
+  default     = "2.4.3"
   description = "Keepalived container image tag used for VRRP VIP failover."
 }
 
@@ -179,7 +179,7 @@ variable "haproxy_container_image" {
 variable "haproxy_container_image_tag" {
   type        = string
   nullable    = false
-  default     = "3.4.3"
+  default     = "3.4.7"
   description = "HAProxy container image tag used for API server load balancing."
 }
 

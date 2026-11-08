@@ -93,6 +93,10 @@ module "k3s" {
       kind                            = "KubeletConfiguration"
       shutdownGracePeriod             = "5m"
       shutdownGracePeriodCriticalPods = "1m"
+      imageMaximumGCAge               = "168h"
+      evictionHard = {
+        "memory.available" = "100Mi"
+      }
     },
   ]
   system_upgrade_trigger = time_rotating.system_upgrade.id

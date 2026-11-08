@@ -30,6 +30,15 @@
     mode: u=rw,g=r,o=
   notify: Restart keepalived
 
+- name: Create keepalived quadlet image
+  ansible.builtin.template:
+    src: keepalived.image.j2
+    dest: "{{ quadlet_system_info.containers_dir }}/keepalived.image"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify: Pull keepalived image
+
 - name: Create keepalived quadlet container
   ansible.builtin.template:
     src: keepalived.container.j2

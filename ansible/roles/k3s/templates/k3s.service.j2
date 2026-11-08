@@ -28,4 +28,8 @@ RestartSec=5s
 ExecStartPre=/bin/sh -xc '! /usr/bin/systemctl is-enabled --quiet nm-cloud-setup.service 2>/dev/null'
 ExecStartPre=-/sbin/modprobe br_netfilter
 ExecStartPre=-/sbin/modprobe overlay
+{% if __k3s_role == 'server' %}
+# let the LB mark this server down before k3s starts
+ExecStartPre=/bin/sleep 5
+{% endif %}
 ExecStart={{ __k3s_binary_dir }}/k3s {{ __k3s_role }}

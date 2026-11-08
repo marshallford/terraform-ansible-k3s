@@ -1,4 +1,4 @@
-# k3s Cluster Terraform Module
+# K3s Cluster Terraform Module
 
 [![Terraform Registry](https://img.shields.io/badge/terraform-ansible--k3s-%23844FBA?logo=terraform&logoColor=%23844FBA)](https://registry.terraform.io/modules/marshallford/k3s/ansible/latest)
 [![GitHub Release](https://img.shields.io/github/v/release/marshallford/terraform-ansible-k3s?sort=semver&display_name=release&logo=github)](https://github.com/marshallford/terraform-ansible-k3s/releases)
@@ -9,13 +9,13 @@ Provision and operate a Kubernetes cluster with the convenience of a CSP-managed
 
 ## 📦 Features
 
-1. **Deploys** [k3s](https://docs.k3s.io/), a single-binary Kubernetes distribution
-2. **Employs** k3s' [air-gapped](https://docs.k3s.io/installation/airgap) installation method
+1. **Deploys** [K3s](https://docs.k3s.io/), a single-binary Kubernetes distribution
+2. **Employs** K3s' [air-gapped](https://docs.k3s.io/installation/airgap) installation method
 3. **Implements** a virtual IP address with automatic failover for the Kubernetes API server (powered by [Keepalived](https://www.keepalived.org/))
 4. **Delivers** a [highly available](https://docs.k3s.io/architecture#high-availability-k3s) control plane with load-balanced server nodes (powered by [HAProxy](https://www.haproxy.org/))
 5. **Includes** built-in [SELinux support](https://docs.k3s.io/advanced#selinux-support) using the SELinux policy package
 6. **Offers** curated [configuration options](https://docs.k3s.io/installation/configuration) including node taints/labels, cluster networking, and Kubernetes component flags
-7. **Integrates** with k3s' [auto-deploying manifests](https://docs.k3s.io/installation/packaged-components#auto-deploying-manifests-addons) and [registry configuration](https://docs.k3s.io/installation/private-registry) features
+7. **Integrates** with K3s' [auto-deploying manifests](https://docs.k3s.io/installation/packaged-components#auto-deploying-manifests-addons) and [registry configuration](https://docs.k3s.io/installation/private-registry) features
 8. **Provides** recommendations for [CIS hardening](https://docs.k3s.io/security/hardening-guide) via an optional Terraform submodule and [graceful node shutdown](https://kubernetes.io/docs/concepts/cluster-administration/node-shutdown/#graceful-node-shutdown) via a worked example
 9. **Secures** the Kubernetes API server with a [structured authentication configuration file](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#anonymous-authenticator-configuration) covering anonymous authenticator restrictions and JWT authenticators, delivered via an optional Terraform submodule
 10. **Performs** in-place [upgrades](https://docs.k3s.io/upgrades/manual#upgrade-k3s-using-the-binary) with coordinated node draining and optional [system upgrades](https://coreos.github.io/rpm-ostree/)
@@ -34,10 +34,10 @@ Provision and operate a Kubernetes cluster with the convenience of a CSP-managed
 
 ### 🛠️ Terraform execution host/runner
 
-1. [Terraform](https://developer.hashicorp.com/terraform/install) installed (version 1.13 or later)
+1. [Terraform](https://developer.hashicorp.com/terraform/install) installed (version 1.15 or later)
 2. [`ansible-navigator`](https://ansible.readthedocs.io/projects/navigator/installation/) installed (version 26.8.0 or later)
 3. Container engine (`podman` or `docker`) with support for `amd64` or `arm64` images (Ansible execution environment)
-4. Access to `github.com` to download k3s release artifact tarballs
+4. Access to `github.com` to download K3s release artifact tarballs
 
 ### ⚙️ Machines (baremetal or virtual)
 
@@ -102,8 +102,8 @@ provider "kubernetes" {
 ## 🔒 Security Considerations
 
 1. **State file sensitivity** -- if `kubeconfig_block_type` is set to `data` or `resource`, the cluster admin kubeconfig will be persisted in both Terraform's state file and any generated plan files. These files should be treated as sensitive and protected accordingly.
-2. **Certificate management** -- Kubernetes certificates are rotated as needed on module apply, but it is the operator's responsibility to re-run Terraform before they expire. See the [k3s certificate docs](https://docs.k3s.io/cli/certificate) for details.
-3. **CIS Kubernetes benchmark** -- many controls are satisfied by default in k3s or via the provided `cis-hardening` submodule. Controls outside this scope remain the operator's responsibility.
+2. **Certificate management** -- Kubernetes certificates are rotated as needed on module apply, but it is the operator's responsibility to re-run Terraform before they expire. See the [K3s certificate docs](https://docs.k3s.io/cli/certificate) for details.
+3. **CIS Kubernetes benchmark** -- many controls are satisfied by default in K3s or via the provided `cis-hardening` submodule. Controls outside this scope remain the operator's responsibility.
 4. **Machine updates** -- use Zincati for automatic updates or configure `system_upgrade_trigger` for coordinated updates and reboots through this module.
 5. **Access control** -- exposing machines or the Kubernetes API server directly to the internet increases risk. Access should be restricted through VPN, bastion, or firewall controls.
 
@@ -131,6 +131,6 @@ make verify VERIFY_CONTAINER_IMAGE=ghcr.io/marshallford/terraform-ansible-k3s:v0
 - [ ] Butane snippet for NTP
 - [ ] Firewall rules
 - [ ] Assert podman version
-- [ ] k3s token rotation
+- [ ] K3s token rotation
 - [ ] Stop Zincati at start of playbook and start at the end
 - [ ] Knownhosts management

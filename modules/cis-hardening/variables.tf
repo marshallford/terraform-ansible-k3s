@@ -54,14 +54,21 @@ variable "event_rate_limits" {
 }
 
 variable "audit_policy_rules" {
-  type = list(any)
-  default = [{
-    level = "Metadata"
-  }]
+  type = any
+  default = [
+    {
+      level           = "None"
+      nonResourceURLs = ["/healthz*", "/livez*", "/readyz*"]
+    },
+    {
+      level      = "Metadata"
+      omitStages = ["RequestReceived"]
+    },
+  ]
   nullable    = false
   description = "Audit policy rules."
   validation {
-    condition     = alltrue([for v in var.audit_policy_rules : can(keys(v))])
+    condition     = can(slice(var.audit_policy_rules, 0, 0)) && alltrue([for v in var.audit_policy_rules : can(keys(v))])
     error_message = "The audit_policy_rules variable must be a list of objects or maps."
   }
 }

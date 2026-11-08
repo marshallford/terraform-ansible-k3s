@@ -35,19 +35,23 @@
   become: true
   notify: Restart keepalived
 
-- name: Create haproxy sockets
+- name: Create haproxy socket
   ansible.builtin.template:
-    src: "{{ item }}.socket.j2"
-    dest: "{{ quadlet_user_info.systemd_dir }}/{{ item }}.socket"
+    src: haproxy.socket.j2
+    dest: "{{ quadlet_user_info.systemd_dir }}/haproxy.socket"
     owner: "{{ quadlet_user_info.name }}"
     group: "{{ quadlet_user_info.name }}"
     mode: u=rw,g=r,o=r
-  loop:
-  - haproxy
-  - haproxy-monitor
-  loop_control:
-    label: "{{ item }}"
-  notify: Restart haproxy
+  notify: Restart haproxy socket
+
+- name: Create haproxy quadlet image
+  ansible.builtin.template:
+    src: haproxy.image.j2
+    dest: "{{ quadlet_user_info.containers_dir }}/haproxy.image"
+    owner: "{{ quadlet_user_info.name }}"
+    group: "{{ quadlet_user_info.name }}"
+    mode: u=rw,g=r,o=r
+  notify: Pull haproxy image
 
 - name: Create haproxy quadlet container
   ansible.builtin.template:

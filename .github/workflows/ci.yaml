@@ -10,68 +10,93 @@ on: # yamllint disable-line rule:truthy
     branches:
     - main
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  title:
+    name: PR Title
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+    - name: Check PR title
+      uses: amannn/action-semantic-pull-request@v6.1.2
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
     - name: Checkout
-      uses: actions/checkout@v7
+      uses: actions/checkout@v7.0.1
+    - name: Verify actions lockfile
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh extension install github/gh-actions-lock --pin v0.4.1
+        gh actions-lock --verify
     - name: Setup uv
-      uses: astral-sh/setup-uv@v10.0.1
+      uses: astral-sh/setup-uv@v10.3.3
     - name: Setup Python
-      uses: actions/setup-python@v7
+      uses: actions/setup-python@v7.1.0
       with:
         python-version-file: .python-version
+    - name: Read Terraform version
+      id: terraform-version
+      uses: $/.github/actions/terraform-version
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v4
+      uses: hashicorp/setup-terraform@v4.0.1
       with:
+        terraform_version: ${{ steps.terraform-version.outputs.version }}
         terraform_wrapper: false
     - name: Pull
       run: make -j pull
     - name: Lint
       run: make lint
-    - name: Check PR title
-      uses: amannn/action-semantic-pull-request@v6
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
   test:
     name: Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
     - name: Checkout
-      uses: actions/checkout@v7
+      uses: actions/checkout@v7.0.1
+    - name: Read Terraform version
+      id: terraform-version
+      uses: $/.github/actions/terraform-version
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v4
+      uses: hashicorp/setup-terraform@v4.0.1
       with:
+        terraform_version: ${{ steps.terraform-version.outputs.version }}
         terraform_wrapper: false
     - name: Test
       run: make test
   build:
     name: Build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
     - name: Checkout
-      uses: actions/checkout@v7
+      uses: actions/checkout@v7.0.1
     - name: Extract Makefile variables
       run: eval "$(make -q vars/github)"
     - name: Setup uv
-      uses: astral-sh/setup-uv@v10.0.1
+      uses: astral-sh/setup-uv@v10.3.3
     - name: Setup Python
-      uses: actions/setup-python@v7
+      uses: actions/setup-python@v7.1.0
       with:
         python-version-file: .python-version
     - name: Create container image context
       run: make build/context
     - name: Build container image
-      uses: ./.github/actions/container-image
+      uses: $/.github/actions/container-image
       with:
         image: ${{ env.MAKEFILE_CONTAINER_IMAGE }}
         tags: ${{ env.MAKEFILE_CI_IMAGE_TAG }}
@@ -81,6 +106,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs:
+    - title
     - lint
     - test
     - build

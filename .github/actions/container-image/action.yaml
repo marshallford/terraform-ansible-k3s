@@ -44,20 +44,20 @@ runs:
   steps:
   - name: Setup QEMU
     if: ${{ inputs.digest == '' && inputs.platforms != '' }}
-    uses: docker/setup-qemu-action@v4
+    uses: docker/setup-qemu-action@v4.4.0
   - name: Setup Buildx
     if: ${{ inputs.digest == '' }}
-    uses: docker/setup-buildx-action@v4
+    uses: docker/setup-buildx-action@v4.4.1
   - name: Setup cosign
     if: ${{ fromJSON(inputs.push) }}
-    uses: sigstore/cosign-installer@v4.1.2
+    uses: sigstore/cosign-installer@v4.1.3
   - name: Extract Git commit timestamp
     if: ${{ inputs.digest == '' }}
     shell: bash
     run: echo "TIMESTAMP=$(git log -1 --pretty=%ct)" >> "$GITHUB_ENV"
   - name: Meta
     id: meta
-    uses: docker/metadata-action@v6
+    uses: docker/metadata-action@v6.2.0
     env:
       DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
     with:
@@ -67,7 +67,7 @@ runs:
         latest=false
   - name: Login
     if: ${{ fromJSON(inputs.push) }}
-    uses: docker/login-action@v4
+    uses: docker/login-action@v4.8.0
     with:
       registry: ${{ inputs.registry }}
       username: ${{ inputs.registry-username }}
@@ -75,7 +75,7 @@ runs:
   - name: Build${{ fromJSON(inputs.push) && ' and push' || '' }}
     if: ${{ inputs.digest == '' }}
     id: build
-    uses: docker/build-push-action@v7
+    uses: docker/build-push-action@v7.4.0
     env:
       SOURCE_DATE_EPOCH: ${{ env.TIMESTAMP }}
     with:
@@ -110,14 +110,14 @@ runs:
         | jq -c 'del(.files) | .relationships |= map(select((.spdxElementId | startswith("SPDXRef-File")) or (.relatedSpdxElement | startswith("SPDXRef-File")) | not))' > "$SBOM_PATH"
   - name: Attest build provenance
     if: ${{ fromJSON(inputs.push) }}
-    uses: actions/attest@v4
+    uses: actions/attest@v4.2.2
     with:
       subject-name: ${{ inputs.image }}
       subject-digest: ${{ inputs.digest || steps.build.outputs.digest }}
       push-to-registry: true
   - name: Attest SBOM
     if: ${{ fromJSON(inputs.push) }}
-    uses: actions/attest@v4
+    uses: actions/attest@v4.2.2
     with:
       subject-name: ${{ inputs.image }}
       subject-digest: ${{ inputs.digest || steps.build.outputs.digest }}

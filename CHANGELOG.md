@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.4.2...v0.5.0) (2026-11-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires Terraform >= 1.15.0 and marshallford/ansible >= 0.39.0
+
+### Features
+
+* harden the API server LB, smooth k3s restarts, trim audit logs, bump deps ([#63](https://github.com/marshallford/terraform-ansible-k3s/issues/63)) ([5558400](https://github.com/marshallford/terraform-ansible-k3s/commit/5558400849709e6e845b4669f6e919f8fc9e4722))
+
 ## [0.4.2](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.4.1...v0.4.2) (2026-09-05)
 
 

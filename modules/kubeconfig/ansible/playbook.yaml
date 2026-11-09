@@ -6,8 +6,3 @@
   - name: Kubeconfig
     ansible.builtin.include_role:
       name: k3s_kubeconfig
-    vars:
-      __k3s_kubeconfig_server: "{{ k3s_server }}"
-      __k3s_kubeconfig_cluster_name: "{{ k3s_cluster_name }}"
-      __k3s_kubeconfig_user_name: "{{ k3s_user_name }}"
-      __k3s_kubeconfig_context_name: "{{ k3s_context_name }}"

@@ -11,6 +11,6 @@
   loop: "{{ (__k3s_current_staging_dir.files | map(attribute='path') | map('basename')) | difference(live_files | list) }}"
   vars:
     live_files:
-    - k3s-{{ __k3s_version }}.bin
-    - images-{{ __k3s_version }}.tar.zst
-    - selinux-{{ __k3s_selinux_version }}.rpm
+    - k3s-{{ k3s_version }}.bin
+    - images-{{ k3s_version }}.tar.zst
+    - selinux-{{ k3s_selinux_version }}.rpm

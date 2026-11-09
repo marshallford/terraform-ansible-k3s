@@ -1,0 +1,5 @@
+- name: Uncordon node
+  ansible.builtin.command:
+    cmd: "{{ __k3s_binary_dir }}/k3s kubectl uncordon {{ k3s_node_config['node-name'] }}"
+  changed_when: true
+  delegate_to: "{{ k3s_delegated_server_host }}"

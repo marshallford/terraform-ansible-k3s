@@ -12,12 +12,12 @@ locals {
   inventory = yamlencode({
     all = {
       vars = {
-        ansible_ssh_common_args    = provider::ansible::ssh_args(true)
-        ansible_python_interpreter = "/usr/bin/python3"
-        k3s_server                 = var.server
-        k3s_cluster_name           = var.cluster_name
-        k3s_user_name              = var.user_name
-        k3s_context_name           = var.context_name
+        ansible_ssh_common_args     = provider::ansible::ssh_args(true)
+        ansible_python_interpreter  = "/usr/bin/python3"
+        k3s_kubeconfig_server       = var.server
+        k3s_kubeconfig_cluster_name = var.cluster_name
+        k3s_kubeconfig_user_name    = var.user_name
+        k3s_kubeconfig_context_name = var.context_name
       }
       hosts = {
         server = {

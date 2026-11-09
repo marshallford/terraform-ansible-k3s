@@ -15,7 +15,7 @@
     path: "{{ __k3s_manifests_dir }}"
     state: directory
     mode: u=rwx,g=,o=
-  when: __k3s_role == "server"
+  when: k3s_role == "server"
 
 - name: Set k3s env file
   ansible.builtin.template:
@@ -29,18 +29,18 @@
     content: "{{ item.value }}"
     dest: "{{ __k3s_manifests_dir }}/{{ item.key }}"
     mode: u=rw,g=,o=
-  loop: "{{ __k3s_manifests | dict2items }}"
+  loop: "{{ k3s_manifests | dict2items }}"
   loop_control:
     label: "{{ item.key }}"
   register: __k3s_manifests_copy
-  when: __k3s_role == "server"
+  when: k3s_role == "server"
 
 - name: Find existing auto deployed manifests
   ansible.builtin.find:
     paths: "{{ __k3s_manifests_dir }}"
     patterns: "*"
   register: __k3s_manifests_current
-  when: __k3s_role == "server"
+  when: k3s_role == "server"
 
 - name: Prune auto deployed manifests
   ansible.builtin.file:
@@ -49,7 +49,7 @@
   loop: "{{ (__k3s_manifests_current.files | map(attribute='path')) | difference(__k3s_manifests_copy.results | map(attribute='dest') | list) }}"
   loop_control:
     label: "{{ item | basename }}"
-  when: __k3s_role == "server"
+  when: k3s_role == "server"
 
 - name: Harden kernel parameters for kubelet
   ansible.builtin.template:
@@ -75,7 +75,7 @@
 
 - name: Check if k3s service is enabled
   ansible.builtin.command:
-    cmd: systemctl is-enabled --quiet k3s-{{ __k3s_role }}.service # noqa:command-instead-of-module
+    cmd: systemctl is-enabled --quiet k3s-{{ k3s_role }}.service # noqa:command-instead-of-module
   register: __k3s_service_enabled
   failed_when: false
   changed_when: false
@@ -84,7 +84,7 @@
   ansible.builtin.stat:
     path: "{{ __k3s_etcd_wal_dir }}"
   register: __k3s_etcd_check
-  when: __k3s_role == "server"
+  when: k3s_role == "server"
 
 - name: Set k3s facts
   ansible.builtin.set_fact:

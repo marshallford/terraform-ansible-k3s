@@ -1,0 +1,9 @@
+argument_specs:
+  up:
+    options:
+      keepalived_container_image:
+        type: str
+      keepalived_container_image_tag:
+        type: str
+  down:
+    options: {}

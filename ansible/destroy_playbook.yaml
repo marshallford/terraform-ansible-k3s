@@ -11,22 +11,18 @@
   - name: HAProxy
     ansible.builtin.include_role:
       name: haproxy
-    vars:
-      __haproxy_part: down
+      tasks_from: down
     when: k3s_role == "server"
   - name: Keepalived
     ansible.builtin.include_role:
       name: keepalived
+      tasks_from: down
       apply:
         become: true
-    vars:
-      __keepalived_part: down
     when: k3s_role == "server"
   - name: Reset k3s
     ansible.builtin.include_role:
       name: k3s
+      tasks_from: reset
       apply:
         become: true
-    vars:
-      __k3s_part: reset
-      __k3s_role: "{{ k3s_role }}"

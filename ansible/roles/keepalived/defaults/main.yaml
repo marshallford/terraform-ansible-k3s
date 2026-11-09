@@ -1,3 +1,2 @@
-__keepalived_part: up
-__keepalived_container_image: docker.io/osixia/keepalived
-__keepalived_container_image_tag: 2.4.3
+keepalived_container_image: docker.io/osixia/keepalived
+keepalived_container_image_tag: 2.4.3

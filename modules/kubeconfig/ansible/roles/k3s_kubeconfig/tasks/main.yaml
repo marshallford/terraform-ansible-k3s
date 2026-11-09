@@ -18,18 +18,18 @@
       apiVersion: v1
       kind: Config
       clusters:
-      - name: "{{ __k3s_kubeconfig_cluster_name }}"
+      - name: "{{ k3s_kubeconfig_cluster_name }}"
         cluster:
-          server: "{{ __k3s_kubeconfig_server }}"
+          server: "{{ k3s_kubeconfig_server }}"
           certificate-authority-data: "{{ cluster_ca_certificate }}"
       users:
-      - name: "{{ __k3s_kubeconfig_user_name }}"
+      - name: "{{ k3s_kubeconfig_user_name }}"
         user:
           client-certificate-data: "{{ client_certificate }}"
           client-key-data: "{{ client_key }}"
       contexts:
-      - name: "{{ __k3s_kubeconfig_context_name }}"
+      - name: "{{ k3s_kubeconfig_context_name }}"
         context:
-          cluster: "{{ __k3s_kubeconfig_cluster_name }}"
-          user: "{{ __k3s_kubeconfig_user_name }}"
-      current-context: "{{ __k3s_kubeconfig_context_name }}"
+          cluster: "{{ k3s_kubeconfig_cluster_name }}"
+          user: "{{ k3s_kubeconfig_user_name }}"
+      current-context: "{{ k3s_kubeconfig_context_name }}"

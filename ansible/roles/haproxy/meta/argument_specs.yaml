@@ -1,0 +1,32 @@
+argument_specs:
+  up:
+    options:
+      haproxy_container_image:
+        type: str
+      haproxy_container_image_tag:
+        type: str
+      haproxy_backend_servers:
+        type: list
+        elements: list
+        required: true
+      haproxy_keepalived_virtual_ip_address:
+        type: str
+        required: true
+      haproxy_keepalived_virtual_router_id:
+        type: int
+        required: true
+      haproxy_keepalived_vip_interface:
+        type: str
+        required: true
+      haproxy_keepalived_vrrp_interface:
+        type: str
+        required: true
+      haproxy_keepalived_unicast_src_ip:
+        type: str
+        required: true
+      haproxy_keepalived_unicast_peers:
+        type: list
+        elements: str
+        required: true
+  down:
+    options: {}

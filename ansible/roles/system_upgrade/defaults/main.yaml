@@ -1,0 +1,2 @@
+system_upgrade_trigger: ""
+__system_upgrade_trigger_file_path: "/etc/zincati/ansible-upgrade-trigger"

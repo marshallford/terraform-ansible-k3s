@@ -1,6 +1,6 @@
 - name: Stop and disable k3s service
   ansible.builtin.service:
-    name: k3s-{{ __k3s_role }}
+    name: k3s-{{ k3s_role }}
     state: stopped
     enabled: false
 

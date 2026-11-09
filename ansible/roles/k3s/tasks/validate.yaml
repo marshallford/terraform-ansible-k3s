@@ -1,7 +1,7 @@
 - name: Require a retained server when removing k3s servers
   ansible.builtin.assert:
     that:
-    - (__k3s_removed_servers | length == 0) or (__k3s_retained_servers | length > 0)
+    - (k3s_removed_servers | length == 0) or (k3s_retained_servers | length > 0)
     fail_msg: >-
       This run removes all existing k3s servers at once, retaining none. The new
       k3s servers have no live cluster member to join, so the existing etcd data

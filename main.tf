@@ -14,10 +14,12 @@ locals {
       vars = {
         ansible_ssh_common_args        = provider::ansible::ssh_args(true)
         ansible_python_interpreter     = "/usr/bin/python3"
-        k3s_api_server                 = var.api_server
         k3s_version                    = var.k3s_version
-        k3s_selinux_version            = var.selinux_version
-        k3s_tokens                     = var.tokens
+        k3s_selinux_version            = var.k3s_selinux_version
+        k3s_server                     = "https://${var.api_server.virtual_ip}:6443"
+        k3s_tls_san                    = concat([var.api_server.virtual_ip], var.api_server.hosts)
+        k3s_server_token               = var.tokens.server
+        k3s_agent_token                = var.tokens.agent
         k3s_files                      = var.files
         k3s_kubelet_configs            = var.kubelet_configs
         k3s_registries_config          = var.registries_config
@@ -48,7 +50,9 @@ locals {
         }
         servers = {
           hosts = { for machine in var.server_machines.machines : "server-${machine.name}" => {
-            ansible_host = machine.address
+            ansible_host                      = machine.address
+            haproxy_keepalived_unicast_src_ip = local.server_node_ips["server-${machine.name}"]
+            haproxy_keepalived_unicast_peers  = [for name, ip in local.server_node_ips : ip if name != "server-${machine.name}"]
             k3s_node_config = { for k, v in merge(machine.config, {
               node_name        = coalesce(machine.config.node_name, "server-${machine.name}"),
               node_ip          = coalesce(machine.config.node_ip, machine.address),
@@ -58,10 +62,13 @@ locals {
             }) : replace(k, "_", "-") => v if v != null && v != [] }
           } }
           vars = {
-            ansible_user  = var.server_machines.ssh.user
-            ansible_port  = var.server_machines.ssh.port
-            k3s_role      = "server"
-            k3s_manifests = var.manifests
+            ansible_user                          = var.server_machines.ssh.user
+            ansible_port                          = var.server_machines.ssh.port
+            k3s_role                              = "server"
+            k3s_manifests                         = var.manifests
+            haproxy_keepalived_virtual_ip_address = var.api_server.virtual_ip
+            haproxy_keepalived_virtual_router_id  = var.api_server.virtual_router_id
+            haproxy_backend_servers               = [for name, ip in local.server_node_ips : [name, ip]]
           }
         }
         agents = {
@@ -91,11 +98,12 @@ locals {
     file_path => filebase64sha512("${path.module}/ansible/roles/${file_path}")
   }
   server               = "https://${coalesce(try(var.api_server.hosts[0], null), var.api_server.virtual_ip)}:6443"
+  server_node_ips      = { for machine in var.server_machines.machines : "server-${machine.name}" => coalesce(machine.config.node_ip, machine.address) }
   first_server_machine = one([for machine in var.server_machines.machines : machine if machine.name == sort([for m in var.server_machines.machines : m.name])[0]])
   immutable = {
     api_server_virtual_ip        = var.api_server.virtual_ip
     api_server_virtual_router_id = var.api_server.virtual_router_id
-    selinux_version              = var.selinux_version
+    k3s_selinux_version          = var.k3s_selinux_version
   }
 }
 

@@ -28,6 +28,6 @@ backend machines
   http-check send hdr Connection keep-alive
   http-check expect status 200,401
   default-server inter 2s fall 2 rise 1 check check-ssl verify none
-  {% for server in __haproxy_backend_servers %}
+  {% for server in haproxy_backend_servers %}
   server {{ server[0] }} {{ (server[0] == inventory_hostname) | ternary('host.containers.internal', server[1]) }}:{{ __haproxy_backend_port }}
   {% endfor %}

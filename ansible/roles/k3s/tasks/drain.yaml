@@ -1,26 +1,26 @@
 - name: Cordon node
   ansible.builtin.command:
-    cmd: "{{ __k3s_binary_dir }}/k3s kubectl cordon {{ __k3s_node_config['node-name'] }}"
+    cmd: "{{ __k3s_binary_dir }}/k3s kubectl cordon {{ k3s_node_config['node-name'] }}"
   changed_when: true
 
 - name: Drain node
   block:
   - name: Drain node (evict)
     ansible.builtin.command:
-      cmd: "{{ __k3s_binary_dir }}/k3s kubectl drain {{ __k3s_drain_cli_options }} --timeout {{ __k3s_drain_options.eviction_timeout }} {{ __k3s_node_config['node-name'] }}"
+      cmd: "{{ __k3s_binary_dir }}/k3s kubectl drain {{ __k3s_drain_cli_options }} --timeout {{ k3s_drain_options.eviction_timeout }} {{ k3s_node_config['node-name'] }}"
     register: __k3s_drain
-    failed_when: __k3s_drain.rc != 0 and not __k3s_drain_options.deletion_fallback
+    failed_when: __k3s_drain.rc != 0 and not k3s_drain_options.deletion_fallback
     changed_when: true
   - name: Drain node (delete)
     ansible.builtin.command:
-      cmd: "{{ __k3s_binary_dir }}/k3s kubectl drain {{ __k3s_drain_cli_options }} --timeout {{ __k3s_drain_options.deletion_timeout }} --disable-eviction {{ __k3s_node_config['node-name'] }}"
-    when: __k3s_drain.rc != 0 and __k3s_drain_options.deletion_fallback
+      cmd: "{{ __k3s_binary_dir }}/k3s kubectl drain {{ __k3s_drain_cli_options }} --timeout {{ k3s_drain_options.deletion_timeout }} --disable-eviction {{ k3s_node_config['node-name'] }}"
+    when: __k3s_drain.rc != 0 and k3s_drain_options.deletion_fallback
     changed_when: true
   rescue:
   - name: Uncordon node
     ansible.builtin.command:
-      cmd: "{{ __k3s_binary_dir }}/k3s kubectl uncordon {{ __k3s_node_config['node-name'] }}"
+      cmd: "{{ __k3s_binary_dir }}/k3s kubectl uncordon {{ k3s_node_config['node-name'] }}"
     changed_when: true
   - name: Drain failed
     ansible.builtin.fail:
-      msg: "Draining node {{ __k3s_node_config['node-name'] }} failed."
+      msg: "Draining node {{ k3s_node_config['node-name'] }} failed."

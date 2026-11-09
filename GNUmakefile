@@ -84,16 +84,20 @@ fmt: fmt/terraform
 fmt/terraform:
 	terraform fmt -recursive
 
-TEST_EXAMPLES := $(patsubst examples/%/,test/terraform/%,$(wildcard examples/*/))
+TEST_EXAMPLES := $(patsubst examples/%/,test/examples/%,$(wildcard examples/*/))
 
-.PHONY: test test/terraform $(TEST_EXAMPLES)
-test: test/terraform
+.PHONY: test test/examples test/module $(TEST_EXAMPLES)
+test: test/examples test/module
 
-test/terraform: $(TEST_EXAMPLES)
+test/examples: $(TEST_EXAMPLES)
 
-$(TEST_EXAMPLES): test/terraform/%:
+$(TEST_EXAMPLES): test/examples/%:
 	terraform -chdir=examples/$* init -backend=false -input=false
 	terraform -chdir=examples/$* validate
+
+test/module:
+	terraform -chdir=tests init -backend=false -input=false
+	terraform -chdir=tests test -test-directory=.
 
 .PHONY: verify verify/image verify/sbom
 verify: verify/image verify/sbom
@@ -134,7 +138,7 @@ clean/python:
 	rm -rf $(VENV)
 
 clean/terraform:
-	rm -rf examples/*/.terraform
+	rm -rf tests/.terraform examples/*/.terraform
 
 clean/ansible:
 	rm -rf .ansible

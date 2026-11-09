@@ -1,0 +1,6 @@
+- name: Check if nodes are all healthy
+  ansible.builtin.command:
+    cmd: "{{ __k3s_binary_dir }}/k3s kubectl wait --for=condition=Ready node --all --timeout=1m"
+  changed_when: false
+  when: k3s_delegated_server_host == inventory_hostname
+  delegate_to: "{{ k3s_delegated_server_host }}"

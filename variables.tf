@@ -137,19 +137,19 @@ variable "k3s_version" {
   type     = string
   nullable = false
   validation {
-    condition     = var.k3s_version == null || can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+.*$", var.k3s_version))
+    condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+.*$", var.k3s_version))
     error_message = "The k3s_version must be a valid semantic version starting with x.y.z (e.g. '1.30.0') without a 'v' prefix."
   }
   default     = "1.37.2+k3s1"
   description = "The version of k3s to install."
 }
 
-variable "selinux_version" {
+variable "k3s_selinux_version" {
   type     = string
   nullable = false
   validation {
-    condition     = var.selinux_version == null || can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+.*$", var.selinux_version))
-    error_message = "The selinux_version must be a valid semantic version starting with x.y.z (e.g. '1.6.0') without a 'v' prefix."
+    condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+.*$", var.k3s_selinux_version))
+    error_message = "The k3s_selinux_version must be a valid semantic version starting with x.y.z (e.g. '1.6.0') without a 'v' prefix."
   }
   default     = "1.6.1"
   description = "The version of k3s SELinux package to install."

@@ -1,0 +1,9 @@
+argument_specs:
+  setup:
+    options:
+      system_upgrade_trigger:
+        type: str
+  upgrade:
+    options:
+      system_upgrade_trigger:
+        type: str

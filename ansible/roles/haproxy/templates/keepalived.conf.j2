@@ -8,22 +8,22 @@ vrrp_script check_haproxy {
 
 vrrp_instance HAPROXY {
   state BACKUP
-  interface {{ __haproxy_keepalived_vrrp_interface }}
-  {% if __haproxy_keepalived_unicast_peers %}
-  unicast_src_ip {{ __haproxy_keepalived_unicast_src_ip }}
+  interface {{ haproxy_keepalived_vrrp_interface }}
+  {% if haproxy_keepalived_unicast_peers %}
+  unicast_src_ip {{ haproxy_keepalived_unicast_src_ip }}
   unicast_peer {
-    {% for peer in __haproxy_keepalived_unicast_peers %}
+    {% for peer in haproxy_keepalived_unicast_peers %}
     {{ peer }}
     {% endfor %}
   }
   check_unicast_src
   {% endif %}
-  virtual_router_id {{ __haproxy_keepalived_virtual_router_id }}
+  virtual_router_id {{ haproxy_keepalived_virtual_router_id }}
   priority 100
   advert_int 1
   nopreempt
   virtual_ipaddress {
-    {{ __haproxy_keepalived_virtual_ip_address }} dev {{ __haproxy_keepalived_vip_interface }}
+    {{ haproxy_keepalived_virtual_ip_address }} dev {{ haproxy_keepalived_vip_interface }}
   }
 
   track_script {

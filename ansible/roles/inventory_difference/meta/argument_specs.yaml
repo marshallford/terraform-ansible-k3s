@@ -1,0 +1,9 @@
+argument_specs:
+  main:
+    options:
+      inventory_difference_previous_inventory_file:
+        type: str
+        required: true
+      inventory_difference_current_inventory_file:
+        type: str
+        required: true

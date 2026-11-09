@@ -8,5 +8,4 @@
   - name: Check certificates
     ansible.builtin.include_role:
       name: k3s
-    vars:
-      __k3s_part: check_certificates
+      tasks_from: check_certificates

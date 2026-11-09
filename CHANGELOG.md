@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.5.0...v0.6.0) (2026-11-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* the selinux_version variable is now k3s_selinux_version
+
+### Features
+
+* public role inputs, inventory computed in Terraform, argument specs and a defaults test ([#66](https://github.com/marshallford/terraform-ansible-k3s/issues/66)) ([a7b233d](https://github.com/marshallford/terraform-ansible-k3s/commit/a7b233d3e0a7168680d810e6d0fd911908542032))
+
 ## [0.5.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.4.2...v0.5.0) (2026-11-08)
 
 

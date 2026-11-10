@@ -9,6 +9,7 @@ variable "timezone" {
 }
 
 output "snippet" {
+  type = string
   value = templatefile("${path.module}/timezone.tftpl.yaml", {
     timezone = var.timezone
   })

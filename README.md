@@ -119,18 +119,25 @@ make verify VERIFY_CONTAINER_IMAGE=ghcr.io/marshallford/terraform-ansible-k3s:v0
 
 ## ⚠️ Limitations
 
-1. Only tested with `amd64` machines on an IPv4 network
-2. SELinux package cannot be upgraded ([upstream issue](https://github.com/coreos/rpm-ostree/issues/2127))
-3. Machines removed must be fully wiped or have their disks reprovisioned prior to rejoining the cluster
-4. Terraform-managed machine resources must set lifecycle `create_before_destroy = true` to ensure correct ordering during node removal
+1. Only tested with `amd64` machines
+2. IPv4 only (no dual-stack or IPv6-only clusters)
+3. SELinux package cannot be upgraded ([upstream issue](https://github.com/coreos/rpm-ostree/issues/2127))
+4. Machines removed must be fully wiped or have their disks reprovisioned prior to rejoining the cluster
+5. Terraform-managed machine resources must set lifecycle `create_before_destroy = true` to ensure correct ordering during node removal
 
 ## 🚧 To-do
 
-- [ ] Ansible roles equivalent to Butane snippets
-- [ ] Support for custom Ansible plays (pre, post, etc)
-- [ ] Butane snippet for NTP
-- [ ] Firewall rules
-- [ ] Assert podman version
-- [ ] K3s token rotation
-- [ ] Stop Zincati at start of playbook and start at the end
-- [ ] Knownhosts management
+- [ ] Port the Butane snippets to Ansible roles, including installing Python
+- [ ] Add a Butane snippet for NTP
+- [ ] Run custom Ansible plays (pre, post, etc.)
+- [ ] Add a host firewall (nftables)
+- [ ] Support single-server clusters and external load balancers without keepalived
+- [ ] Support dual-stack networking
+- [ ] Rotate the K3s tokens
+- [ ] Keep join tokens out of Terraform state
+- [ ] Handle replaced machines that reuse an IP address (stale SSH host keys)
+- [ ] Block changes to critical K3s settings after cluster creation
+- [ ] Allow repeated component flags and taint keys
+- [ ] Check the minimum podman version
+- [ ] Coordinate Zincati reboots with playbook runs and across nodes (FleetLock)
+- [ ] Prune unused container images

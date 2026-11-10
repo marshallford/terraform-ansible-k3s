@@ -134,6 +134,20 @@ resource "ansible_navigator_run" "this" {
     "stdout" = {
       jq_filter = ".stdout"
     }
+    "summary" = {
+      jq_filter = <<-EOT
+      def task_name: ((.task_path // "") | capture("/roles/(?<role>[^/]+)/").role // null) as $role
+        | if $role then "\($role) : \(.task)" else .task end;
+
+      [.plays[].tasks[] | select(.__result != "In progress") | .name = task_name] as $tasks
+      | ($tasks | map(select(.host != "localhost"))) as $node_tasks
+      | {
+        changed_per_host: ($node_tasks | group_by(.host) | map({key: .[0].host, value: map(select(.__changed)) | length}) | from_entries),
+        changed_tasks: ($node_tasks | map(select(.__changed)) | group_by(.name) | map({key: .[0].name, value: length}) | from_entries),
+        slowest_tasks: ($tasks | group_by(.name) | map({task: .[0].name, host_seconds: map(.duration // 0) | add | round}) | sort_by(-.host_seconds) | .[:10]),
+      }
+      EOT
+    }
   }
   triggers = {
     run = {

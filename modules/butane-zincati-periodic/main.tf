@@ -23,15 +23,16 @@ variable "windows" {
     start_time     = string
     length_minutes = number
   }))
-  nullable    = false
-  description = "Maintenance windows."
+  nullable = false
   validation {
     condition     = length(var.windows) > 0
     error_message = "At least one window must be specified."
   }
+  description = "Maintenance windows."
 }
 
 output "snippet" {
+  type = string
   value = templatefile("${path.module}/zincati-periodic.tftpl.yaml", {
     wariness  = var.wariness
     time_zone = var.time_zone

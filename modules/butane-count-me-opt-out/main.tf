@@ -3,6 +3,7 @@ terraform {
 }
 
 output "snippet" {
+  type        = string
   value       = templatefile("${path.module}/count-me-opt-out.tftpl.yaml", {})
   description = "Butane snippet."
 }

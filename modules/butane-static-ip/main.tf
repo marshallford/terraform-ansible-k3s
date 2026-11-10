@@ -55,6 +55,7 @@ variable "static_routes" {
 }
 
 output "snippet" {
+  type = string
   value = templatefile("${path.module}/static-ip.tftpl.yaml", {
     interface      = var.interface,
     ip             = var.ip,

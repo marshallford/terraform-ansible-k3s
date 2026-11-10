@@ -9,6 +9,7 @@ variable "interface" {
 }
 
 output "snippet" {
+  type = string
   value = templatefile("${path.module}/dhcp.tftpl.yaml", {
     interface = var.interface,
   })

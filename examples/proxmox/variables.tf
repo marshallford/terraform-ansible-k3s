@@ -16,20 +16,20 @@ variable "proxmox_password" {
 
 variable "proxmox_file_storage" {
   type     = string
-  nullable = false
   default  = "local"
+  nullable = false
 }
 
 variable "proxmox_block_storage" {
   type     = string
-  nullable = false
   default  = "local-lvm"
+  nullable = false
 }
 
 variable "proxmox_bridge" {
   type     = string
-  nullable = false
   default  = "vmbr0"
+  nullable = false
 }
 
 variable "proxmox_nodes" {
@@ -41,14 +41,14 @@ variable "proxmox_nodes" {
 
 variable "region" {
   type     = string
-  nullable = false
   default  = "datacenter"
+  nullable = false
 }
 
 variable "cluster_name" {
   type     = string
-  nullable = false
   default  = "terraform-ansible-k3s-example"
+  nullable = false
 }
 
 variable "api_server_virtual_ip" {
@@ -58,18 +58,18 @@ variable "api_server_virtual_ip" {
 
 variable "api_server_virtual_router_id" {
   type     = number
-  nullable = false
   default  = 1
+  nullable = false
 }
 
 variable "server_nodes" {
   type     = number
-  nullable = false
   default  = 3
+  nullable = false
 }
 
 variable "agent_nodes" {
   type     = number
-  nullable = false
   default  = 1
+  nullable = false
 }

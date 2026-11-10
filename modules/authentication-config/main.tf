@@ -3,6 +3,9 @@ terraform {
 }
 
 output "server_nodes_config" {
+  type = object({
+    kube_apiserver_arg = map(string)
+  })
   value = {
     kube_apiserver_arg = {
       "authentication-config" = "K3S_FILES_DIR/authentication-config.yaml"
@@ -12,6 +15,7 @@ output "server_nodes_config" {
 }
 
 output "files" {
+  type = map(string)
   value = {
     "authentication-config.yaml" = yamlencode(merge({
       apiVersion = "apiserver.config.k8s.io/v1"

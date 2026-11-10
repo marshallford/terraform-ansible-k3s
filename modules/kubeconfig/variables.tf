@@ -38,14 +38,18 @@ variable "server_machine" {
     }), {})
     address = string
   })
-  nullable    = false
+  nullable = false
+  validation {
+    condition     = floor(var.server_machine.ssh.port) == var.server_machine.ssh.port && var.server_machine.ssh.port >= 1 && var.server_machine.ssh.port <= 65535
+    error_message = "The ssh port must be a whole number between 1 and 65535."
+  }
   description = "Machine that has been configured as a server node."
 }
 
 variable "block_type" {
   type     = string
-  nullable = false
   default  = "ephemeral"
+  nullable = false
   validation {
     condition     = contains(["ephemeral", "data", "resource"], var.block_type)
     error_message = "The block_type must be either 'ephemeral', 'data', or 'resource'."
@@ -61,22 +65,21 @@ variable "server" {
 
 variable "cluster_name" {
   type        = string
-  nullable    = false
   default     = "default"
+  nullable    = false
   description = "Name of the cluster for the kubeconfig."
 }
 
 variable "user_name" {
   type        = string
-  nullable    = false
   default     = "default"
+  nullable    = false
   description = "Name of the user for the kubeconfig."
 }
 
 variable "context_name" {
   type        = string
-  nullable    = false
   default     = "default"
+  nullable    = false
   description = "Name of the context for the kubeconfig."
-
 }

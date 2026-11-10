@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.6.0...v0.7.0) (2026-11-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* stricter input validation rejects values that previously failed only during apply (a non-IPv4 virtual_ip or server node IP, invalid derived node names), and cis-hardening config outputs are now typed, so their arg values are strings
+
+### Features
+
+* playbook summary output, typed outputs, stricter input validation and validation tests ([#68](https://github.com/marshallford/terraform-ansible-k3s/issues/68)) ([4140055](https://github.com/marshallford/terraform-ansible-k3s/commit/414005541f0dfc1d2f6ace36b799d8e42ee85ff6))
+
 ## [0.6.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.5.0...v0.6.0) (2026-11-09)
 
 

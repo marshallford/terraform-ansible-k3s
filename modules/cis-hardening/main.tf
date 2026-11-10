@@ -3,6 +3,11 @@ terraform {
 }
 
 output "all_nodes_config" {
+  type = object({
+    protect_kernel_defaults = bool
+    selinux                 = bool
+    kubelet_arg             = map(string)
+  })
   value = {
     protect_kernel_defaults = true
     selinux                 = true
@@ -16,6 +21,11 @@ output "all_nodes_config" {
 }
 
 output "server_nodes_config" {
+  type = object({
+    secrets_encryption          = bool
+    kube_apiserver_arg          = map(string)
+    kube_controller_manager_arg = map(string)
+  })
   value = {
     secrets_encryption = true
     kube_apiserver_arg = {
@@ -35,6 +45,7 @@ output "server_nodes_config" {
 }
 
 output "files" {
+  type = map(string)
   value = {
     "admission-control.yaml" = yamlencode({
       apiVersion = "apiserver.config.k8s.io/v1"

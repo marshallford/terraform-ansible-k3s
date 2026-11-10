@@ -9,6 +9,7 @@ variable "hostname" {
 }
 
 output "snippet" {
+  type = string
   value = templatefile("${path.module}/hostname.tftpl.yaml", {
     hostname = var.hostname
   })

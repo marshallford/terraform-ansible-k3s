@@ -10,6 +10,7 @@ variable "test_dns_host" {
 }
 
 output "snippet" {
+  type = string
   value = templatefile("${path.module}/qemu-ga.tftpl.yaml", {
     test_dns_host = var.test_dns_host
   })

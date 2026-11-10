@@ -38,8 +38,12 @@ variable "api_server" {
   })
   nullable = false
   validation {
-    condition     = var.api_server.virtual_router_id >= 1 && var.api_server.virtual_router_id <= 255
-    error_message = "The virtual_router_id must be between 1 and 255."
+    condition     = can(cidrnetmask("${var.api_server.virtual_ip}/32"))
+    error_message = "The virtual_ip must be an IPv4 address."
+  }
+  validation {
+    condition     = floor(var.api_server.virtual_router_id) == var.api_server.virtual_router_id && var.api_server.virtual_router_id >= 1 && var.api_server.virtual_router_id <= 255
+    error_message = "The virtual_router_id must be a whole number between 1 and 255."
   }
   description = "Keepalived configuration for API server VIP and additional TLS SAN entries for API server certificate."
 }
@@ -49,8 +53,12 @@ variable "tokens" {
     server = string
     agent  = string
   })
-  nullable    = false
-  sensitive   = true
+  nullable  = false
+  sensitive = true
+  validation {
+    condition     = length(var.tokens.server) > 0 && length(var.tokens.agent) > 0
+    error_message = "The server and agent tokens must not be empty."
+  }
   description = "Shared secret used to join a server or agent to cluster."
 }
 
@@ -84,10 +92,28 @@ variable "server_machines" {
   validation {
     condition = alltrue([
       for machine in var.server_machines.machines :
-      machine.config.node_name == null ||
-      (can(regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$", machine.config.node_name)) && try(length(machine.config.node_name), 0) <= 63)
+      can(regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$", coalesce(machine.config.node_name, "server-${machine.name}"))) &&
+      length(coalesce(machine.config.node_name, "server-${machine.name}")) <= 63
     ])
-    error_message = "The node_name must be a valid RFC1123 DNS label: max 63 characters, lowercase alphanumeric or '-', must start and end with alphanumeric."
+    error_message = "Each server node name (config.node_name, or 'server-<name>' when unset) must be a valid RFC1123 DNS label: max 63 characters, lowercase alphanumeric or '-', must start and end with alphanumeric."
+  }
+  validation {
+    condition = length(distinct([
+      for machine in var.server_machines.machines : coalesce(machine.config.node_name, "server-${machine.name}")
+    ])) == length(var.server_machines.machines)
+    error_message = "Each server node name (config.node_name, or 'server-<name>' when unset) must be unique."
+  }
+  validation {
+    condition = alltrue([
+      for machine in var.server_machines.machines :
+      can(cidrnetmask("${coalesce(machine.config.node_ip, machine.address)}/32")) &&
+      can(cidrnetmask("${coalesce(machine.config.node_external_ip, machine.address)}/32"))
+    ])
+    error_message = "Each server node IP and external IP (config.node_ip and config.node_external_ip, or address when unset) must be a single IPv4 address."
+  }
+  validation {
+    condition     = floor(var.server_machines.ssh.port) == var.server_machines.ssh.port && var.server_machines.ssh.port >= 1 && var.server_machines.ssh.port <= 65535
+    error_message = "The ssh port must be a whole number between 1 and 65535."
   }
   description = "Machines to be configured as server nodes. The ssh user/port apply to every server machine, including when retrieving the kubeconfig."
 }
@@ -110,8 +136,8 @@ variable "agent_machine_groups" {
       }), {})
     }))
   }))
-  nullable = false
   default  = {}
+  nullable = false
   validation {
     condition = alltrue([
       for group in var.agent_machine_groups :
@@ -120,66 +146,101 @@ variable "agent_machine_groups" {
     error_message = "Each agent machine must have a unique name within its group."
   }
   validation {
-    condition = alltrue([
-      for group in var.agent_machine_groups :
-      alltrue([
+    condition = alltrue(flatten([
+      for group_name, group in var.agent_machine_groups : [
         for machine in group.machines :
-        machine.config.node_name == null ||
-        (can(regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$", machine.config.node_name)) && try(length(machine.config.node_name), 0) <= 63)
-      ])
-    ])
-    error_message = "The node_name must be a valid RFC1123 DNS label: max 63 characters, lowercase alphanumeric or '-', must start and end with alphanumeric."
+        can(regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$", coalesce(machine.config.node_name, "agent-${group_name}-${machine.name}"))) &&
+        length(coalesce(machine.config.node_name, "agent-${group_name}-${machine.name}")) <= 63
+      ]
+    ]))
+    error_message = "Each agent node name (config.node_name, or 'agent-<group>-<name>' when unset) must be a valid RFC1123 DNS label: max 63 characters, lowercase alphanumeric or '-', must start and end with alphanumeric."
+  }
+  validation {
+    condition = length(distinct(concat(
+      [for machine in var.server_machines.machines : coalesce(machine.config.node_name, "server-${machine.name}")],
+      flatten([for group_name, group in var.agent_machine_groups : [for machine in group.machines : coalesce(machine.config.node_name, "agent-${group_name}-${machine.name}")]]),
+    ))) == length(var.server_machines.machines) + sum(concat([0], [for group in var.agent_machine_groups : length(group.machines)]))
+    error_message = "Each agent node name (config.node_name, or 'agent-<group>-<name>' when unset) must be unique across all server and agent nodes."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for group in var.agent_machine_groups : [
+        for machine in group.machines : alltrue([
+          for ip in concat(
+            split(",", coalesce(machine.config.node_ip, machine.address)),
+            split(",", coalesce(machine.config.node_external_ip, machine.address)),
+          ) : can(cidrhost("${ip}/32", 0))
+        ])
+      ]
+    ]))
+    error_message = "Each agent node IP and external IP (config.node_ip and config.node_external_ip, or address when unset) must be one or more comma-separated IP addresses."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for group in var.agent_machine_groups : [
+        for machine in group.machines :
+        length(split(",", coalesce(machine.config.node_ip, machine.address))) == 1 || (
+          length(split(",", coalesce(machine.config.node_ip, machine.address))) == 2 &&
+          length([for ip in split(",", coalesce(machine.config.node_ip, machine.address)) : ip if can(cidrnetmask("${ip}/32"))]) == 1
+        )
+      ]
+    ]))
+    error_message = "Each agent node IP (config.node_ip, or address when unset) must be a single IP address or a dual-stack pair of one IPv4 and one IPv6 address, as the kubelet requires."
+  }
+  validation {
+    condition     = alltrue([for group in var.agent_machine_groups : floor(group.ssh.port) == group.ssh.port && group.ssh.port >= 1 && group.ssh.port <= 65535])
+    error_message = "The ssh port of each agent group must be a whole number between 1 and 65535."
   }
   description = "Machines to be configured as agent nodes, grouped. The ssh user/port apply to every machine within a group."
 }
 
 variable "k3s_version" {
   type     = string
+  default  = "1.37.2+k3s1"
   nullable = false
   validation {
-    condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+.*$", var.k3s_version))
-    error_message = "The k3s_version must be a valid semantic version starting with x.y.z (e.g. '1.30.0') without a 'v' prefix."
+    condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$", var.k3s_version))
+    error_message = "The k3s_version must be a semantic version without a 'v' prefix (e.g. '1.37.2+k3s1')."
   }
-  default     = "1.37.2+k3s1"
   description = "The version of k3s to install."
 }
 
 variable "k3s_selinux_version" {
   type     = string
+  default  = "1.6.1"
   nullable = false
   validation {
-    condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+.*$", var.k3s_selinux_version))
-    error_message = "The k3s_selinux_version must be a valid semantic version starting with x.y.z (e.g. '1.6.0') without a 'v' prefix."
+    condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$", var.k3s_selinux_version))
+    error_message = "The k3s_selinux_version must be a semantic version without a 'v' prefix (e.g. '1.6.1')."
   }
-  default     = "1.6.1"
   description = "The version of k3s SELinux package to install."
 }
 
 variable "keepalived_container_image" {
   type        = string
-  nullable    = false
   default     = "docker.io/osixia/keepalived"
+  nullable    = false
   description = "Keepalived container image used for VRRP VIP failover."
 }
 
 variable "keepalived_container_image_tag" {
   type        = string
-  nullable    = false
   default     = "2.4.3"
+  nullable    = false
   description = "Keepalived container image tag used for VRRP VIP failover."
 }
 
 variable "haproxy_container_image" {
   type        = string
-  nullable    = false
   default     = "docker.io/library/haproxy"
+  nullable    = false
   description = "HAProxy container image used for API server load balancing."
 }
 
 variable "haproxy_container_image_tag" {
   type        = string
-  nullable    = false
   default     = "3.4.7"
+  nullable    = false
   description = "HAProxy container image tag used for API server load balancing."
 }
 
@@ -191,8 +252,8 @@ variable "all_nodes_config" {
     kubelet_arg             = optional(map(string), {})
     kube_proxy_arg          = optional(map(string), {})
   })
-  nullable    = false
   default     = {}
+  nullable    = false
   description = "Configuration options that apply to all nodes."
 }
 
@@ -221,43 +282,43 @@ variable "server_nodes_config" {
     kube_proxy_arg                    = optional(map(string), {})
     disable_agent                     = optional(bool)
   })
-  nullable    = false
   default     = {}
+  nullable    = false
   description = "Configuration options that apply to server nodes."
 }
 
 variable "manifests" {
   type        = map(string)
-  nullable    = false
   default     = {}
+  nullable    = false
   description = "Auto deploying manifests (filename=contents). Removing manifests will not delete the corresponding resources from the cluster."
 }
 
 variable "files" {
   type        = map(string)
-  nullable    = false
   default     = {}
+  nullable    = false
   description = "Files copied to the machines to be referenced in configuration (filename=contents). The string 'K3S_FILES_DIR' can be referenced in configurations to point to the directory where the files are copied."
 }
 
 # https://docs.k3s.io/installation/configuration#kubelet-configuration-files
 variable "kubelet_configs" {
-  type     = list(any)
-  nullable = false
+  type     = any
   default  = []
+  nullable = false
   validation {
-    condition     = alltrue([for v in var.kubelet_configs : can(keys(v))])
+    condition     = can(slice(var.kubelet_configs, 0, 0)) && alltrue([for v in var.kubelet_configs : can(keys(v))])
     error_message = "The kubelet_configs variable must be a list of objects or maps."
   }
   validation {
-    condition = alltrue([
+    condition = !can(slice(var.kubelet_configs, 0, 0)) || alltrue([
       for config in var.kubelet_configs :
       try(config.apiVersion, null) != null
     ])
     error_message = "Each kubelet configuration must contain an 'apiVersion' key."
   }
   validation {
-    condition = alltrue([
+    condition = !can(slice(var.kubelet_configs, 0, 0)) || alltrue([
       for config in var.kubelet_configs :
       try(config.kind, null) == "KubeletConfiguration"
     ])
@@ -268,14 +329,14 @@ variable "kubelet_configs" {
 
 # https://rancher.com/docs/k3s/latest/en/installation/private-registry/
 variable "registries_config" {
-  type        = any
-  nullable    = false
-  default     = {}
-  description = "Registry configuration to be used by k3s when generating the containerd configuration."
+  type     = any
+  default  = {}
+  nullable = false
   validation {
     condition     = can(keys(var.registries_config))
     error_message = "The registries_config variable must be an object or map."
   }
+  description = "Registry configuration to be used by k3s when generating the containerd configuration."
 }
 
 variable "drain_options" {
@@ -284,44 +345,44 @@ variable "drain_options" {
     eviction_timeout  = optional(string, "30m")
     deletion_timeout  = optional(string, "10m")
   })
-  nullable    = false
-  default     = {}
-  description = "Node drain options."
+  default  = {}
+  nullable = false
   validation {
-    condition     = can(timeadd(timestamp(), var.drain_options.eviction_timeout))
+    condition     = can(timeadd(plantimestamp(), var.drain_options.eviction_timeout))
     error_message = "The eviction_timeout must be a valid duration (e.g. '10m', '30s', '1h30m')."
   }
   validation {
-    condition     = can(timeadd(timestamp(), var.drain_options.deletion_timeout))
+    condition     = can(timeadd(plantimestamp(), var.drain_options.deletion_timeout))
     error_message = "The deletion_timeout must be a valid duration (e.g. '10m', '30s', '1h30m')."
   }
+  description = "Node drain options."
 }
 
 variable "system_upgrade_trigger" {
   type        = string
-  nullable    = false
   default     = ""
+  nullable    = false
   description = "Trigger machine system upgrades (with reboot)."
 }
 
 variable "reset_on_destroy" {
   type        = bool
-  nullable    = false
   default     = false
+  nullable    = false
   description = "Stop services (Keepalived, HAProxy, k3s) and stop all containers on destroy."
 }
 
 variable "cleanup" {
   type        = bool
-  nullable    = false
   default     = true
+  nullable    = false
   description = "Remove unused k3s binaries, images and selinux packages from machines. Disable when performing frequent downgrades/upgrades."
 }
 
 variable "kubeconfig_block_type" {
   type     = string
-  nullable = false
   default  = "ephemeral"
+  nullable = false
   validation {
     condition     = contains(["ephemeral", "data", "resource"], var.kubeconfig_block_type)
     error_message = "The kubeconfig_block_type must be either 'ephemeral', 'data', or 'resource'."

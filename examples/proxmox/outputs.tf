@@ -3,8 +3,8 @@ output "machine_ssh_private_key" {
   sensitive = true
 }
 
-output "playbook_stdout" {
-  value = module.k3s.playbook_stdout
+output "playbook_summary" {
+  value = module.k3s.playbook_summary
 }
 
 output "kubeconfig_yaml" {

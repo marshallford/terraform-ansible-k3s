@@ -65,10 +65,10 @@ variable "audit_policy_rules" {
       omitStages = ["RequestReceived"]
     },
   ]
-  nullable    = false
-  description = "Audit policy rules."
+  nullable = false
   validation {
     condition     = can(slice(var.audit_policy_rules, 0, 0)) && alltrue([for v in var.audit_policy_rules : can(keys(v))])
     error_message = "The audit_policy_rules variable must be a list of objects or maps."
   }
+  description = "Audit policy rules."
 }

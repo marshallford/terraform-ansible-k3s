@@ -5,6 +5,11 @@ locals {
 }
 
 output "credentials" {
+  type = object({
+    cluster_ca_certificate = string
+    client_certificate     = string
+    client_key             = string
+  })
   value = try(
     {
       cluster_ca_certificate = local.data_facts.k3s_kubeconfig_cluster_ca_certificate,
@@ -27,12 +32,18 @@ output "credentials" {
 }
 
 output "kubeconfig_yaml" {
+  type        = string
   value       = try(local.data_facts.k3s_kubeconfig_yaml, local.resource_facts.k3s_kubeconfig_yaml, null)
   sensitive   = true
   description = "Cluster admin kubeconfig."
 }
 
 output "ephemeral_credentials" {
+  type = object({
+    cluster_ca_certificate = string
+    client_certificate     = string
+    client_key             = string
+  })
   value = try(
     {
       cluster_ca_certificate = local.ephemeral_facts.k3s_kubeconfig_cluster_ca_certificate,
@@ -51,6 +62,7 @@ output "ephemeral_credentials" {
 }
 
 output "ephemeral_kubeconfig_yaml" {
+  type        = string
   value       = try(local.ephemeral_facts.k3s_kubeconfig_yaml, null)
   sensitive   = true
   ephemeral   = true

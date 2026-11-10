@@ -9,6 +9,7 @@ variable "ssh_authorized_key" {
 }
 
 output "snippet" {
+  type = string
   value = templatefile("${path.module}/ssh-authorized-key.tftpl.yaml", {
     ssh_authorized_key = var.ssh_authorized_key
   })

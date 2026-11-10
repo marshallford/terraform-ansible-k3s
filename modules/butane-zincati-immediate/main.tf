@@ -10,6 +10,7 @@ variable "wariness" {
 }
 
 output "snippet" {
+  type = string
   value = templatefile("${path.module}/zincati-immediate.tftpl.yaml", {
     wariness = var.wariness
   })

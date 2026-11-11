@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.8.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.7.0...v0.8.0) (2026-11-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* every machine now drops inbound traffic except SSH, ICMP, NodePorts, the API server (servers only), cluster nodes, the pod network, and the service network. Services listening on the host network, such as hostNetwork pods or rootless podman published ports, need a rule in the new firewall_rules input. Set it on server_machines or on an agent group. With kube-proxy in IPVS mode, LoadBalancer IPs outside the NodePort range also need a rule. The playbook_stdout output is now null unless playbook_stdout_enabled is set. This keeps the large playbook output out of state.
+
+### Features
+
+* default-deny nftables host firewall, single-sourced API ports and main role entry points ([#70](https://github.com/marshallford/terraform-ansible-k3s/issues/70)) ([5c81b86](https://github.com/marshallford/terraform-ansible-k3s/commit/5c81b86210294e912915d1cec46dc32f1430abd9))
+
 ## [0.7.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.6.0...v0.7.0) (2026-11-10)
 
 

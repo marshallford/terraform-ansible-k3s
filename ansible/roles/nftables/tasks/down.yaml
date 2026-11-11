@@ -1,0 +1,17 @@
+- name: Stop and disable nftables service
+  ansible.builtin.systemd_service:
+    name: "{{ __nftables_service }}"
+    state: stopped
+    enabled: false
+
+- name: Remove nftables service drop-in and config
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+  - "{{ __nftables_dropin_dir }}"
+  - "{{ __nftables_config_dir }}"
+
+- name: Reload systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: true

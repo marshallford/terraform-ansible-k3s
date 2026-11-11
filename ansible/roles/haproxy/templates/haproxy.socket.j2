@@ -2,6 +2,6 @@
 [Socket]
 BindIPv6Only=both
 FreeBind=true
-ListenStream={{ haproxy_keepalived_virtual_ip_address }}:{{ __haproxy_listen_port }}
+ListenStream={{ haproxy_keepalived_virtual_ip_address }}:{{ haproxy_listen_port }}
 ListenStream=127.0.0.1:{{ __haproxy_monitor_port }}
 NoDelay=true

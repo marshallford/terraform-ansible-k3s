@@ -1,0 +1,11 @@
+- name: Create nftables rules
+  ansible.builtin.template:
+    src: rules.nft.j2
+    dest: "{{ __nftables_rules_dir }}/{{ nftables_rules_name }}.nft"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=
+    validate: "{{ __nftables_binary }} --check --file %s"
+  vars:
+    __nftables_fragment_rules: "{{ nftables_rules }}"
+  notify: Reload nftables

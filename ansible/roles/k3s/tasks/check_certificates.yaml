@@ -1,4 +1,4 @@
-- name: Check k3s certificates
+- name: Check K3s certificates
   ansible.builtin.command:
     cmd: "{{ __k3s_binary_dir }}/k3s certificate check -o table"
   changed_when: false

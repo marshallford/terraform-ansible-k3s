@@ -1,7 +1,7 @@
 output "playbook_stdout" {
   type        = string
-  value       = join("\n", jsondecode(ansible_navigator_run.this.artifact_queries.stdout.results[0]))
-  description = "Stdout of Ansible playbook run."
+  value       = var.playbook_stdout_enabled ? join("\n", jsondecode(ansible_navigator_run.this.artifact_queries["stdout"].results[0])) : null
+  description = "Stdout of Ansible playbook run. Requires playbook_stdout_enabled, otherwise null."
 }
 
 output "playbook_summary" {

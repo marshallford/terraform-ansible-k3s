@@ -1,5 +1,5 @@
 haproxy_container_image: docker.io/library/haproxy
 haproxy_container_image_tag: 3.4.7
-__haproxy_listen_port: 6443
-__haproxy_backend_port: 8443
+haproxy_listen_port: 6443
+haproxy_backend_port: 8443
 __haproxy_monitor_port: 9999

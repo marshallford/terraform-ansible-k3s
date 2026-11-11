@@ -1,0 +1,8 @@
+#jinja2: lstrip_blocks: True
+[Service]
+ExecStart=
+ExecStart={{ __nftables_binary }} --file {{ __nftables_main_config }}
+ExecReload=
+ExecReload={{ __nftables_binary }} --file {{ __nftables_main_config }}
+ExecStop=
+ExecStop=-{{ __nftables_binary }} destroy table inet {{ __nftables_table }}

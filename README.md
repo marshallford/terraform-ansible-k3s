@@ -22,6 +22,7 @@ Provision and operate a Kubernetes cluster with the convenience of a CSP-managed
 11. **Manages** day-2 node additions and [removals](https://docs.k3s.io/installation/uninstall)
 12. **Facilitates** Kubernetes certificate [rotation](https://docs.k3s.io/cli/certificate#checking-expiration-dates)
 13. **Enables** seamless Terraform-native [cluster access](https://docs.k3s.io/cluster-access), no manual steps required
+14. **Protects** machines with a default-deny [nftables](https://wiki.nftables.org/) host firewall that works with any CNI and accepts custom rules
 
 ## 🚀 Key Differentiators
 
@@ -106,6 +107,7 @@ provider "kubernetes" {
 3. **CIS Kubernetes benchmark** -- many controls are satisfied by default in K3s or via the provided `cis-hardening` submodule. Controls outside this scope remain the operator's responsibility.
 4. **Machine updates** -- use Zincati for automatic updates or configure `system_upgrade_trigger` for coordinated updates and reboots through this module.
 5. **Access control** -- exposing machines or the Kubernetes API server directly to the internet increases risk. Access should be restricted through VPN, bastion, or firewall controls.
+6. **Host firewall** -- each machine drops inbound traffic except SSH, ICMP, NodePorts, the API server (servers only), cluster nodes, the pod network, and the service network. Add rules with `firewall_rules` on `server_machines` or an agent group. The last matching rule wins. For example, `["tcp dport 22 drop", "ip saddr 192.0.2.0/24 tcp dport 22 accept"]` limits SSH to one network, which must include the Terraform runner. `["accept"]` disables filtering. A CNI that assigns pod addresses outside `cluster_cidr` needs a rule accepting them.
 
 ## 🔐 Supply Chain
 
@@ -130,7 +132,6 @@ make verify VERIFY_CONTAINER_IMAGE=ghcr.io/marshallford/terraform-ansible-k3s:v0
 - [ ] Port the Butane snippets to Ansible roles, including installing Python
 - [ ] Add a Butane snippet for NTP
 - [ ] Run custom Ansible plays (pre, post, etc.)
-- [ ] Add a host firewall (nftables)
 - [ ] Support single-server clusters and external load balancers without keepalived
 - [ ] Support dual-stack networking
 - [ ] Rotate the K3s tokens

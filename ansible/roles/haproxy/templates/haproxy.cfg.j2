@@ -29,5 +29,5 @@ backend machines
   http-check expect status 200,401
   default-server inter 2s fall 2 rise 1 check check-ssl verify none
   {% for server in haproxy_backend_servers %}
-  server {{ server[0] }} {{ (server[0] == inventory_hostname) | ternary('host.containers.internal', server[1]) }}:{{ __haproxy_backend_port }}
+  server {{ server[0] }} {{ (server[0] == inventory_hostname) | ternary('host.containers.internal', server[1]) }}:{{ haproxy_backend_port }}
   {% endfor %}

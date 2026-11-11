@@ -20,9 +20,15 @@
       apply:
         become: true
     when: k3s_role == "server"
-  - name: Reset k3s
+  - name: Reset K3s
     ansible.builtin.include_role:
       name: k3s
       tasks_from: reset
+      apply:
+        become: true
+  - name: Firewall
+    ansible.builtin.include_role:
+      name: nftables
+      tasks_from: down
       apply:
         become: true

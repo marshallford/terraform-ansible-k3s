@@ -19,6 +19,13 @@ variable "execution_environment_image" {
   description = "Name of the execution environment container image."
 }
 
+variable "playbook_stdout_enabled" {
+  type        = bool
+  default     = false
+  nullable    = false
+  description = "Enable the playbook_stdout output. It is large and changes every run."
+}
+
 variable "ssh_private_keys" {
   type = list(object({
     name = string
@@ -68,6 +75,7 @@ variable "server_machines" {
       user = optional(string, "core")
       port = optional(number, 22)
     }), {})
+    firewall_rules = optional(list(string), [])
     machines = map(object({
       name    = string
       address = string
@@ -115,7 +123,11 @@ variable "server_machines" {
     condition     = floor(var.server_machines.ssh.port) == var.server_machines.ssh.port && var.server_machines.ssh.port >= 1 && var.server_machines.ssh.port <= 65535
     error_message = "The ssh port must be a whole number between 1 and 65535."
   }
-  description = "Machines to be configured as server nodes. The ssh user/port apply to every server machine, including when retrieving the kubeconfig."
+  validation {
+    condition     = alltrue([for rule in var.server_machines.firewall_rules : trimspace(rule) != "" && !strcontains(rule, "\n")])
+    error_message = "Each server firewall rule must be a single, non-empty line."
+  }
+  description = "Machines to be configured as server nodes. The ssh user/port apply to every server machine, including when retrieving the kubeconfig. The firewall_rules are extra nftables input rules, e.g. \"tcp dport 443 accept\", where the last match wins, including over the built-in rules; [\"accept\"] disables filtering."
 }
 
 variable "agent_machine_groups" {
@@ -124,6 +136,7 @@ variable "agent_machine_groups" {
       user = optional(string, "core")
       port = optional(number, 22)
     }), {})
+    firewall_rules = optional(list(string), [])
     machines = map(object({
       name    = string
       address = string
@@ -191,7 +204,11 @@ variable "agent_machine_groups" {
     condition     = alltrue([for group in var.agent_machine_groups : floor(group.ssh.port) == group.ssh.port && group.ssh.port >= 1 && group.ssh.port <= 65535])
     error_message = "The ssh port of each agent group must be a whole number between 1 and 65535."
   }
-  description = "Machines to be configured as agent nodes, grouped. The ssh user/port apply to every machine within a group."
+  validation {
+    condition     = alltrue(flatten([for group in var.agent_machine_groups : [for rule in group.firewall_rules : trimspace(rule) != "" && !strcontains(rule, "\n")]]))
+    error_message = "Each agent group firewall rule must be a single, non-empty line."
+  }
+  description = "Machines to be configured as agent nodes, grouped. The ssh user/port and firewall_rules (as for server_machines) apply to every machine within a group."
 }
 
 variable "k3s_version" {
@@ -202,7 +219,7 @@ variable "k3s_version" {
     condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$", var.k3s_version))
     error_message = "The k3s_version must be a semantic version without a 'v' prefix (e.g. '1.37.2+k3s1')."
   }
-  description = "The version of k3s to install."
+  description = "The version of K3s to install."
 }
 
 variable "k3s_selinux_version" {
@@ -213,7 +230,7 @@ variable "k3s_selinux_version" {
     condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$", var.k3s_selinux_version))
     error_message = "The k3s_selinux_version must be a semantic version without a 'v' prefix (e.g. '1.6.1')."
   }
-  description = "The version of k3s SELinux package to install."
+  description = "The version of K3s SELinux package to install."
 }
 
 variable "keepalived_container_image" {
@@ -336,7 +353,7 @@ variable "registries_config" {
     condition     = can(keys(var.registries_config))
     error_message = "The registries_config variable must be an object or map."
   }
-  description = "Registry configuration to be used by k3s when generating the containerd configuration."
+  description = "Registry configuration to be used by K3s when generating the containerd configuration."
 }
 
 variable "drain_options" {
@@ -369,14 +386,14 @@ variable "reset_on_destroy" {
   type        = bool
   default     = false
   nullable    = false
-  description = "Stop services (Keepalived, HAProxy, k3s) and stop all containers on destroy."
+  description = "Stop services (Keepalived, HAProxy, K3s) and stop all containers on destroy."
 }
 
 variable "cleanup" {
   type        = bool
   default     = true
   nullable    = false
-  description = "Remove unused k3s binaries, images and selinux packages from machines. Disable when performing frequent downgrades/upgrades."
+  description = "Remove unused K3s binaries, images and SELinux packages from machines. Disable when performing frequent downgrades/upgrades."
 }
 
 variable "kubeconfig_block_type" {

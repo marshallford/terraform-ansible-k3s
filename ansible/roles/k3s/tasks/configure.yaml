@@ -1,4 +1,4 @@
-- name: Link to k3s binary and images in staging
+- name: Link to K3s binary and images in staging
   ansible.builtin.file:
     src: "{{ __k3s_staging_dir }}/{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -13,7 +13,7 @@
   notify: Restart k3s-{{ k3s_role }}
 
 # TODO https://github.com/coreos/rpm-ostree/issues/2127
-- name: Install k3s selinux package
+- name: Install K3s SELinux package
   community.general.rpm_ostree_pkg:
     name: "{{ __k3s_staging_dir }}/{{ __k3s_selinux_package }}"
     apply_live: true
@@ -22,7 +22,7 @@
   when: "__k3s_selinux_rpm_ostree_package not in rpm_ostree_status_local_packages"
   notify: Restart k3s-{{ k3s_role }}
 
-- name: Ensure k3s systemd service
+- name: Ensure K3s systemd service
   ansible.builtin.template:
     src: k3s.service.j2
     dest: /etc/systemd/system/k3s-{{ k3s_role }}.service
@@ -31,7 +31,7 @@
   - Reload systemd
   - Restart k3s-{{ k3s_role }}
 
-- name: Copy k3s files
+- name: Copy K3s files
   ansible.builtin.copy:
     content: "{{ item.value }}"
     dest: "{{ __k3s_files_dir }}/{{ item.key }}"
@@ -42,13 +42,13 @@
   register: __k3s_files_copy
   notify: Restart k3s-{{ k3s_role }}
 
-- name: Find existing k3s files
+- name: Find existing K3s files
   ansible.builtin.find:
     paths: "{{ __k3s_files_dir }}"
     patterns: "*"
   register: __k3s_files_current
 
-- name: Prune k3s files
+- name: Prune K3s files
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
@@ -57,7 +57,7 @@
     label: "{{ item | basename }}"
   notify: Restart k3s-{{ k3s_role }}
 
-- name: Copy k3s kubelet configs
+- name: Copy K3s kubelet configs
   ansible.builtin.copy:
     content: "{{ item | to_nice_yaml(indent=2, sort_keys=false) | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
     dest: "{{ __k3s_kubelet_config_dir }}/{{ '%02d' | format(index + 1) }}-ansible.conf"
@@ -69,14 +69,14 @@
   register: __k3s_kubelet_configs_copy
   notify: Restart k3s-{{ k3s_role }}
 
-- name: Find existing k3s kubelet configs
+- name: Find existing K3s kubelet configs
   ansible.builtin.find:
     paths: "{{ __k3s_kubelet_config_dir }}"
     patterns: "*"
     excludes: "00-*"
   register: __k3s_kubelet_configs_current
 
-- name: Prune k3s kubelet configs
+- name: Prune K3s kubelet configs
   ansible.builtin.file:
     path: "{{ item }}"
     state: absent
@@ -85,7 +85,7 @@
     label: "{{ item | basename }}"
   notify: Restart k3s-{{ k3s_role }}
 
-- name: Ensure k3s config and registries config
+- name: Ensure K3s config and registries config
   ansible.builtin.copy:
     content: "{{ item.content | to_nice_yaml(indent=2, sort_keys=false) | regex_replace('K3S_FILES_DIR', __k3s_files_dir) }}"
     dest: "{{ __k3s_config_dir }}/{{ item.dest }}"
@@ -109,7 +109,7 @@
 - name: Flush handlers
   ansible.builtin.meta: flush_handlers
 
-- name: Start and enable k3s service
+- name: Start and enable K3s service
   ansible.builtin.service:
     name: k3s-{{ k3s_role }}
     state: started

@@ -1,0 +1,12 @@
+nftables_base_rules:
+- tcp dport {{ ansible_port | default(22) }} accept comment "SSH"
+- iifname "podman*" accept comment "podman bridges"
+nftables_rules: []
+__nftables_binary: /usr/sbin/nft
+__nftables_table: host_firewall
+__nftables_service: nftables.service
+__nftables_config_dir: /etc/nftables/{{ __nftables_table }}
+__nftables_rules_dir: "{{ __nftables_config_dir }}/rules.d"
+__nftables_main_config: "{{ __nftables_config_dir }}/main.nft"
+__nftables_dropin_dir: /etc/systemd/system/{{ __nftables_service }}.d
+__nftables_base_rules_name: 00-base

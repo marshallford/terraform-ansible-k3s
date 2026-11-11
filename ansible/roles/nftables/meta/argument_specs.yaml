@@ -1,0 +1,16 @@
+argument_specs:
+  main:
+    options:
+      nftables_base_rules:
+        type: list
+        elements: str
+  rules:
+    options:
+      nftables_rules_name:
+        type: str
+        required: true
+      nftables_rules:
+        type: list
+        elements: str
+  down:
+    options: {}

@@ -28,7 +28,7 @@
     vars:
       inventory_difference_previous_inventory_file: "{{ lookup('env', 'ANSIBLE_TF_PREVIOUS_INVENTORY') }}"
       inventory_difference_current_inventory_file: "{{ lookup('env', 'ANSIBLE_TF_INVENTORY') }}"
-- name: Validate k3s server topology
+- name: Validate K3s server topology
   hosts: localhost
   gather_facts: false
   become: false
@@ -44,6 +44,35 @@
     ansible.builtin.add_host:
       name: "{{ (groups['servers'] | default([]) | difference(groups['new_servers'] | default([])) | sort | first) | default(groups['bootstrap_server'] | first) }}"
       groups: control_server
+- name: Configure firewall
+  hosts: servers:agents
+  gather_facts: false
+  become: true
+  tasks:
+  - name: Firewall
+    ansible.builtin.include_role:
+      name: nftables
+  - name: Firewall rules for K3s
+    ansible.builtin.include_role:
+      name: nftables
+      tasks_from: rules
+    vars:
+      nftables_rules_name: 50-k3s
+      nftables_rules: >-
+        {{
+          (
+            firewall_node_rules +
+            groups['removed_all'] | default([]) | map('extract', hostvars, 'firewall_node_rules') | flatten +
+            firewall_k3s_rules
+          ) | unique
+        }}
+  - name: Firewall rules from user input
+    ansible.builtin.include_role:
+      name: nftables
+      tasks_from: rules
+    vars:
+      nftables_rules_name: 90-user
+      nftables_rules: "{{ firewall_rules }}"
 - name: Configure API server load balancer
   hosts: servers
   gather_facts: false
@@ -53,13 +82,11 @@
   - name: Keepalived
     ansible.builtin.include_role:
       name: keepalived
-      tasks_from: up
       apply:
         become: true
   - name: HAProxy
     ansible.builtin.include_role:
       name: haproxy
-      tasks_from: up
     vars:
       haproxy_keepalived_vip_interface: >-
         {{
@@ -71,7 +98,7 @@
           interfaces_with_ipv4_addr | selectattr('ipv4.address', 'equalto', k3s_node_config['node-ip']) |
           map(attribute='device') | default([none], true) | first
         }}
-- name: Prepare machines for k3s
+- name: Prepare machines for K3s
   hosts: servers:agents
   gather_facts: false
   become: true
@@ -84,7 +111,7 @@
     ansible.builtin.include_role:
       name: system_upgrade
       tasks_from: setup
-- name: Download k3s
+- name: Download K3s
   hosts: localhost
   gather_facts: false
   become: false
@@ -106,7 +133,7 @@
       name: k3s
       tasks_from: stage
     when: not k3s_staged
-- name: Bootstrap k3s cluster
+- name: Bootstrap K3s cluster
   hosts: bootstrap_server
   gather_facts: false
   become: true
@@ -135,7 +162,7 @@
       ansible.builtin.include_role:
         name: system_upgrade
         tasks_from: upgrade
-    - name: Configure k3s
+    - name: Configure K3s
       ansible.builtin.include_role:
         name: k3s
         tasks_from: configure
@@ -144,7 +171,7 @@
         name: k3s
         tasks_from: uncordon
       when: k3s_installed
-- name: Configure new k3s servers
+- name: Configure new K3s servers
   hosts: new_servers
   gather_facts: false
   become: true
@@ -152,7 +179,7 @@
   vars:
     k3s_delegated_server_host: "{{ groups.control_server | first }}"
   tasks: *configure_node
-- name: Configure existing k3s servers
+- name: Configure existing K3s servers
   hosts: servers:!new_servers
   gather_facts: false
   become: true
@@ -160,14 +187,14 @@
   vars:
     k3s_delegated_server_host: "{{ groups.control_server | first }}"
   tasks: *configure_node
-- name: Configure new k3s agents
+- name: Configure new K3s agents
   hosts: new_agents
   gather_facts: false
   become: true
   vars:
     k3s_delegated_server_host: "{{ groups.control_server | first }}"
   tasks: *configure_node
-- name: Configure existing k3s agents
+- name: Configure existing K3s agents
   hosts: agents:!new_agents
   gather_facts: false
   become: true
@@ -214,10 +241,16 @@
       apply:
         become: true
         delegate_to: "{{ groups.control_server | first }}"
-  - name: Reset k3s
+  - name: Reset K3s
     ansible.builtin.include_role:
       name: k3s
       tasks_from: reset
+      apply:
+        become: true
+  - name: Firewall
+    ansible.builtin.include_role:
+      name: nftables
+      tasks_from: down
       apply:
         become: true
   - name: Delete node from cluster
@@ -227,3 +260,16 @@
       apply:
         become: true
         delegate_to: "{{ groups.control_server | first }}"
+- name: Reconfigure firewall
+  hosts: servers:agents
+  gather_facts: false
+  become: true
+  tasks:
+  - name: Firewall rules for K3s
+    ansible.builtin.include_role:
+      name: nftables
+      tasks_from: rules
+    vars:
+      nftables_rules_name: 50-k3s
+      nftables_rules: "{{ firewall_node_rules + firewall_k3s_rules }}"
+    when: groups['removed_all'] | default([]) | length > 0

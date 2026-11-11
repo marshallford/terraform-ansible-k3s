@@ -16,7 +16,7 @@ locals {
         ansible_python_interpreter     = "/usr/bin/python3"
         k3s_version                    = var.k3s_version
         k3s_selinux_version            = var.k3s_selinux_version
-        k3s_server                     = "https://${var.api_server.virtual_ip}:6443"
+        k3s_server                     = "https://${var.api_server.virtual_ip}:${local.api_server_port}"
         k3s_tls_san                    = concat([var.api_server.virtual_ip], var.api_server.hosts)
         k3s_server_token               = var.tokens.server
         k3s_agent_token                = var.tokens.agent
@@ -25,11 +25,13 @@ locals {
         k3s_registries_config          = var.registries_config
         k3s_cleanup                    = var.cleanup
         k3s_drain_options              = var.drain_options
+        k3s_https_listen_port          = local.k3s_https_listen_port
         system_upgrade_trigger         = var.system_upgrade_trigger
         keepalived_container_image     = var.keepalived_container_image
         keepalived_container_image_tag = var.keepalived_container_image_tag
         haproxy_container_image        = var.haproxy_container_image
         haproxy_container_image_tag    = var.haproxy_container_image_tag
+        firewall_node_rules            = local.firewall_node_rules
         k3s_all_nodes_config = { for k, v in merge(var.all_nodes_config, {
           kubelet_arg    = [for k, v in var.all_nodes_config.kubelet_arg : "${k}=${v}"]
           kube_proxy_arg = [for k, v in var.all_nodes_config.kube_proxy_arg : "${k}=${v}"]
@@ -55,7 +57,7 @@ locals {
             haproxy_keepalived_unicast_peers  = [for name, ip in local.server_node_ips : ip if name != "server-${machine.name}"]
             k3s_node_config = { for k, v in merge(machine.config, {
               node_name        = coalesce(machine.config.node_name, "server-${machine.name}"),
-              node_ip          = coalesce(machine.config.node_ip, machine.address),
+              node_ip          = local.server_node_ips["server-${machine.name}"],
               node_external_ip = coalesce(machine.config.node_external_ip, machine.address),
               node_label       = [for k, v in machine.config.node_label : "${k}=${v}"]
               node_taint       = [for k, v in machine.config.node_taint : "${k}=${v}"]
@@ -69,14 +71,22 @@ locals {
             haproxy_keepalived_virtual_ip_address = var.api_server.virtual_ip
             haproxy_keepalived_virtual_router_id  = var.api_server.virtual_router_id
             haproxy_backend_servers               = [for name, ip in local.server_node_ips : [name, ip]]
+            haproxy_listen_port                   = local.api_server_port
+            haproxy_backend_port                  = local.k3s_https_listen_port
+            firewall_k3s_rules                    = concat(local.firewall_k3s_rules, ["tcp dport ${local.api_server_port} accept comment \"K3s API server\""])
+            firewall_rules                        = var.server_machines.firewall_rules
           }
         }
         agents = {
-          vars = { k3s_role = "agent" }
+          vars = {
+            k3s_role           = "agent"
+            firewall_k3s_rules = local.firewall_k3s_rules
+          }
           children = { for group_name, group in var.agent_machine_groups : "agents_${group_name}" => {
             vars = {
-              ansible_user = group.ssh.user
-              ansible_port = group.ssh.port
+              ansible_user   = group.ssh.user
+              ansible_port   = group.ssh.port
+              firewall_rules = group.firewall_rules
             }
             hosts = { for machine in group.machines : "agent-${group_name}-${machine.name}" => {
               ansible_host = machine.address
@@ -97,7 +107,7 @@ locals {
     for file_path in fileset("${path.module}/ansible/roles", "**/*.{yaml,j2}") :
     file_path => filebase64sha512("${path.module}/ansible/roles/${file_path}")
   }
-  server               = "https://${coalesce(try(var.api_server.hosts[0], null), var.api_server.virtual_ip)}:6443"
+  server               = "https://${coalesce(try(var.api_server.hosts[0], null), var.api_server.virtual_ip)}:${local.api_server_port}"
   server_node_ips      = { for machine in var.server_machines.machines : "server-${machine.name}" => coalesce(machine.config.node_ip, machine.address) }
   first_server_machine = one([for machine in var.server_machines.machines : machine if machine.name == sort([for m in var.server_machines.machines : m.name])[0]])
   immutable = {
@@ -105,6 +115,34 @@ locals {
     api_server_virtual_router_id = var.api_server.virtual_router_id
     k3s_selinux_version          = var.k3s_selinux_version
   }
+  api_server_port       = 6443
+  k3s_https_listen_port = 8443
+  # Trusting nodes and the pod/service networks wholesale keeps any CNI working.
+  # TODO drop the VIP (flannel may use it for VXLAN) once keepalived > 2.4.3
+  # marks /32 VIPs deprecated.
+  firewall_node_addresses = distinct(flatten(concat(
+    [var.api_server.virtual_ip],
+    [for machine in var.server_machines.machines : [local.server_node_ips["server-${machine.name}"], coalesce(machine.config.node_external_ip, machine.address)]],
+    [for group in var.agent_machine_groups : [for machine in group.machines : concat(
+      split(",", coalesce(machine.config.node_ip, machine.address)),
+      split(",", coalesce(machine.config.node_external_ip, machine.address)),
+    )]],
+  )))
+  firewall_node_rules = [for family, addresses in {
+    ip  = [for address in local.firewall_node_addresses : address if !strcontains(address, ":")]
+    ip6 = [for address in local.firewall_node_addresses : address if strcontains(address, ":")]
+  } : "${family} saddr { ${join(", ", addresses)} } accept comment \"K3s nodes\"" if length(addresses) > 0]
+  firewall_cluster_cidrs = [for cidr in flatten([
+    split(",", coalesce(var.server_nodes_config.cluster_cidr, "10.42.0.0/16")),
+    split(",", coalesce(var.server_nodes_config.service_cidr, "10.43.0.0/16")),
+  ]) : trimspace(cidr)]
+  firewall_k3s_rules = concat(
+    [for family, cidrs in {
+      ip  = [for cidr in local.firewall_cluster_cidrs : cidr if !strcontains(cidr, ":")]
+      ip6 = [for cidr in local.firewall_cluster_cidrs : cidr if strcontains(cidr, ":")]
+    } : "${family} saddr { ${join(", ", cidrs)} } accept comment \"K3s pod and service networks\"" if length(cidrs) > 0],
+    ["meta l4proto { tcp, udp } th dport ${lookup(var.server_nodes_config.kube_apiserver_arg, "service-node-port-range", "30000-32767")} accept comment \"K3s NodePorts\""],
+  )
 }
 
 resource "terraform_data" "immutable" {
@@ -130,10 +168,7 @@ resource "ansible_navigator_run" "this" {
   ansible_options = {
     private_keys = var.ssh_private_keys
   }
-  artifact_queries = {
-    "stdout" = {
-      jq_filter = ".stdout"
-    }
+  artifact_queries = merge(var.playbook_stdout_enabled ? { stdout = { jq_filter = ".stdout" } } : {}, {
     "summary" = {
       jq_filter = <<-EOT
       def task_name: ((.task_path // "") | capture("/roles/(?<role>[^/]+)/").role // null) as $role
@@ -148,7 +183,7 @@ resource "ansible_navigator_run" "this" {
       }
       EOT
     }
-  }
+  })
   triggers = {
     run = {
       roles               = base64sha256(jsonencode(local.roles_files_hashes))

@@ -1,6 +1,6 @@
 # CIS Hardening
 
-This submodule provides k3s configuration based on the [CIS hardening guide](https://docs.k3s.io/security/hardening-guide).
+This submodule provides K3s configuration based on the [CIS hardening guide](https://docs.k3s.io/security/hardening-guide).
 
 ## Example
 

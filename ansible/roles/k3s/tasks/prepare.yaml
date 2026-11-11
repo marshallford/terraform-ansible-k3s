@@ -1,4 +1,4 @@
-- name: Ensure k3s directories exist
+- name: Ensure K3s directories exist
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -10,14 +10,14 @@
   - "{{ __k3s_kubelet_config_dir }}"
   - "{{ __k3s_staging_dir }}"
 
-- name: Ensure k3s manifests directory exists
+- name: Ensure K3s manifests directory exists
   ansible.builtin.file:
     path: "{{ __k3s_manifests_dir }}"
     state: directory
     mode: u=rwx,g=,o=
   when: k3s_role == "server"
 
-- name: Set k3s env file
+- name: Set K3s env file
   ansible.builtin.template:
     src: k3s.env.j2
     dest: "{{ __k3s_config_dir }}/k3s.env"
@@ -58,35 +58,35 @@
     mode: u=rw,g=,o=
   notify: Restart systemd-sysctl
 
-- name: Check if k3s binary exists
+- name: Check if K3s binary exists
   ansible.builtin.stat:
     path: "{{ __k3s_staging_dir }}/{{ __k3s_binary }}"
   register: __k3s_binary_check
 
-- name: Check if k3s images exists
+- name: Check if K3s images exists
   ansible.builtin.stat:
     path: "{{ __k3s_staging_dir }}/{{ __k3s_images }}"
   register: __k3s_images_check
 
-- name: Check if k3s selinux package exists
+- name: Check if K3s SELinux package exists
   ansible.builtin.stat:
     path: "{{ __k3s_staging_dir }}/{{ __k3s_selinux_package }}"
   register: __k3s_selinux_package_check
 
-- name: Check if k3s service is enabled
+- name: Check if K3s service is enabled
   ansible.builtin.command:
     cmd: systemctl is-enabled --quiet k3s-{{ k3s_role }}.service # noqa:command-instead-of-module
   register: __k3s_service_enabled
   failed_when: false
   changed_when: false
 
-- name: Check if k3s etcd is initialized
+- name: Check if K3s etcd is initialized
   ansible.builtin.stat:
     path: "{{ __k3s_etcd_wal_dir }}"
   register: __k3s_etcd_check
   when: k3s_role == "server"
 
-- name: Set k3s facts
+- name: Set K3s facts
   ansible.builtin.set_fact:
     k3s_staged: "{{ __k3s_binary_check.stat.exists and __k3s_images_check.stat.exists and __k3s_selinux_package_check.stat.exists }}"
     k3s_installed: "{{ __k3s_service_enabled.rc == 0 }}"

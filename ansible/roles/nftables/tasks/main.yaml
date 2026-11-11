@@ -1,0 +1,51 @@
+- name: Create nftables directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+  loop:
+  - "{{ __nftables_config_dir }}"
+  - "{{ __nftables_rules_dir }}"
+  - "{{ __nftables_dropin_dir }}"
+
+- name: Create nftables service drop-in
+  ansible.builtin.template:
+    src: nftables.service.conf.j2
+    dest: "{{ __nftables_dropin_dir }}/10-ansible.conf"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify: Reload nftables
+
+- name: Create nftables main config
+  ansible.builtin.template:
+    src: main.nft.j2
+    dest: "{{ __nftables_main_config }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=
+    validate: "{{ __nftables_binary }} --check --file %s"
+  notify: Reload nftables
+
+- name: Create nftables base rules
+  ansible.builtin.template:
+    src: rules.nft.j2
+    dest: "{{ __nftables_rules_dir }}/{{ __nftables_base_rules_name }}.nft"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=
+    validate: "{{ __nftables_binary }} --check --file %s"
+  vars:
+    __nftables_fragment_rules: "{{ nftables_base_rules }}"
+  notify: Reload nftables
+
+- name: Enable nftables service
+  ansible.builtin.systemd_service:
+    name: "{{ __nftables_service }}"
+    daemon_reload: true
+    enabled: true
+  register: __nftables_service_status
+  changed_when: __nftables_service_status.changed or __nftables_service_status.status.ActiveState != 'active'
+  notify: Reload nftables

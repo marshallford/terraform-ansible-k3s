@@ -1,10 +1,10 @@
-- name: Stop and disable k3s service
+- name: Stop and disable K3s service
   ansible.builtin.service:
     name: k3s-{{ k3s_role }}
     state: stopped
     enabled: false
 
-- name: SIGKILL k3s containerd containers
+- name: SIGKILL K3s containerd containers
   ansible.builtin.command:
     cmd: pkill -9 -f 'k3s/data/[^/]+/bin/containerd-shim-runc'
   register: __k3s_pkill_containerd_shim_runc

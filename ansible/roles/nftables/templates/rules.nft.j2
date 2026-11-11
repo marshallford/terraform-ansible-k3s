@@ -1,0 +1,8 @@
+#jinja2: lstrip_blocks: True
+table inet {{ __nftables_table }} {
+  chain input_rules {
+  }
+}
+{% for rule in __nftables_fragment_rules %}
+insert rule inet {{ __nftables_table }} input_rules {{ rule }}
+{% endfor %}

@@ -1,10 +1,14 @@
 argument_specs:
-  up:
+  main:
     options:
       haproxy_container_image:
         type: str
       haproxy_container_image_tag:
         type: str
+      haproxy_listen_port:
+        type: int
+      haproxy_backend_port:
+        type: int
       haproxy_backend_servers:
         type: list
         elements: list

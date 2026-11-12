@@ -100,6 +100,11 @@ data "ct_config" "agent" {
   pretty_print = true
 }
 
+resource "random_id" "server_ignition" {
+  for_each    = local.server_machines
+  byte_length = 4
+}
+
 resource "proxmox_virtual_environment_file" "server_ignition" {
   for_each     = data.ct_config.server
   content_type = "snippets"
@@ -108,8 +113,17 @@ resource "proxmox_virtual_environment_file" "server_ignition" {
 
   source_raw {
     data      = each.value.rendered
-    file_name = "${local.server_machines[each.key].full_name}.ign"
+    file_name = "${local.server_machines[each.key].full_name}-${random_id.server_ignition[each.key].hex}.ign"
   }
+
+  lifecycle {
+    ignore_changes = [source_raw[0].data]
+  }
+}
+
+resource "random_id" "agent_ignition" {
+  for_each    = local.agent_machines
+  byte_length = 4
 }
 
 resource "proxmox_virtual_environment_file" "agent_ignition" {
@@ -120,7 +134,11 @@ resource "proxmox_virtual_environment_file" "agent_ignition" {
 
   source_raw {
     data      = each.value.rendered
-    file_name = "${local.agent_machines[each.key].full_name}.ign"
+    file_name = "${local.agent_machines[each.key].full_name}-${random_id.agent_ignition[each.key].hex}.ign"
+  }
+
+  lifecycle {
+    ignore_changes = [source_raw[0].data]
   }
 }
 
@@ -170,8 +188,7 @@ resource "proxmox_virtual_environment_vm" "server" {
   }
 
   lifecycle {
-    create_before_destroy = true
-    ignore_changes        = [disk[0].file_id]
+    ignore_changes = [disk[0].file_id]
   }
 }
 
@@ -221,7 +238,6 @@ resource "proxmox_virtual_environment_vm" "agent" {
   }
 
   lifecycle {
-    create_before_destroy = true
-    ignore_changes        = [disk[0].file_id]
+    ignore_changes = [disk[0].file_id]
   }
 }

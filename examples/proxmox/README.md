@@ -15,6 +15,8 @@ This example demonstrates how to deploy a K3s cluster onto the Proxmox virtualiz
 
 1. For demonstration purposes, this example relies on DHCP for virtual machine network configuration; in practice, static IPs or reserved DHCP leases should be used.
 2. To ensure the example is at least somewhat portable to other Proxmox environments, no shared storage is assumed. In practice, shared file level storage should be used to store/distribute the Fedora CoreOS image across all hosts.
+3. Machine names include the Proxmox VM ID, so a replaced VM joins the cluster as a new node and the old one is reset before its VM is destroyed.
+4. Ignition only runs on first boot, so changes to the Ignition config don't replace running VMs. To roll a change out (or replace a machine), replace one machine's `random_id` per apply, e.g. `terraform apply -replace='random_id.server_ignition["00"]'`.
 
 ## Steps
 

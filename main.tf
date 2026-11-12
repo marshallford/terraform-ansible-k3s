@@ -156,6 +156,17 @@ resource "terraform_data" "immutable" {
   }
 }
 
+# Makes callers' machines create_before_destroy, so removed ones are reset before they're destroyed.
+resource "terraform_data" "machines" {
+  input = {
+    servers = keys(var.server_machines.machines)
+    agents  = { for name, group in var.agent_machine_groups : name => keys(group.machines) }
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "ansible_navigator_run" "this" {
   ansible_navigator_binary = var.ansible_navigator_binary
   working_directory        = "${path.module}/ansible"

@@ -45,7 +45,7 @@
       name: "{{ (groups['servers'] | default([]) | difference(groups['new_servers'] | default([])) | sort | first) | default(groups['bootstrap_server'] | first) }}"
       groups: control_server
 - name: Configure firewall
-  hosts: servers:agents
+  hosts: all
   gather_facts: false
   become: true
   tasks:
@@ -61,8 +61,7 @@
       nftables_rules: >-
         {{
           (
-            firewall_node_rules +
-            groups['removed_all'] | default([]) | map('extract', hostvars, 'firewall_node_rules') | flatten +
+            groups['all'] | map('extract', hostvars, 'firewall_node_rules') | flatten +
             firewall_k3s_rules
           ) | unique
         }}

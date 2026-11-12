@@ -60,7 +60,7 @@ module "k3s" {
 
   server_machines = {
     machines = { for key, vm in proxmox_virtual_environment_vm.server : key => {
-      name    = key
+      name    = "${key}-${vm.vm_id}"
       address = vm.ipv4_addresses[1][0]
       config = {
         node_label = {
@@ -73,7 +73,7 @@ module "k3s" {
   agent_machine_groups = {
     "primary" = {
       machines = { for key, vm in proxmox_virtual_environment_vm.agent : key => {
-        name    = key
+        name    = "${key}-${vm.vm_id}"
         address = vm.ipv4_addresses[1][0]
         config = {
           node_label = {

@@ -125,7 +125,8 @@ make verify VERIFY_CONTAINER_IMAGE=ghcr.io/marshallford/terraform-ansible-k3s:v0
 2. IPv4 only (no dual-stack or IPv6-only clusters)
 3. SELinux package cannot be upgraded ([upstream issue](https://github.com/coreos/rpm-ostree/issues/2127))
 4. Machines removed must be fully wiped or have their disks reprovisioned prior to rejoining the cluster
-5. Terraform-managed machine resources must set lifecycle `create_before_destroy = true` to ensure correct ordering during node removal
+5. Terraform-managed machine resources and their dependencies are always `create_before_destroy`, so a replacement can't reuse the old machine's fixed-name resources or static IP address
+6. A replaced machine needs a new `name`; the old machine is only reset when its `name` is removed
 
 ## 🚧 To-do
 

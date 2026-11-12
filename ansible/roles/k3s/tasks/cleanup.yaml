@@ -8,9 +8,4 @@
   ansible.builtin.file:
     path: "{{ __k3s_staging_dir }}/{{ item }}"
     state: absent
-  loop: "{{ (__k3s_current_staging_dir.files | map(attribute='path') | map('basename')) | difference(live_files | list) }}"
-  vars:
-    live_files:
-    - k3s-{{ k3s_version }}.bin
-    - images-{{ k3s_version }}.tar.zst
-    - selinux-{{ k3s_selinux_version }}.rpm
+  loop: "{{ (__k3s_current_staging_dir.files | map(attribute='path') | map('basename')) | difference(__k3s_artifacts | map(attribute='name')) }}"

@@ -1,24 +1,28 @@
 - name: Restart systemd-sysctl
-  ansible.builtin.service:
+  ansible.builtin.systemd_service:
     name: systemd-sysctl
     state: restarted
   retries: 3
   delay: 10
 
-- name: Reload systemd
+- name: Restart k3s-artifact-server
   ansible.builtin.systemd_service:
+    name: k3s-artifact-server
+    state: restarted
     daemon_reload: true
 
 - name: Restart k3s-server
-  ansible.builtin.service:
+  ansible.builtin.systemd_service:
     name: k3s-server
     state: restarted
+    daemon_reload: true
   retries: 3
   delay: 10
 
 - name: Restart k3s-agent
-  ansible.builtin.service:
+  ansible.builtin.systemd_service:
     name: k3s-agent
     state: restarted
+    daemon_reload: true
   retries: 3
   delay: 10

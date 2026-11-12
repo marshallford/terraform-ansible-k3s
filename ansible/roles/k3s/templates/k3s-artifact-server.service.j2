@@ -1,0 +1,16 @@
+[Unit]
+Description=Serve K3s artifacts to other machines
+
+[Service]
+ExecStart=/usr/bin/python3 -I -m http.server --bind=0.0.0.0 --directory={{ __k3s_staging_dir }} {{ k3s_artifact_server_port }}
+Restart=on-failure
+RestartSec=10s
+DynamicUser=yes
+CapabilityBoundingSet=
+TemporaryFileSystem={{ __k3s_data_dir | dirname }}:ro
+BindReadOnlyPaths={{ __k3s_staging_dir }}
+PrivateDevices=yes
+RestrictAddressFamilies=AF_INET
+
+[Install]
+WantedBy=multi-user.target

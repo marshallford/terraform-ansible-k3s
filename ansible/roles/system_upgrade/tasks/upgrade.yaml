@@ -1,5 +1,5 @@
 - name: Stop zincati
-  ansible.builtin.service:
+  ansible.builtin.systemd_service:
     name: zincati
     state: stopped
   when: system_upgrade_requested | default(false)
@@ -18,7 +18,7 @@
   when: __system_upgrade is changed
 
 - name: Start zincati
-  ansible.builtin.service:
+  ansible.builtin.systemd_service:
     name: zincati
     state: started
   when: system_upgrade_requested | default(false) and __system_upgrade is not changed

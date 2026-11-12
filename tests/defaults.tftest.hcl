@@ -77,6 +77,11 @@ run "role_defaults_match_inventory_values" {
   }
 
   assert {
+    condition     = yamldecode(ansible_navigator_run.this.inventory).all.vars.k3s_artifact_server_port == yamldecode(file("../ansible/roles/k3s/defaults/main.yaml")).k3s_artifact_server_port
+    error_message = "The k3s_artifact_server_port in the inventory differs from the k3s role default."
+  }
+
+  assert {
     condition     = yamldecode(ansible_navigator_run.this.inventory).all.children.servers.vars.haproxy_backend_port == yamldecode(file("../ansible/roles/haproxy/defaults/main.yaml")).haproxy_backend_port
     error_message = "The haproxy_backend_port in the inventory differs from the haproxy role default."
   }

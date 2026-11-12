@@ -26,17 +26,15 @@ argument_specs:
         required: true
       k3s_manifests:
         type: dict
-  download:
-    options:
-      k3s_arch:
-        type: str
-        required: true
-      k3s_version:
-        type: str
-      k3s_selinux_version:
-        type: str
+      k3s_artifact_server_port:
+        type: int
   stage:
     options:
+      k3s_artifact_source_host:
+        type: str
+        required: true
+      k3s_artifact_server_port:
+        type: int
       k3s_version:
         type: str
       k3s_selinux_version:

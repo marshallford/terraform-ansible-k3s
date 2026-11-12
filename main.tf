@@ -26,6 +26,7 @@ locals {
         k3s_cleanup                    = var.cleanup
         k3s_drain_options              = var.drain_options
         k3s_https_listen_port          = local.k3s_https_listen_port
+        k3s_artifact_server_port       = local.k3s_artifact_server_port
         system_upgrade_trigger         = var.system_upgrade_trigger
         keepalived_container_image     = var.keepalived_container_image
         keepalived_container_image_tag = var.keepalived_container_image_tag
@@ -115,8 +116,9 @@ locals {
     api_server_virtual_router_id = var.api_server.virtual_router_id
     k3s_selinux_version          = var.k3s_selinux_version
   }
-  api_server_port       = 6443
-  k3s_https_listen_port = 8443
+  api_server_port          = 6443
+  k3s_https_listen_port    = 8443
+  k3s_artifact_server_port = 8099
   # Trusting nodes and the pod/service networks wholesale keeps any CNI working.
   # TODO drop the VIP (flannel may use it for VXLAN) once keepalived > 2.4.3
   # marks /32 VIPs deprecated.

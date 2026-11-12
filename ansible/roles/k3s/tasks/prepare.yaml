@@ -1,14 +1,17 @@
 - name: Ensure K3s directories exist
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ item.path }}"
     state: directory
-    mode: u=rwx,g=rx,o=
+    mode: "{{ item.mode | default('u=rwx,g=rx,o=') }}"
   loop:
-  - "{{ __k3s_config_dir }}"
-  - "{{ __k3s_files_dir }}"
-  - "{{ __k3s_images_dir }}"
-  - "{{ __k3s_kubelet_config_dir }}"
-  - "{{ __k3s_staging_dir }}"
+  - path: "{{ __k3s_config_dir }}"
+  - path: "{{ __k3s_files_dir }}"
+  - path: "{{ __k3s_images_dir }}"
+  - path: "{{ __k3s_kubelet_config_dir }}"
+  - path: "{{ __k3s_staging_dir }}"
+    mode: u=rwx,g=rx,o=rx
+  loop_control:
+    label: "{{ item.path }}"
 
 - name: Ensure K3s manifests directory exists
   ansible.builtin.file:
@@ -58,20 +61,31 @@
     mode: u=rw,g=,o=
   notify: Restart systemd-sysctl
 
-- name: Check if K3s binary exists
-  ansible.builtin.stat:
-    path: "{{ __k3s_staging_dir }}/{{ __k3s_binary }}"
-  register: __k3s_binary_check
+- name: Ensure K3s artifact server systemd service
+  ansible.builtin.template:
+    src: k3s-artifact-server.service.j2
+    dest: /etc/systemd/system/k3s-artifact-server.service
+    mode: u=rw,g=r,o=r
+  notify: Restart k3s-artifact-server
 
-- name: Check if K3s images exists
-  ansible.builtin.stat:
-    path: "{{ __k3s_staging_dir }}/{{ __k3s_images }}"
-  register: __k3s_images_check
+- name: Start and enable K3s artifact server
+  ansible.builtin.systemd_service:
+    name: k3s-artifact-server
+    state: started
+    enabled: true
+    daemon_reload: true
 
-- name: Check if K3s SELinux package exists
+- name: Set K3s architecture fact
+  ansible.builtin.set_fact:
+    k3s_arch: "{{ 'arm64' if ansible_facts.architecture == 'aarch64' else 'arm' if ansible_facts.architecture == 'armv7l' else 'amd64' }}"
+
+- name: Check if K3s artifacts exist
   ansible.builtin.stat:
-    path: "{{ __k3s_staging_dir }}/{{ __k3s_selinux_package }}"
-  register: __k3s_selinux_package_check
+    path: "{{ __k3s_staging_dir }}/{{ item.name }}"
+  loop: "{{ __k3s_artifacts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: __k3s_artifacts_check
 
 - name: Check if K3s service is enabled
   ansible.builtin.command:
@@ -88,7 +102,6 @@
 
 - name: Set K3s facts
   ansible.builtin.set_fact:
-    k3s_staged: "{{ __k3s_binary_check.stat.exists and __k3s_images_check.stat.exists and __k3s_selinux_package_check.stat.exists }}"
+    k3s_staged: "{{ __k3s_artifacts_check.results | map(attribute='stat.exists') is all }}"
     k3s_installed: "{{ __k3s_service_enabled.rc == 0 }}"
     k3s_etcd_initialized: "{{ __k3s_etcd_check.stat.exists | default(false) }}"
-    k3s_arch: "{{ 'arm64' if ansible_facts.architecture == 'aarch64' else 'arm' if ansible_facts.architecture == 'armv7l' else 'amd64' }}"

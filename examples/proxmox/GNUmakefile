@@ -7,9 +7,9 @@ UV ?= uv
 VENV := .venv
 VENV_STAMP := $(VENV)/stamp
 
-$(VENV_STAMP): pyproject.toml $(wildcard uv.lock)
+$(VENV_STAMP): pyproject.toml uv.lock .python-version
 	$(UV) venv $(VENV) --clear
-	$(UV) sync
+	$(UV) sync --locked
 	touch $(VENV_STAMP)
 
 .PHONY: python

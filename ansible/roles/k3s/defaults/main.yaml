@@ -7,6 +7,7 @@ k3s_drain_options:
   eviction_timeout: "30m"
   deletion_timeout: "10m"
 k3s_https_listen_port: 8443
+k3s_artifact_server_port: 8099
 __k3s_config_dir: /etc/rancher/k3s
 __k3s_files_dir: "{{ __k3s_config_dir }}/files"
 __k3s_kubeconfig: "{{ __k3s_config_dir }}/k3s.yaml"
@@ -20,7 +21,25 @@ __k3s_staging_dir: "{{ __k3s_data_dir }}/staging"
 __k3s_binary: "k3s-{{ k3s_version }}.bin"
 __k3s_images: "images-{{ k3s_version }}.tar.zst"
 __k3s_selinux_package: "selinux-{{ k3s_selinux_version }}.rpm"
-__k3s_controller_download_dir: "{{ playbook_dir }}/tmp/k3s"
+__k3s_artifacts:
+- name: "{{ __k3s_binary }}"
+  download_url: "{{ __k3s_download_baseurl }}/{{ __k3s_download_binary }}"
+  download_checksum: "sha256:{{ __k3s_download_baseurl }}/{{ __k3s_download_checksum }}"
+  mode: u=rwx,g=r,o=r
+  seuser: system_u
+  serole: object_r
+  setype: container_runtime_exec_t
+  selevel: s0
+- name: "{{ __k3s_images }}"
+  download_url: "{{ __k3s_download_baseurl }}/{{ __k3s_download_airgap_images }}"
+  download_checksum: "sha256:{{ __k3s_download_baseurl }}/{{ __k3s_download_checksum }}"
+  mode: u=rw,g=r,o=r
+- name: "{{ __k3s_selinux_package }}"
+  download_url: "{{ __k3s_selinux_download_baseurl }}/{{ __k3s_selinux_download_package }}"
+  download_checksum: "sha256:{{ __k3s_selinux_download_baseurl }}/{{ __k3s_selinux_download_checksum }}"
+  mode: u=rw,g=r,o=r
+__k3s_artifact_source_url: "http://{{ hostvars[k3s_artifact_source_host]['k3s_node_config']['node-ip'] | split(',') | first }}:{{ k3s_artifact_server_port }}"
+__k3s_download_dir: "{{ playbook_dir }}/tmp/k3s/{{ k3s_arch }}"
 __k3s_download_baseurl: "https://github.com/k3s-io/k3s/releases/download/v{{ k3s_version }}"
 __k3s_download_binary: "k3s{{ (k3s_arch == 'amd64') | ternary('', '-' + k3s_arch) }}"
 __k3s_download_airgap_images: "k3s-airgap-images-{{ k3s_arch }}.tar.zst"

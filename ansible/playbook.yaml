@@ -110,22 +110,20 @@
     ansible.builtin.include_role:
       name: system_upgrade
       tasks_from: setup
-- name: Download K3s
-  hosts: localhost
-  gather_facts: false
-  become: false
-  tasks:
-  - name: Download
-    ansible.builtin.include_role:
-      name: k3s
-      tasks_from: download
-    vars:
-      k3s_arch: "{{ item }}"
-    loop: "{{ query('inventory_hostnames', 'servers:agents') | map('extract', hostvars) | rejectattr('k3s_staged') | map(attribute='k3s_arch') | unique | list }}"
-- name: Stage downloads on machines
+- name: Stage K3s artifacts on machines
   hosts: servers:agents
   gather_facts: false
   become: true
+  vars:
+    same_arch_machines: "{{ query('inventory_hostnames', 'servers:agents') | map('extract', hostvars) | selectattr('k3s_arch', 'eq', k3s_arch) }}"
+    machines_with_artifacts: "{{ same_arch_machines | selectattr('k3s_staged') | map(attribute='inventory_hostname') | list }}"
+    first_machine_without_artifacts: "{{ same_arch_machines | rejectattr('k3s_staged') | map(attribute='inventory_hostname') | sort | first }}"
+    k3s_artifact_source_host: >-
+      {{
+        (machines_with_artifacts | shuffle(seed=inventory_hostname) | first) if machines_with_artifacts else
+        'localhost' if inventory_hostname == first_machine_without_artifacts else
+        first_machine_without_artifacts
+      }}
   tasks:
   - name: Stage
     ansible.builtin.include_role:

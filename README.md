@@ -38,7 +38,7 @@ Provision and operate a Kubernetes cluster with the convenience of a CSP-managed
 1. [Terraform](https://developer.hashicorp.com/terraform/install) installed (version 1.15 or later)
 2. [`ansible-navigator`](https://ansible.readthedocs.io/projects/navigator/installation/) installed (version 26.8.0 or later)
 3. Container engine (`podman` or `docker`) with support for `amd64` or `arm64` images (Ansible execution environment)
-4. Access to `github.com` to download K3s release artifact tarballs
+4. Access to `github.com` to download K3s artifacts (binary, airgap images, SELinux package) for cluster creation, K3s upgrades, and new machine architectures. Machines otherwise copy them from each other
 
 ### ⚙️ Machines (baremetal or virtual)
 

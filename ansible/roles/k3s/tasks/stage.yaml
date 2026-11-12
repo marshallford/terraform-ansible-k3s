@@ -1,21 +1,66 @@
-- name: Copy K3s binary
-  ansible.builtin.copy:
-    src: "{{ __k3s_controller_download_dir }}/{{ k3s_arch }}/{{ __k3s_binary }}"
-    dest: "{{ __k3s_staging_dir }}/{{ __k3s_binary }}"
-    mode: u=rwx,g=r,o=r
-    seuser: system_u
-    serole: object_r
-    setype: container_runtime_exec_t
-    selevel: s0
+- name: Stage K3s artifacts from the control node
+  when: k3s_artifact_source_host == 'localhost'
+  block:
+  - name: Download K3s artifacts to the control node
+    delegate_to: "{{ k3s_artifact_source_host }}"
+    become: false
+    block:
+    - name: Ensure K3s download directory exists
+      ansible.builtin.file:
+        path: "{{ __k3s_download_dir }}"
+        state: directory
+        mode: u=rwx,g=rwx,o=rx
 
-- name: Copy K3s images
-  ansible.builtin.copy:
-    src: "{{ __k3s_controller_download_dir }}/{{ k3s_arch }}/{{ __k3s_images }}"
-    dest: "{{ __k3s_staging_dir }}/{{ __k3s_images }}"
-    mode: u=rw,g=r,o=r
+    - name: Download K3s artifacts
+      ansible.builtin.get_url:
+        url: "{{ item.download_url }}"
+        dest: "{{ __k3s_download_dir }}/{{ item.name }}"
+        checksum: "{{ item.download_checksum }}"
+        mode: u=rw,g=r,o=r
+      loop: "{{ __k3s_artifacts }}"
+      loop_control:
+        label: "{{ item.name }}"
 
-- name: Copy K3s SELinux package
-  ansible.builtin.copy:
-    src: "{{ __k3s_controller_download_dir }}/{{ __k3s_selinux_package }}"
-    dest: "{{ __k3s_staging_dir }}/{{ __k3s_selinux_package }}"
-    mode: u=rw,g=r,o=r
+  - name: Copy K3s artifacts
+    ansible.builtin.copy:
+      src: "{{ __k3s_download_dir }}/{{ item.name }}"
+      dest: "{{ __k3s_staging_dir }}/{{ item.name }}"
+      mode: "{{ item.mode }}"
+      seuser: "{{ item.seuser | default(omit) }}"
+      serole: "{{ item.serole | default(omit) }}"
+      setype: "{{ item.setype | default(omit) }}"
+      selevel: "{{ item.selevel | default(omit) }}"
+    loop: "{{ __k3s_artifacts }}"
+    loop_control:
+      label: "{{ item.name }}"
+
+- name: Stage K3s artifacts from another machine
+  when: k3s_artifact_source_host != 'localhost'
+  block:
+  - name: Checksum K3s artifacts on the source machine
+    ansible.builtin.stat:
+      path: "{{ __k3s_staging_dir }}/{{ item.name }}"
+      checksum_algorithm: sha256
+      get_mime: false
+    loop: "{{ __k3s_artifacts }}"
+    loop_control:
+      label: "{{ item.name }}"
+    register: __k3s_source_artifacts
+    failed_when: not __k3s_source_artifacts.stat.exists
+    delegate_to: "{{ k3s_artifact_source_host }}"
+
+  - name: Download K3s artifacts from the source machine
+    ansible.builtin.get_url:
+      url: "{{ __k3s_artifact_source_url }}/{{ item.name }}"
+      dest: "{{ __k3s_staging_dir }}/{{ item.name }}"
+      checksum: "sha256:{{ __k3s_source_artifacts.results[index].stat.checksum }}"
+      use_proxy: false
+      mode: "{{ item.mode }}"
+      seuser: "{{ item.seuser | default(omit) }}"
+      serole: "{{ item.serole | default(omit) }}"
+      setype: "{{ item.setype | default(omit) }}"
+      selevel: "{{ item.selevel | default(omit) }}"
+    loop: "{{ __k3s_artifacts }}"
+    loop_control:
+      label: "{{ item.name }}"
+      index_var: index

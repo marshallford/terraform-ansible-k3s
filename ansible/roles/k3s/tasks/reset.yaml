@@ -1,5 +1,5 @@
 - name: Stop and disable K3s service
-  ansible.builtin.service:
+  ansible.builtin.systemd_service:
     name: k3s-{{ k3s_role }}
     state: stopped
     enabled: false
@@ -10,3 +10,9 @@
   register: __k3s_pkill_containerd_shim_runc
   changed_when: __k3s_pkill_containerd_shim_runc.rc == 0
   failed_when: false
+
+- name: Stop and disable K3s artifact server
+  ansible.builtin.systemd_service:
+    name: k3s-artifact-server
+    state: stopped
+    enabled: false

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.1](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.8.0...v0.8.1) (2026-11-12)
+
+
+### Features
+
+* copy K3s artifacts between machines instead of re-downloading them ([#74](https://github.com/marshallford/terraform-ansible-k3s/issues/74)) ([282e7ca](https://github.com/marshallford/terraform-ansible-k3s/commit/282e7ca050a2d9b6737a2c405f40d0ae61ff8c01))
+* make machines create_before_destroy and have removed nodes trust new ones ([#72](https://github.com/marshallford/terraform-ansible-k3s/issues/72)) ([9309f4f](https://github.com/marshallford/terraform-ansible-k3s/commit/9309f4fc2bec1fd1f62c6931d80652188ce9dc05))
+
 ## [0.8.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.7.0...v0.8.0) (2026-11-11)
 
 

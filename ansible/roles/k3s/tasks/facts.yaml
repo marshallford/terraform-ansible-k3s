@@ -1,0 +1,37 @@
+- name: Require a supported machine architecture
+  ansible.builtin.assert:
+    that:
+    - ansible_facts.architecture in __k3s_arches
+    fail_msg: "Unsupported architecture {{ ansible_facts.architecture }}, machines must be {{ __k3s_arches.keys() | join(' or ') }}."
+    quiet: true
+
+- name: Set K3s architecture fact
+  ansible.builtin.set_fact:
+    k3s_arch: "{{ __k3s_arches[ansible_facts.architecture] }}"
+
+- name: Check if K3s artifacts exist
+  ansible.builtin.stat:
+    path: "{{ __k3s_staging_dir }}/{{ item.name }}"
+  loop: "{{ __k3s_artifacts }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: __k3s_artifacts_check
+
+- name: Check if K3s service is enabled
+  ansible.builtin.command:
+    cmd: systemctl is-enabled --quiet k3s-{{ k3s_role }}.service # noqa:command-instead-of-module
+  register: __k3s_service_enabled
+  failed_when: false
+  changed_when: false
+
+- name: Check if K3s etcd is initialized
+  ansible.builtin.stat:
+    path: "{{ __k3s_etcd_wal_dir }}"
+  register: __k3s_etcd_check
+  when: k3s_role == "server"
+
+- name: Set K3s facts
+  ansible.builtin.set_fact:
+    k3s_staged: "{{ __k3s_artifacts_check.results | map(attribute='stat.exists') is all }}"
+    k3s_installed: "{{ __k3s_service_enabled.rc == 0 }}"
+    k3s_etcd_initialized: "{{ __k3s_etcd_check.stat.exists | default(false) }}"

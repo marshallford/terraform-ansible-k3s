@@ -21,6 +21,9 @@ __k3s_staging_dir: "{{ __k3s_data_dir }}/staging"
 __k3s_binary: "k3s-{{ k3s_version }}.bin"
 __k3s_images: "images-{{ k3s_version }}.tar.zst"
 __k3s_selinux_package: "selinux-{{ k3s_selinux_version }}.rpm"
+__k3s_arches:
+  x86_64: amd64
+  aarch64: arm64
 __k3s_artifacts:
 - name: "{{ __k3s_binary }}"
   download_url: "{{ __k3s_download_baseurl }}/{{ __k3s_download_binary }}"
@@ -31,7 +34,7 @@ __k3s_artifacts:
 - name: "{{ __k3s_selinux_package }}"
   download_url: "{{ __k3s_selinux_download_baseurl }}/{{ __k3s_selinux_download_package }}"
   download_checksum: "sha256:{{ __k3s_selinux_download_baseurl }}/{{ __k3s_selinux_download_checksum }}"
-__k3s_artifact_source_url: "http://{{ hostvars[k3s_artifact_source_host]['k3s_node_config']['node-ip'] | split(',') | first }}:{{ k3s_artifact_server_port }}"
+__k3s_artifact_source_url: "http://{{ k3s_artifact_source_address }}:{{ k3s_artifact_server_port }}"
 __k3s_download_dir: "{{ playbook_dir }}/tmp/k3s/{{ k3s_arch }}"
 __k3s_download_baseurl: "https://github.com/k3s-io/k3s/releases/download/v{{ k3s_version }}"
 __k3s_download_binary: "k3s{{ (k3s_arch == 'amd64') | ternary('', '-' + k3s_arch) }}"

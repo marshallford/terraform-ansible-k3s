@@ -13,7 +13,7 @@ defaults
 frontend main
   bind fd@3
   option tcplog
-  default_backend machines
+  default_backend servers
 
 frontend monitor
   bind fd@4
@@ -21,7 +21,7 @@ frontend monitor
   no log
   monitor-uri /healthz
 
-backend machines
+backend servers
   balance roundrobin
   option redispatch
   option httpchk GET /readyz

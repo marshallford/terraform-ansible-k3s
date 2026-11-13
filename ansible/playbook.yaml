@@ -8,6 +8,12 @@
       timeout: 600
   - name: Gather facts
     ansible.builtin.setup:
+  - name: Gather K3s facts
+    ansible.builtin.include_role:
+      name: k3s
+      tasks_from: facts
+      apply:
+        become: true
   - name: Gather rpm-ostree facts
     ansible.builtin.include_role:
       name: rpm_ostree_status
@@ -28,10 +34,12 @@
     vars:
       inventory_difference_previous_inventory_file: "{{ lookup('env', 'ANSIBLE_TF_PREVIOUS_INVENTORY') }}"
       inventory_difference_current_inventory_file: "{{ lookup('env', 'ANSIBLE_TF_INVENTORY') }}"
-- name: Validate K3s server topology
+- name: Validate K3s cluster
   hosts: localhost
   gather_facts: false
   become: false
+  vars:
+    retained_servers: "{{ groups['servers'] | difference(groups['new_servers'] | default([])) }}"
   tasks:
   - name: Validate
     ansible.builtin.include_role:
@@ -39,10 +47,10 @@
       tasks_from: validate
     vars:
       k3s_removed_servers: "{{ groups['removed_servers'] | default([]) }}"
-      k3s_retained_servers: "{{ groups['servers'] | difference(groups['new_servers'] | default([])) }}"
+      k3s_retained_servers: "{{ retained_servers }}"
   - name: Select control server
     ansible.builtin.add_host:
-      name: "{{ (groups['servers'] | difference(groups['new_servers'] | default([])) | sort | first) | default(groups['bootstrap_server'] | first) }}"
+      name: "{{ (retained_servers | sort | first) | default(groups['bootstrap_server'] | first) }}"
       groups: control_server
 - name: Configure firewall
   hosts: all
@@ -115,7 +123,7 @@
   gather_facts: false
   become: true
   vars:
-    same_arch_machines: "{{ query('inventory_hostnames', 'servers:agents') | map('extract', hostvars) | selectattr('k3s_arch', 'eq', k3s_arch) }}"
+    same_arch_machines: "{{ (groups['servers'] + groups['agents']) | map('extract', hostvars) | selectattr('k3s_arch', 'eq', k3s_arch) }}"
     machines_with_artifacts: "{{ same_arch_machines | selectattr('k3s_staged') | map(attribute='inventory_hostname') | list }}"
     first_machine_without_artifacts: "{{ same_arch_machines | rejectattr('k3s_staged') | map(attribute='inventory_hostname') | sort | first }}"
     k3s_artifact_source_host: >-
@@ -124,6 +132,8 @@
         'localhost' if inventory_hostname == first_machine_without_artifacts else
         first_machine_without_artifacts
       }}
+    k3s_artifact_source_address: >-
+      {{ none if k3s_artifact_source_host == 'localhost' else hostvars[k3s_artifact_source_host]['k3s_node_config']['node-ip'] | split(',') | first }}
   tasks:
   - name: Stage
     ansible.builtin.include_role:
@@ -174,7 +184,7 @@
   become: true
   serial: 1
   vars:
-    k3s_delegated_server_host: "{{ groups.control_server | first }}"
+    k3s_delegated_server_host: "{{ groups['control_server'] | first }}"
   tasks: *configure_node
 - name: Configure existing K3s servers
   hosts: servers:!new_servers
@@ -182,14 +192,14 @@
   become: true
   serial: 1
   vars:
-    k3s_delegated_server_host: "{{ groups.control_server | first }}"
+    k3s_delegated_server_host: "{{ groups['control_server'] | first }}"
   tasks: *configure_node
 - name: Configure new K3s agents
   hosts: new_agents
   gather_facts: false
   become: true
   vars:
-    k3s_delegated_server_host: "{{ groups.control_server | first }}"
+    k3s_delegated_server_host: "{{ groups['control_server'] | first }}"
   tasks: *configure_node
 - name: Configure existing K3s agents
   hosts: agents:!new_agents
@@ -197,7 +207,7 @@
   become: true
   serial: 1
   vars:
-    k3s_delegated_server_host: "{{ groups.control_server | first }}"
+    k3s_delegated_server_host: "{{ groups['control_server'] | first }}"
   tasks: *configure_node
 - name: Cleanup machines
   hosts: servers:agents
@@ -237,7 +247,7 @@
       tasks_from: drain
       apply:
         become: true
-        delegate_to: "{{ groups.control_server | first }}"
+        delegate_to: "{{ groups['control_server'] | first }}"
   - name: Reset K3s
     ansible.builtin.include_role:
       name: k3s
@@ -256,7 +266,7 @@
       tasks_from: delete
       apply:
         become: true
-        delegate_to: "{{ groups.control_server | first }}"
+        delegate_to: "{{ groups['control_server'] | first }}"
 - name: Reconfigure firewall
   hosts: servers:agents
   gather_facts: false

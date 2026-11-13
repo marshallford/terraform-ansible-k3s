@@ -1,4 +1,13 @@
 argument_specs:
+  facts:
+    options:
+      k3s_role:
+        type: str
+        required: true
+      k3s_version:
+        type: str
+      k3s_selinux_version:
+        type: str
   validate:
     options:
       k3s_removed_servers:
@@ -14,10 +23,6 @@ argument_specs:
       k3s_role:
         type: str
         required: true
-      k3s_version:
-        type: str
-      k3s_selinux_version:
-        type: str
       k3s_server_token:
         type: str
         required: true
@@ -33,6 +38,8 @@ argument_specs:
       k3s_artifact_source_host:
         type: str
         required: true
+      k3s_artifact_source_address:
+        type: str
       k3s_artifact_server_port:
         type: int
       k3s_version:

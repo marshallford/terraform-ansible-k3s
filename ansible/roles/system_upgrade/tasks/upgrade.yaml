@@ -2,26 +2,30 @@
   ansible.builtin.systemd_service:
     name: zincati
     state: stopped
-  when: system_upgrade_requested | default(false)
+  when: system_upgrade_requested
 
 - name: System upgrade
   ansible.posix.rpm_ostree_upgrade:
     allow_downgrade: true
     cache_only: true
-  when: system_upgrade_requested | default(false)
+  when: system_upgrade_requested
   register: __system_upgrade
 
-- name: Reboot # noqa: no-handler
+- name: Set system upgrade reboot fact
+  ansible.builtin.set_fact:
+    __system_upgrade_reboot: "{{ __system_upgrade is changed or (system_upgrade_requested and rpm_ostree_status_base_checksum != rpm_ostree_status_booted_base_checksum) }}"
+
+- name: Reboot
   ansible.builtin.reboot:
     reboot_timeout: 1800 # 30m
     post_reboot_delay: 60 # 1m, https://github.com/ansible/ansible/issues/86122
-  when: __system_upgrade is changed
+  when: __system_upgrade_reboot
 
 - name: Start zincati
   ansible.builtin.systemd_service:
     name: zincati
     state: started
-  when: system_upgrade_requested | default(false) and __system_upgrade is not changed
+  when: system_upgrade_requested and not __system_upgrade_reboot
 
 - name: Set upgrade trigger
   ansible.builtin.copy:

@@ -39,10 +39,10 @@
       tasks_from: validate
     vars:
       k3s_removed_servers: "{{ groups['removed_servers'] | default([]) }}"
-      k3s_retained_servers: "{{ groups['servers'] | default([]) | difference(groups['new_servers'] | default([])) }}"
+      k3s_retained_servers: "{{ groups['servers'] | difference(groups['new_servers'] | default([])) }}"
   - name: Select control server
     ansible.builtin.add_host:
-      name: "{{ (groups['servers'] | default([]) | difference(groups['new_servers'] | default([])) | sort | first) | default(groups['bootstrap_server'] | first) }}"
+      name: "{{ (groups['servers'] | difference(groups['new_servers'] | default([])) | sort | first) | default(groups['bootstrap_server'] | first) }}"
       groups: control_server
 - name: Configure firewall
   hosts: all

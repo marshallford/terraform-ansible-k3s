@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.9.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.8.1...v0.9.0) (2026-11-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* the cis-hardening submodule now runs containers that don't set a seccomp profile with RuntimeDefault (seccomp_default), rejects Services that set spec.externalIPs (deny_service_external_ips), and no longer extends service account tokens, so clients that don't reload their token fail once it expires (after about an hour). terminated_pod_gc_threshold now defaults to 100 instead of 10.
+
+### Features
+
+* align cis-hardening with the K3s CIS 2.0 self-assessment ([#81](https://github.com/marshallford/terraform-ansible-k3s/issues/81)) ([74ee093](https://github.com/marshallford/terraform-ansible-k3s/commit/74ee0937d29d211296f8c5bc0e1f90ee79031301))
+
+
+### Bug Fixes
+
+* load the K3s SELinux policy on rpm-ostree and install the binary as a file ([#80](https://github.com/marshallford/terraform-ansible-k3s/issues/80)) ([ec07790](https://github.com/marshallford/terraform-ansible-k3s/commit/ec0779025ac9d4ae4552dcbf28c985f3da2ce4e0))
+* reboot into a system upgrade staged by an earlier failed run ([#79](https://github.com/marshallford/terraform-ansible-k3s/issues/79)) ([0f5d188](https://github.com/marshallford/terraform-ansible-k3s/commit/0f5d1885f89d69343b060e63b30da6dba614b7a2))
+* run notified handlers when a play fails ([#78](https://github.com/marshallford/terraform-ansible-k3s/issues/78)) ([7989f8b](https://github.com/marshallford/terraform-ansible-k3s/commit/7989f8b0983b4ae8327b36c6d853c07b57099b3b))
+
 ## [0.8.1](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.8.0...v0.8.1) (2026-11-12)
 
 

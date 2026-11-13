@@ -14,7 +14,7 @@ variable "execution_environment_enabled" {
 
 variable "execution_environment_image" {
   type        = string
-  default     = "ghcr.io/marshallford/terraform-ansible-k3s:v0.8.1" # x-release-please-version
+  default     = "ghcr.io/marshallford/terraform-ansible-k3s:v0.9.0" # x-release-please-version
   nullable    = true
   description = "Name of the execution environment container image."
 }

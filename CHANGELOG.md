@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.8.1...v0.8.2) (2026-11-13)
+
+
+### Bug Fixes
+
+* run notified handlers when a play fails ([#75](https://github.com/marshallford/terraform-ansible-k3s/issues/75)) ([a40132d](https://github.com/marshallford/terraform-ansible-k3s/commit/a40132dacab5d8d83f2228fc51b0ab6b88b3a4c8))
+
 ## [0.8.1](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.8.0...v0.8.1) (2026-11-12)
 
 

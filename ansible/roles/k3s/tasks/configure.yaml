@@ -1,17 +1,3 @@
-- name: Link to K3s binary and images in staging
-  ansible.builtin.file:
-    src: "{{ __k3s_staging_dir }}/{{ item.src }}"
-    dest: "{{ item.dest }}"
-    state: link
-  loop:
-  - src: "{{ __k3s_binary }}"
-    dest: "{{ __k3s_binary_dir }}/k3s"
-  - src: "{{ __k3s_images }}"
-    dest: "{{ __k3s_images_dir }}/images.tar.zst"
-  loop_control:
-    label: "{{ item.src }}"
-  notify: Restart k3s-{{ k3s_role }}
-
 # TODO https://github.com/coreos/rpm-ostree/issues/2127
 - name: Install K3s SELinux package
   community.general.rpm_ostree_pkg:
@@ -19,7 +5,35 @@
     apply_live: true
   retries: 3
   delay: 30
+  register: __k3s_selinux_install
   when: "__k3s_selinux_rpm_ostree_package not in rpm_ostree_status_local_packages"
+  notify: Restart k3s-{{ k3s_role }}
+
+- name: Load K3s SELinux policy
+  ansible.builtin.command:
+    cmd: load_policy
+  changed_when: true
+  when: __k3s_selinux_install is changed or not k3s_installed
+
+- name: Relabel K3s directories
+  community.general.serestorecon:
+    path: "{{ __k3s_data_dir }}"
+    recurse: true
+  when: __k3s_selinux_install is changed or not k3s_installed
+
+- name: Install K3s binary from staging
+  ansible.builtin.copy:
+    src: "{{ __k3s_staging_dir }}/{{ __k3s_binary }}"
+    dest: "{{ __k3s_binary_dir }}/k3s"
+    remote_src: true
+    mode: u=rwx,g=rx,o=rx
+  notify: Restart k3s-{{ k3s_role }}
+
+- name: Link to K3s images in staging
+  ansible.builtin.file:
+    src: "{{ __k3s_staging_dir }}/{{ __k3s_images }}"
+    dest: "{{ __k3s_images_dir }}/images.tar.zst"
+    state: link
   notify: Restart k3s-{{ k3s_role }}
 
 - name: Ensure K3s systemd service

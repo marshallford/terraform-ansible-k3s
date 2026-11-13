@@ -25,7 +25,11 @@
     ansible.builtin.copy:
       src: "{{ __k3s_download_dir }}/{{ item.name }}"
       dest: "{{ __k3s_staging_dir }}/{{ item.name }}"
-      mode: u=rw,g=r,o=r
+      mode: "{{ item.mode }}"
+      seuser: "{{ item.seuser | default(omit) }}"
+      serole: "{{ item.serole | default(omit) }}"
+      setype: "{{ item.setype | default(omit) }}"
+      selevel: "{{ item.selevel | default(omit) }}"
     loop: "{{ __k3s_artifacts }}"
     loop_control:
       label: "{{ item.name }}"
@@ -51,7 +55,11 @@
       dest: "{{ __k3s_staging_dir }}/{{ item.name }}"
       checksum: "sha256:{{ __k3s_source_artifacts.results[index].stat.checksum }}"
       use_proxy: false
-      mode: u=rw,g=r,o=r
+      mode: "{{ item.mode }}"
+      seuser: "{{ item.seuser | default(omit) }}"
+      serole: "{{ item.serole | default(omit) }}"
+      setype: "{{ item.setype | default(omit) }}"
+      selevel: "{{ item.selevel | default(omit) }}"
     loop: "{{ __k3s_artifacts }}"
     loop_control:
       label: "{{ item.name }}"

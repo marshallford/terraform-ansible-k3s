@@ -25,12 +25,19 @@ __k3s_artifacts:
 - name: "{{ __k3s_binary }}"
   download_url: "{{ __k3s_download_baseurl }}/{{ __k3s_download_binary }}"
   download_checksum: "sha256:{{ __k3s_download_baseurl }}/{{ __k3s_download_checksum }}"
+  mode: u=rwx,g=r,o=r
+  seuser: system_u
+  serole: object_r
+  setype: container_runtime_exec_t
+  selevel: s0
 - name: "{{ __k3s_images }}"
   download_url: "{{ __k3s_download_baseurl }}/{{ __k3s_download_airgap_images }}"
   download_checksum: "sha256:{{ __k3s_download_baseurl }}/{{ __k3s_download_checksum }}"
+  mode: u=rw,g=r,o=r
 - name: "{{ __k3s_selinux_package }}"
   download_url: "{{ __k3s_selinux_download_baseurl }}/{{ __k3s_selinux_download_package }}"
   download_checksum: "sha256:{{ __k3s_selinux_download_baseurl }}/{{ __k3s_selinux_download_checksum }}"
+  mode: u=rw,g=r,o=r
 __k3s_artifact_source_url: "http://{{ hostvars[k3s_artifact_source_host]['k3s_node_config']['node-ip'] | split(',') | first }}:{{ k3s_artifact_server_port }}"
 __k3s_download_dir: "{{ playbook_dir }}/tmp/k3s/{{ k3s_arch }}"
 __k3s_download_baseurl: "https://github.com/k3s-io/k3s/releases/download/v{{ k3s_version }}"

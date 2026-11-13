@@ -12,20 +12,6 @@ variable "pod_max_pids" {
   description = "Maximum number of processes per pod."
 }
 
-variable "seccomp_default" {
-  type        = bool
-  default     = true
-  nullable    = false
-  description = "Use the RuntimeDefault seccomp profile for containers that do not set one."
-}
-
-variable "deny_service_external_ips" {
-  type        = bool
-  default     = true
-  nullable    = false
-  description = "Reject Services that set external IPs."
-}
-
 variable "audit_log" {
   type = object({
     maxage    = optional(number, 30)
@@ -39,7 +25,7 @@ variable "audit_log" {
 
 variable "terminated_pod_gc_threshold" {
   type        = number
-  default     = 100
+  default     = 10
   nullable    = false
   description = "Number of terminated pods that can exist before the terminated pod garbage collector starts deleting terminated pods."
 }

@@ -2,7 +2,7 @@
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
-    mode: "{{ item.mode | default('u=rwx,g=,o=') }}"
+    mode: "{{ item.mode | default('u=rwx,g=rx,o=') }}"
   loop:
   - path: "{{ __k3s_config_dir }}"
   - path: "{{ __k3s_files_dir }}"

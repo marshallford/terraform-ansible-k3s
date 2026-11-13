@@ -15,7 +15,6 @@ output "all_nodes_config" {
       "streaming-connection-idle-timeout" = var.streaming_connection_idle_timeout
       "tls-cipher-suites"                 = "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"
       "pod-max-pids"                      = var.pod_max_pids
-      "seccomp-default"                   = var.seccomp_default
     }
   }
   description = "CIS hardening configuration options that apply to all nodes."
@@ -30,14 +29,13 @@ output "server_nodes_config" {
   value = {
     secrets_encryption = true
     kube_apiserver_arg = {
-      "enable-admission-plugins"                = join(",", concat(["NodeRestriction", "EventRateLimit"], var.deny_service_external_ips ? ["DenyServiceExternalIPs"] : []))
-      "admission-control-config-file"           = "K3S_FILES_DIR/admission-control.yaml"
-      "audit-log-path"                          = "/var/lib/rancher/k3s/server/logs/audit.log"
-      "audit-policy-file"                       = "K3S_FILES_DIR/audit.yaml"
-      "audit-log-maxage"                        = var.audit_log.maxage
-      "audit-log-maxbackup"                     = var.audit_log.maxbackup
-      "audit-log-maxsize"                       = var.audit_log.maxsize
-      "service-account-extend-token-expiration" = false
+      "enable-admission-plugins"      = "NodeRestriction,EventRateLimit"
+      "admission-control-config-file" = "K3S_FILES_DIR/admission-control.yaml"
+      "audit-log-path"                = "/var/lib/rancher/k3s/server/logs/audit.log"
+      "audit-policy-file"             = "K3S_FILES_DIR/audit.yaml"
+      "audit-log-maxage"              = var.audit_log.maxage
+      "audit-log-maxbackup"           = var.audit_log.maxbackup
+      "audit-log-maxsize"             = var.audit_log.maxsize
     }
     kube_controller_manager_arg = {
       "terminated-pod-gc-threshold" = var.terminated_pod_gc_threshold

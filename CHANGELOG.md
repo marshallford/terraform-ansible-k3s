@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.9.0...v0.9.1) (2026-11-13)
+
+
+### Bug Fixes
+
+* support only amd64 and arm64 machines and check architecture before configuring ([#83](https://github.com/marshallford/terraform-ansible-k3s/issues/83)) ([67d2b42](https://github.com/marshallford/terraform-ansible-k3s/commit/67d2b42d5b2abecda79093854b9ecc1b2b6a9f51))
+
 ## [0.9.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.8.1...v0.9.0) (2026-11-13)
 
 

@@ -31,14 +31,14 @@ module "k3s" {
     agent  = "some-token"
   }
 
-  server_machines = {
+  server_group = {
     machines = { for name, addr in local.server_machines : name => {
       name    = name
       address = addr
     } }
   }
 
-  agent_machine_groups = {
+  agent_groups = {
     "example" = {
       machines = { for name, addr in local.agent_machines : name => {
         name    = name

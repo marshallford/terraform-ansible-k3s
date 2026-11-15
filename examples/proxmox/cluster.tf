@@ -25,14 +25,16 @@ module "k3s_authentication_config" {
 }
 
 locals {
-  server_nodes_config_merged = merge(
-    module.k3s_cis_hardening.server_nodes_config,
-    module.k3s_authentication_config.server_nodes_config,
+  region_label = { "topology.kubernetes.io/region" = var.region }
+  server_config = merge(
+    module.k3s_cis_hardening.server_config,
+    module.k3s_authentication_config.server_config,
     {
       kube_apiserver_arg = merge(
-        try(module.k3s_cis_hardening.server_nodes_config.kube_apiserver_arg, {}),
-        try(module.k3s_authentication_config.server_nodes_config.kube_apiserver_arg, {})
+        module.k3s_cis_hardening.server_config.kube_apiserver_arg,
+        module.k3s_authentication_config.server_config.kube_apiserver_arg,
       )
+      node_label = local.region_label
     }
   )
 }
@@ -58,44 +60,44 @@ module "k3s" {
     server = random_password.token["server"].result
   }
 
-  server_machines = {
+  server_group = {
+    config = local.server_config
     machines = { for key, vm in proxmox_virtual_environment_vm.server : key => {
       name    = "${key}-${vm.vm_id}"
       address = vm.ipv4_addresses[1][0]
       config = {
         node_label = {
-          "topology.kubernetes.io/region" = var.region
-          "topology.kubernetes.io/zone"   = "${var.region}-${local.server_machines[key].availability_zone}"
+          "topology.kubernetes.io/zone" = "${var.region}-${local.server_machines[key].availability_zone}"
         }
       }
     } }
   }
-  agent_machine_groups = {
+  agent_groups = {
     "primary" = {
+      config = merge(module.k3s_cis_hardening.agent_config, { node_label = local.region_label })
       machines = { for key, vm in proxmox_virtual_environment_vm.agent : key => {
         name    = "${key}-${vm.vm_id}"
         address = vm.ipv4_addresses[1][0]
         config = {
           node_label = {
-            "topology.kubernetes.io/region" = var.region
-            "topology.kubernetes.io/zone"   = "${var.region}-${local.agent_machines[key].availability_zone}"
+            "topology.kubernetes.io/zone" = "${var.region}-${local.agent_machines[key].availability_zone}"
           }
         }
       } }
     }
   }
-  all_nodes_config    = module.k3s_cis_hardening.all_nodes_config
-  server_nodes_config = local.server_nodes_config_merged
-  files               = merge(module.k3s_cis_hardening.files, module.k3s_authentication_config.files)
+  files = merge(module.k3s_cis_hardening.files, module.k3s_authentication_config.files)
   kubelet_configs = [
     {
-      apiVersion                      = "kubelet.config.k8s.io/v1beta1"
-      kind                            = "KubeletConfiguration"
-      shutdownGracePeriod             = "5m"
-      shutdownGracePeriodCriticalPods = "1m"
-      imageMaximumGCAge               = "168h"
-      evictionHard = {
-        "memory.available" = "100Mi"
+      content = {
+        apiVersion                      = "kubelet.config.k8s.io/v1beta1"
+        kind                            = "KubeletConfiguration"
+        shutdownGracePeriod             = "5m"
+        shutdownGracePeriodCriticalPods = "1m"
+        imageMaximumGCAge               = "168h"
+        evictionHard = {
+          "memory.available" = "100Mi"
+        }
       }
     },
   ]

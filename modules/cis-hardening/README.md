@@ -4,7 +4,7 @@ This submodule provides K3s configuration based on the [CIS hardening guide](htt
 
 ## Example
 
-See [examples/cis-hardening](/examples/cis-hardening).
+See [examples/cis-hardening](/examples/cis-hardening). Pass `agent_config` to every agent group's `config`; a group without it isn't hardened.
 
 ## Controls
 

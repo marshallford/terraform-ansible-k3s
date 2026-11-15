@@ -78,12 +78,6 @@ argument_specs:
         type: list
         elements: str
         required: true
-      k3s_all_nodes_config:
-        type: dict
-        required: true
-      k3s_server_nodes_config:
-        type: dict
-        required: true
       k3s_node_config:
         type: dict
         required: true

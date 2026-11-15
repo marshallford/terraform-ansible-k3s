@@ -11,7 +11,7 @@ module "k3s" {
     agent  = "some-token"
   }
 
-  server_machines = {
+  server_group = {
     machines = {
       a = {
         name    = "a"
@@ -22,10 +22,12 @@ module "k3s" {
 
   kubelet_configs = [
     {
-      apiVersion                      = "kubelet.config.k8s.io/v1beta1"
-      kind                            = "KubeletConfiguration"
-      shutdownGracePeriod             = "5m"
-      shutdownGracePeriodCriticalPods = "1m"
+      content = {
+        apiVersion                      = "kubelet.config.k8s.io/v1beta1"
+        kind                            = "KubeletConfiguration"
+        shutdownGracePeriod             = "5m"
+        shutdownGracePeriodCriticalPods = "1m"
+      }
     },
   ]
 }

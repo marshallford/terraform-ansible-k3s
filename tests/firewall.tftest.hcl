@@ -1,10 +1,10 @@
 mock_provider "ansible" {}
 
 variables {
-  api_server      = { virtual_ip = "192.0.2.100", virtual_router_id = 1 }
-  tokens          = { server = "server", agent = "agent" }
-  server_machines = { firewall_rules = ["tcp dport 443 accept"], machines = { "00" = { name = "00", address = "192.0.2.10" } } }
-  agent_machine_groups = {
+  api_server   = { virtual_ip = "192.0.2.100", virtual_router_id = 1 }
+  tokens       = { server = "server", agent = "agent" }
+  server_group = { firewall_rules = ["tcp dport 443 accept"], machines = { "00" = { name = "00", address = "192.0.2.10" } } }
+  agent_groups = {
     a = { firewall_rules = ["tcp dport 80 accept"], machines = { "00" = { name = "00", address = "192.0.2.20" } } }
   }
 }
@@ -40,7 +40,7 @@ run "k3s_defaults" {
 
   assert {
     condition     = yamldecode(ansible_navigator_run.this.inventory).all.children.servers.vars.firewall_rules == ["tcp dport 443 accept"]
-    error_message = "Server firewall rules must be the server_machines firewall_rules."
+    error_message = "Server firewall rules must be the server_group firewall_rules."
   }
 
   assert {
@@ -57,16 +57,19 @@ run "k3s_dual_stack_and_node_port_range" {
   }
 
   variables {
-    agent_machine_groups = {
+    agent_groups = {
       a = { machines = {
         "00" = { name = "00", address = "192.0.2.20" }
         "01" = { name = "01", address = "192.0.2.21", config = { node_ip = "192.0.2.21,2001:db8::21", node_external_ip = "2001:db8::121" } }
       } }
     }
-    server_nodes_config = {
-      cluster_cidr       = "10.42.0.0/16, 2001:db8:42::/56"
-      service_cidr       = "10.43.0.0/16,2001:db8:43::/112"
-      kube_apiserver_arg = { "service-node-port-range" = "20000-22767" }
+    server_group = {
+      config = {
+        cluster_cidr       = "10.42.0.0/16, 2001:db8:42::/56"
+        service_cidr       = "10.43.0.0/16,2001:db8:43::/112"
+        kube_apiserver_arg = { "service-node-port-range" = "20000-22767" }
+      }
+      machines = { "00" = { name = "00", address = "192.0.2.10" } }
     }
   }
 

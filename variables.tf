@@ -69,13 +69,40 @@ variable "tokens" {
   description = "Shared secret used to join a server or agent to cluster."
 }
 
-variable "server_machines" {
+variable "server_group" {
   type = object({
     ssh = optional(object({
       user = optional(string, "core")
       port = optional(number, 22)
     }), {})
     firewall_rules = optional(list(string), [])
+    config = optional(object({
+      protect_kernel_defaults           = optional(bool)
+      selinux                           = optional(bool)
+      kubelet_arg                       = optional(map(string), {})
+      kube_proxy_arg                    = optional(map(string), {})
+      node_label                        = optional(map(string), {})
+      node_taint                        = optional(map(string), {})
+      secrets_encryption                = optional(bool)
+      secrets_encryption_provider       = optional(string)
+      cluster_cidr                      = optional(string)
+      service_cidr                      = optional(string)
+      flannel_backend                   = optional(string)
+      egress_selector_mode              = optional(string)
+      default_local_storage_path        = optional(string)
+      disable                           = optional(list(string))
+      disable_scheduler                 = optional(bool)
+      disable_cloud_controller          = optional(bool)
+      disable_kube_proxy                = optional(bool)
+      disable_network_policy            = optional(bool)
+      disable_helm_controller           = optional(bool)
+      etcd_arg                          = optional(map(string), {})
+      kube_apiserver_arg                = optional(map(string), {})
+      kube_scheduler_arg                = optional(map(string), {})
+      kube_controller_manager_arg       = optional(map(string), {})
+      kube_cloud_controller_manager_arg = optional(map(string), {})
+      disable_agent                     = optional(bool)
+    }), {})
     machines = map(object({
       name    = string
       address = string
@@ -90,16 +117,16 @@ variable "server_machines" {
   })
   nullable = false
   validation {
-    condition     = length(var.server_machines.machines) > 0
+    condition     = length(var.server_group.machines) > 0
     error_message = "At least one server machine must be defined."
   }
   validation {
-    condition     = length(distinct([for machine in var.server_machines.machines : machine.name])) == length(var.server_machines.machines)
+    condition     = length(distinct([for machine in var.server_group.machines : machine.name])) == length(var.server_group.machines)
     error_message = "Each server machine must have a unique name."
   }
   validation {
     condition = alltrue([
-      for machine in var.server_machines.machines :
+      for machine in var.server_group.machines :
       can(regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$", coalesce(machine.config.node_name, "server-${machine.name}"))) &&
       length(coalesce(machine.config.node_name, "server-${machine.name}")) <= 63
     ])
@@ -107,36 +134,44 @@ variable "server_machines" {
   }
   validation {
     condition = length(distinct([
-      for machine in var.server_machines.machines : coalesce(machine.config.node_name, "server-${machine.name}")
-    ])) == length(var.server_machines.machines)
+      for machine in var.server_group.machines : coalesce(machine.config.node_name, "server-${machine.name}")
+    ])) == length(var.server_group.machines)
     error_message = "Each server node name (config.node_name, or 'server-<name>' when unset) must be unique."
   }
   validation {
     condition = alltrue([
-      for machine in var.server_machines.machines :
+      for machine in var.server_group.machines :
       can(cidrnetmask("${coalesce(machine.config.node_ip, machine.address)}/32")) &&
       can(cidrnetmask("${coalesce(machine.config.node_external_ip, machine.address)}/32"))
     ])
     error_message = "Each server node IP and external IP (config.node_ip and config.node_external_ip, or address when unset) must be a single IPv4 address."
   }
   validation {
-    condition     = floor(var.server_machines.ssh.port) == var.server_machines.ssh.port && var.server_machines.ssh.port >= 1 && var.server_machines.ssh.port <= 65535
+    condition     = floor(var.server_group.ssh.port) == var.server_group.ssh.port && var.server_group.ssh.port >= 1 && var.server_group.ssh.port <= 65535
     error_message = "The ssh port must be a whole number between 1 and 65535."
   }
   validation {
-    condition     = alltrue([for rule in var.server_machines.firewall_rules : trimspace(rule) != "" && !strcontains(rule, "\n")])
+    condition     = alltrue([for rule in var.server_group.firewall_rules : trimspace(rule) != "" && !strcontains(rule, "\n")])
     error_message = "Each server firewall rule must be a single, non-empty line."
   }
-  description = "Machines to be configured as server nodes. The ssh user/port apply to every server machine, including when retrieving the kubeconfig. The firewall_rules are extra nftables input rules, e.g. \"tcp dport 443 accept\", where the last match wins, including over the built-in rules; [\"accept\"] disables filtering."
+  description = "The server machine group. The ssh user/port apply to every server machine, including when retrieving the kubeconfig. The firewall_rules are extra nftables input rules, e.g. \"tcp dport 443 accept\", where the last match wins, including over the built-in rules; [\"accept\"] disables filtering. The config holds K3s server configuration options (https://docs.k3s.io/cli/server) for every server machine; each machine's config adds its own options, and its node_label/node_taint entries are merged over the group's."
 }
 
-variable "agent_machine_groups" {
+variable "agent_groups" {
   type = map(object({
     ssh = optional(object({
       user = optional(string, "core")
       port = optional(number, 22)
     }), {})
     firewall_rules = optional(list(string), [])
+    config = optional(object({
+      protect_kernel_defaults = optional(bool)
+      selinux                 = optional(bool)
+      kubelet_arg             = optional(map(string), {})
+      kube_proxy_arg          = optional(map(string), {})
+      node_label              = optional(map(string), {})
+      node_taint              = optional(map(string), {})
+    }), {})
     machines = map(object({
       name    = string
       address = string
@@ -153,14 +188,14 @@ variable "agent_machine_groups" {
   nullable = false
   validation {
     condition = alltrue([
-      for group in var.agent_machine_groups :
+      for group in var.agent_groups :
       length(distinct([for machine in group.machines : machine.name])) == length(group.machines)
     ])
     error_message = "Each agent machine must have a unique name within its group."
   }
   validation {
     condition = alltrue(flatten([
-      for group_name, group in var.agent_machine_groups : [
+      for group_name, group in var.agent_groups : [
         for machine in group.machines :
         can(regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$", coalesce(machine.config.node_name, "agent-${group_name}-${machine.name}"))) &&
         length(coalesce(machine.config.node_name, "agent-${group_name}-${machine.name}")) <= 63
@@ -170,14 +205,14 @@ variable "agent_machine_groups" {
   }
   validation {
     condition = length(distinct(concat(
-      [for machine in var.server_machines.machines : coalesce(machine.config.node_name, "server-${machine.name}")],
-      flatten([for group_name, group in var.agent_machine_groups : [for machine in group.machines : coalesce(machine.config.node_name, "agent-${group_name}-${machine.name}")]]),
-    ))) == length(var.server_machines.machines) + sum(concat([0], [for group in var.agent_machine_groups : length(group.machines)]))
+      [for machine in var.server_group.machines : coalesce(machine.config.node_name, "server-${machine.name}")],
+      flatten([for group_name, group in var.agent_groups : [for machine in group.machines : coalesce(machine.config.node_name, "agent-${group_name}-${machine.name}")]]),
+    ))) == length(var.server_group.machines) + sum(concat([0], [for group in var.agent_groups : length(group.machines)]))
     error_message = "Each agent node name (config.node_name, or 'agent-<group>-<name>' when unset) must be unique across all server and agent nodes."
   }
   validation {
     condition = alltrue(flatten([
-      for group in var.agent_machine_groups : [
+      for group in var.agent_groups : [
         for machine in group.machines : alltrue([
           for ip in concat(
             split(",", coalesce(machine.config.node_ip, machine.address)),
@@ -190,7 +225,7 @@ variable "agent_machine_groups" {
   }
   validation {
     condition = alltrue(flatten([
-      for group in var.agent_machine_groups : [
+      for group in var.agent_groups : [
         for machine in group.machines :
         length(split(",", coalesce(machine.config.node_ip, machine.address))) == 1 || (
           length(split(",", coalesce(machine.config.node_ip, machine.address))) == 2 &&
@@ -201,14 +236,18 @@ variable "agent_machine_groups" {
     error_message = "Each agent node IP (config.node_ip, or address when unset) must be a single IP address or a dual-stack pair of one IPv4 and one IPv6 address, as the kubelet requires."
   }
   validation {
-    condition     = alltrue([for group in var.agent_machine_groups : floor(group.ssh.port) == group.ssh.port && group.ssh.port >= 1 && group.ssh.port <= 65535])
+    condition     = alltrue([for group in var.agent_groups : floor(group.ssh.port) == group.ssh.port && group.ssh.port >= 1 && group.ssh.port <= 65535])
     error_message = "The ssh port of each agent group must be a whole number between 1 and 65535."
   }
   validation {
-    condition     = alltrue(flatten([for group in var.agent_machine_groups : [for rule in group.firewall_rules : trimspace(rule) != "" && !strcontains(rule, "\n")]]))
+    condition     = alltrue(flatten([for group in var.agent_groups : [for rule in group.firewall_rules : trimspace(rule) != "" && !strcontains(rule, "\n")]]))
     error_message = "Each agent group firewall rule must be a single, non-empty line."
   }
-  description = "Machines to be configured as agent nodes, grouped. The ssh user/port and firewall_rules (as for server_machines) apply to every machine within a group."
+  validation {
+    condition     = !contains(keys(var.agent_groups), "server")
+    error_message = "The agent group name 'server' is reserved for the server group."
+  }
+  description = "Agent machine groups. The ssh user/port and firewall_rules (as for server_group) apply to every machine within a group. The config holds K3s agent configuration options (https://docs.k3s.io/cli/agent) for every machine within a group, merged with each machine's config as for server_group."
 }
 
 variable "k3s_version" {
@@ -261,49 +300,6 @@ variable "haproxy_container_image_tag" {
   description = "HAProxy container image tag used for API server load balancing."
 }
 
-# https://docs.k3s.io/cli/agent
-variable "all_nodes_config" {
-  type = object({
-    protect_kernel_defaults = optional(bool)
-    selinux                 = optional(bool)
-    kubelet_arg             = optional(map(string), {})
-    kube_proxy_arg          = optional(map(string), {})
-  })
-  default     = {}
-  nullable    = false
-  description = "Configuration options that apply to all nodes."
-}
-
-# https://docs.k3s.io/cli/server
-variable "server_nodes_config" {
-  type = object({
-    secrets_encryption                = optional(bool)
-    secrets_encryption_provider       = optional(string)
-    cluster_cidr                      = optional(string)
-    service_cidr                      = optional(string)
-    flannel_backend                   = optional(string)
-    egress_selector_mode              = optional(string)
-    default_local_storage_path        = optional(string)
-    disable                           = optional(list(string))
-    disable_scheduler                 = optional(bool)
-    disable_cloud_controller          = optional(bool)
-    disable_kube_proxy                = optional(bool)
-    disable_network_policy            = optional(bool)
-    disable_helm_controller           = optional(bool)
-    etcd_arg                          = optional(map(string), {})
-    kube_apiserver_arg                = optional(map(string), {})
-    kube_scheduler_arg                = optional(map(string), {})
-    kube_controller_manager_arg       = optional(map(string), {})
-    kube_cloud_controller_manager_arg = optional(map(string), {})
-    kubelet_arg                       = optional(map(string), {})
-    kube_proxy_arg                    = optional(map(string), {})
-    disable_agent                     = optional(bool)
-  })
-  default     = {}
-  nullable    = false
-  description = "Configuration options that apply to server nodes."
-}
-
 variable "manifests" {
   type        = map(string)
   default     = {}
@@ -312,10 +308,20 @@ variable "manifests" {
 }
 
 variable "files" {
-  type        = map(string)
-  default     = {}
-  nullable    = false
-  description = "Files copied to the machines to be referenced in configuration (filename=contents). The string 'K3S_FILES_DIR' can be referenced in configurations to point to the directory where the files are copied."
+  type = map(object({
+    groups  = optional(list(string))
+    content = string
+  }))
+  default  = {}
+  nullable = false
+  validation {
+    condition = alltrue([
+      for file in var.files :
+      length(coalesce(file.groups, ["server"])) > 0 && alltrue([for group in coalesce(file.groups, []) : group == "server" || contains(keys(var.agent_groups), group)])
+    ])
+    error_message = "Each file's groups must be unset or a non-empty list of 'server' and agent group names."
+  }
+  description = "Files copied to the machines to be referenced in configuration (filename = { groups, content }). The groups select the machines that get the file: 'server' for the server group, or agent group names; when unset, every machine. The string 'K3S_FILES_DIR' can be referenced in configurations to point to the directory where the files are copied."
 }
 
 # https://docs.k3s.io/installation/configuration#kubelet-configuration-files
@@ -324,24 +330,28 @@ variable "kubelet_configs" {
   default  = []
   nullable = false
   validation {
-    condition     = can(slice(var.kubelet_configs, 0, 0)) && alltrue([for v in var.kubelet_configs : can(keys(v))])
-    error_message = "The kubelet_configs variable must be a list of objects or maps."
+    condition = can(slice(var.kubelet_configs, 0, 0)) && alltrue([
+      for item in var.kubelet_configs : can(keys(item)) && length(setsubtract(keys(item), ["groups", "content"])) == 0 && can(keys(item.content))
+    ])
+    error_message = "The kubelet_configs variable must be a list of objects with optional groups and a content object."
   }
   validation {
     condition = !can(slice(var.kubelet_configs, 0, 0)) || alltrue([
-      for config in var.kubelet_configs :
-      try(config.apiVersion, null) != null
+      for item in var.kubelet_configs :
+      try(item.content.apiVersion, null) != null && try(item.content.kind, null) == "KubeletConfiguration"
     ])
-    error_message = "Each kubelet configuration must contain an 'apiVersion' key."
+    error_message = "Each kubelet configuration content must contain an 'apiVersion' key and 'kind: KubeletConfiguration'."
   }
   validation {
     condition = !can(slice(var.kubelet_configs, 0, 0)) || alltrue([
-      for config in var.kubelet_configs :
-      try(config.kind, null) == "KubeletConfiguration"
+      for item in var.kubelet_configs : try(
+        length(coalesce(try(item.groups, null), ["server"])) > 0 && alltrue([for group in coalesce(try(item.groups, null), []) : group == "server" || contains(keys(var.agent_groups), group)]),
+        false,
+      )
     ])
-    error_message = "Each kubelet configuration must contain 'kind: KubeletConfiguration'."
+    error_message = "Each kubelet configuration's groups must be unset or a non-empty list of 'server' and agent group names."
   }
-  description = "Configure kubelet via drop-in configuration files."
+  description = "Kubelet configuration drop-in files ([{ groups, content }]). The content is a KubeletConfiguration object; the groups select machines as for files, and when unset every machine gets the file. Later files take precedence. The string 'K3S_FILES_DIR' is replaced as for files."
 }
 
 # https://rancher.com/docs/k3s/latest/en/installation/private-registry/

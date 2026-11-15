@@ -11,18 +11,17 @@ module "k3s" {
     agent  = "some-token"
   }
 
-  server_machines = {
+  server_group = {
+    config = {
+      flannel_backend        = "none"
+      disable_network_policy = true
+    }
     machines = {
       a = {
         name    = "a"
         address = "192.168.1.100"
       }
     }
-  }
-
-  server_nodes_config = {
-    flannel_backend        = "none"
-    disable_network_policy = true,
   }
 }
 

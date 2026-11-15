@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.10.0](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.9.1...v0.10.0) (2026-11-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* server_machines is now server_group and agent_machine_groups is now agent_groups. all_nodes_config and server_nodes_config are removed; move their options into server_group.config and each agent group's config (cis-hardening's agent_config must be passed to every agent group). kubelet_configs items are now { groups, content } and files values are { groups, content }. The cis-hardening outputs are server_config, agent_config and files; authentication-config outputs server_config and files. The agent group name "server" is reserved.
+
+### Features
+
+* configure K3s per machine group ([#85](https://github.com/marshallford/terraform-ansible-k3s/issues/85)) ([43d8dee](https://github.com/marshallford/terraform-ansible-k3s/commit/43d8dee44a02a1828051d0aee7c3c391e566b82d))
+
 ## [0.9.1](https://github.com/marshallford/terraform-ansible-k3s/compare/v0.9.0...v0.9.1) (2026-11-13)
 
 

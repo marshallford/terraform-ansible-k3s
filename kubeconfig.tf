@@ -10,7 +10,7 @@ module "kubeconfig" {
   execution_environment_image = var.execution_environment_image
   ssh_private_keys            = var.ssh_private_keys
   server_machine = {
-    ssh     = var.server_machines.ssh
+    ssh     = var.server_group.ssh
     address = terraform_data.cluster_created.output
   }
   block_type = var.kubeconfig_block_type

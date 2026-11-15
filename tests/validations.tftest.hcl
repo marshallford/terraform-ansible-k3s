@@ -1,9 +1,9 @@
 mock_provider "ansible" {}
 
 variables {
-  api_server      = { virtual_ip = "192.0.2.100", virtual_router_id = 1 }
-  tokens          = { server = "server", agent = "agent" }
-  server_machines = { machines = { "00" = { name = "00", address = "192.0.2.10" } } }
+  api_server   = { virtual_ip = "192.0.2.100", virtual_router_id = 1 }
+  tokens       = { server = "server", agent = "agent" }
+  server_group = { machines = { "00" = { name = "00", address = "192.0.2.10" } } }
 }
 
 run "valid_boundary_values" {
@@ -16,12 +16,12 @@ run "valid_boundary_values" {
   variables {
     api_server = { virtual_ip = "192.0.2.100", virtual_router_id = 255 }
     tokens     = { server = "s", agent = "a" }
-    server_machines = { ssh = { port = 65535 }, firewall_rules = ["accept"], machines = {
+    server_group = { ssh = { port = 65535 }, firewall_rules = ["accept"], machines = {
       "00" = { name = "00", address = "192.0.2.10", config = { node_name = format("%063d", 0) } }
       "01" = { name = "01", address = "192.0.2.11" }
       "02" = { name = "02", address = "server-02.example.com", config = { node_ip = "192.0.2.12", node_external_ip = "198.51.100.12" } }
     } }
-    agent_machine_groups = {
+    agent_groups = {
       a = { ssh = { port = 1 }, firewall_rules = ["tcp dport 22 drop", "ip saddr 192.0.2.0/24 tcp dport 22 accept"], machines = {
         "00" = { name = "00", address = "192.0.2.20", config = { node_name = "agent-a-00" } }
         "01" = { name = "01", address = "agent-a-01.example.com", config = { node_ip = "192.0.2.22,2001:db8::22", node_external_ip = "2001:db8::122" } }
@@ -31,9 +31,14 @@ run "valid_boundary_values" {
     k3s_version         = "1.38.0-rc1+k3s1"
     k3s_selinux_version = "1.6.1"
     kubelet_configs = [
-      { apiVersion = "kubelet.config.k8s.io/v1beta1", kind = "KubeletConfiguration", shutdownGracePeriod = "5m" },
-      { apiVersion = "kubelet.config.k8s.io/v1beta1", kind = "KubeletConfiguration", evictionHard = { "memory.available" = "100Mi" } },
+      { content = { apiVersion = "kubelet.config.k8s.io/v1beta1", kind = "KubeletConfiguration", shutdownGracePeriod = "5m" } },
+      { groups = ["server", "a"], content = { apiVersion = "kubelet.config.k8s.io/v1beta1", kind = "KubeletConfiguration", evictionHard = { "memory.available" = "100Mi" } } },
+      { groups = ["b"], content = { apiVersion = "kubelet.config.k8s.io/v1beta1", kind = "KubeletConfiguration", maxPods = 50 } },
     ]
+    files = {
+      "all.yaml"   = { content = "a: 1" }
+      "agent.yaml" = { groups = ["a", "b"], content = "b: 2" }
+    }
     registries_config     = { mirrors = {} }
     drain_options         = { eviction_timeout = "1h30m", deletion_timeout = "30s" }
     kubeconfig_block_type = "data"
@@ -138,7 +143,7 @@ run "tokens_agent_empty" {
   expect_failures = [var.tokens]
 }
 
-run "server_machines_empty" {
+run "server_group_empty" {
   command = plan
 
   module {
@@ -146,13 +151,13 @@ run "server_machines_empty" {
   }
 
   variables {
-    server_machines = { machines = {} }
+    server_group = { machines = {} }
   }
 
-  expect_failures = [var.server_machines]
+  expect_failures = [var.server_group]
 }
 
-run "server_machines_duplicate_names" {
+run "server_group_duplicate_names" {
   command = plan
 
   module {
@@ -160,16 +165,16 @@ run "server_machines_duplicate_names" {
   }
 
   variables {
-    server_machines = { machines = {
+    server_group = { machines = {
       "00" = { name = "00", address = "192.0.2.10", config = { node_name = "server-a" } }
       "01" = { name = "00", address = "192.0.2.11", config = { node_name = "server-b" } }
     } }
   }
 
-  expect_failures = [var.server_machines]
+  expect_failures = [var.server_group]
 }
 
-run "server_machines_node_name_invalid_characters" {
+run "server_group_node_name_invalid_characters" {
   command = plan
 
   module {
@@ -177,13 +182,13 @@ run "server_machines_node_name_invalid_characters" {
   }
 
   variables {
-    server_machines = { machines = { "00" = { name = "00", address = "192.0.2.10", config = { node_name = "Server_00" } } } }
+    server_group = { machines = { "00" = { name = "00", address = "192.0.2.10", config = { node_name = "Server_00" } } } }
   }
 
-  expect_failures = [var.server_machines]
+  expect_failures = [var.server_group]
 }
 
-run "server_machines_node_name_too_long" {
+run "server_group_node_name_too_long" {
   command = plan
 
   module {
@@ -191,13 +196,13 @@ run "server_machines_node_name_too_long" {
   }
 
   variables {
-    server_machines = { machines = { "00" = { name = "00", address = "192.0.2.10", config = { node_name = format("%064d", 0) } } } }
+    server_group = { machines = { "00" = { name = "00", address = "192.0.2.10", config = { node_name = format("%064d", 0) } } } }
   }
 
-  expect_failures = [var.server_machines]
+  expect_failures = [var.server_group]
 }
 
-run "server_machines_default_node_name_invalid" {
+run "server_group_default_node_name_invalid" {
   command = plan
 
   module {
@@ -205,13 +210,13 @@ run "server_machines_default_node_name_invalid" {
   }
 
   variables {
-    server_machines = { machines = { "00" = { name = "Server_00", address = "192.0.2.10" } } }
+    server_group = { machines = { "00" = { name = "Server_00", address = "192.0.2.10" } } }
   }
 
-  expect_failures = [var.server_machines]
+  expect_failures = [var.server_group]
 }
 
-run "server_machines_node_names_not_unique" {
+run "server_group_node_names_not_unique" {
   command = plan
 
   module {
@@ -219,16 +224,16 @@ run "server_machines_node_names_not_unique" {
   }
 
   variables {
-    server_machines = { machines = {
+    server_group = { machines = {
       "00" = { name = "00", address = "192.0.2.10", config = { node_name = "server-01" } }
       "01" = { name = "01", address = "192.0.2.11" }
     } }
   }
 
-  expect_failures = [var.server_machines]
+  expect_failures = [var.server_group]
 }
 
-run "server_machines_address_hostname" {
+run "server_group_address_hostname" {
   command = plan
 
   module {
@@ -236,13 +241,13 @@ run "server_machines_address_hostname" {
   }
 
   variables {
-    server_machines = { machines = { "00" = { name = "00", address = "server-00.example.com" } } }
+    server_group = { machines = { "00" = { name = "00", address = "server-00.example.com" } } }
   }
 
-  expect_failures = [var.server_machines]
+  expect_failures = [var.server_group]
 }
 
-run "server_machines_node_ip_ipv6" {
+run "server_group_node_ip_ipv6" {
   command = plan
 
   module {
@@ -250,13 +255,13 @@ run "server_machines_node_ip_ipv6" {
   }
 
   variables {
-    server_machines = { machines = { "00" = { name = "00", address = "192.0.2.10", config = { node_ip = "2001:db8::10" } } } }
+    server_group = { machines = { "00" = { name = "00", address = "192.0.2.10", config = { node_ip = "2001:db8::10" } } } }
   }
 
-  expect_failures = [var.server_machines]
+  expect_failures = [var.server_group]
 }
 
-run "server_machines_external_ip_hostname" {
+run "server_group_external_ip_hostname" {
   command = plan
 
   module {
@@ -264,13 +269,13 @@ run "server_machines_external_ip_hostname" {
   }
 
   variables {
-    server_machines = { machines = { "00" = { name = "00", address = "server-00.example.com", config = { node_ip = "192.0.2.10" } } } }
+    server_group = { machines = { "00" = { name = "00", address = "server-00.example.com", config = { node_ip = "192.0.2.10" } } } }
   }
 
-  expect_failures = [var.server_machines]
+  expect_failures = [var.server_group]
 }
 
-run "server_machines_external_ip_list" {
+run "server_group_external_ip_list" {
   command = plan
 
   module {
@@ -278,13 +283,13 @@ run "server_machines_external_ip_list" {
   }
 
   variables {
-    server_machines = { machines = { "00" = { name = "00", address = "192.0.2.10", config = { node_external_ip = "198.51.100.10,2001:db8::10" } } } }
+    server_group = { machines = { "00" = { name = "00", address = "192.0.2.10", config = { node_external_ip = "198.51.100.10,2001:db8::10" } } } }
   }
 
-  expect_failures = [var.server_machines]
+  expect_failures = [var.server_group]
 }
 
-run "server_machines_ssh_port_invalid" {
+run "server_group_ssh_port_invalid" {
   command = plan
 
   module {
@@ -292,13 +297,13 @@ run "server_machines_ssh_port_invalid" {
   }
 
   variables {
-    server_machines = { ssh = { port = 0 }, machines = { "00" = { name = "00", address = "192.0.2.10" } } }
+    server_group = { ssh = { port = 0 }, machines = { "00" = { name = "00", address = "192.0.2.10" } } }
   }
 
-  expect_failures = [var.server_machines]
+  expect_failures = [var.server_group]
 }
 
-run "server_machines_ssh_port_not_whole" {
+run "server_group_ssh_port_not_whole" {
   command = plan
 
   module {
@@ -306,13 +311,13 @@ run "server_machines_ssh_port_not_whole" {
   }
 
   variables {
-    server_machines = { ssh = { port = 22.5 }, machines = { "00" = { name = "00", address = "192.0.2.10" } } }
+    server_group = { ssh = { port = 22.5 }, machines = { "00" = { name = "00", address = "192.0.2.10" } } }
   }
 
-  expect_failures = [var.server_machines]
+  expect_failures = [var.server_group]
 }
 
-run "server_machines_firewall_rules_empty" {
+run "server_group_firewall_rules_empty" {
   command = plan
 
   module {
@@ -320,13 +325,13 @@ run "server_machines_firewall_rules_empty" {
   }
 
   variables {
-    server_machines = { firewall_rules = [""], machines = { "00" = { name = "00", address = "192.0.2.10" } } }
+    server_group = { firewall_rules = [""], machines = { "00" = { name = "00", address = "192.0.2.10" } } }
   }
 
-  expect_failures = [var.server_machines]
+  expect_failures = [var.server_group]
 }
 
-run "agent_machine_groups_duplicate_names" {
+run "agent_groups_duplicate_names" {
   command = plan
 
   module {
@@ -334,16 +339,16 @@ run "agent_machine_groups_duplicate_names" {
   }
 
   variables {
-    agent_machine_groups = { a = { machines = {
+    agent_groups = { a = { machines = {
       "00" = { name = "00", address = "192.0.2.20", config = { node_name = "agent-a" } }
       "01" = { name = "00", address = "192.0.2.21", config = { node_name = "agent-b" } }
     } } }
   }
 
-  expect_failures = [var.agent_machine_groups]
+  expect_failures = [var.agent_groups]
 }
 
-run "agent_machine_groups_node_name_invalid_characters" {
+run "agent_groups_node_name_invalid_characters" {
   command = plan
 
   module {
@@ -351,13 +356,13 @@ run "agent_machine_groups_node_name_invalid_characters" {
   }
 
   variables {
-    agent_machine_groups = { a = { machines = { "00" = { name = "00", address = "192.0.2.20", config = { node_name = "-agent" } } } } }
+    agent_groups = { a = { machines = { "00" = { name = "00", address = "192.0.2.20", config = { node_name = "-agent" } } } } }
   }
 
-  expect_failures = [var.agent_machine_groups]
+  expect_failures = [var.agent_groups]
 }
 
-run "agent_machine_groups_node_name_too_long" {
+run "agent_groups_node_name_too_long" {
   command = plan
 
   module {
@@ -365,13 +370,13 @@ run "agent_machine_groups_node_name_too_long" {
   }
 
   variables {
-    agent_machine_groups = { a = { machines = { "00" = { name = "00", address = "192.0.2.20", config = { node_name = format("%064d", 0) } } } } }
+    agent_groups = { a = { machines = { "00" = { name = "00", address = "192.0.2.20", config = { node_name = format("%064d", 0) } } } } }
   }
 
-  expect_failures = [var.agent_machine_groups]
+  expect_failures = [var.agent_groups]
 }
 
-run "agent_machine_groups_default_node_name_too_long" {
+run "agent_groups_default_node_name_too_long" {
   command = plan
 
   module {
@@ -379,13 +384,13 @@ run "agent_machine_groups_default_node_name_too_long" {
   }
 
   variables {
-    agent_machine_groups = { b = { machines = { "00" = { name = format("%056d", 0), address = "192.0.2.20" } } } }
+    agent_groups = { b = { machines = { "00" = { name = format("%056d", 0), address = "192.0.2.20" } } } }
   }
 
-  expect_failures = [var.agent_machine_groups]
+  expect_failures = [var.agent_groups]
 }
 
-run "agent_machine_groups_node_name_overlaps_server" {
+run "agent_groups_node_name_overlaps_server" {
   command = plan
 
   module {
@@ -393,13 +398,13 @@ run "agent_machine_groups_node_name_overlaps_server" {
   }
 
   variables {
-    agent_machine_groups = { a = { machines = { "00" = { name = "00", address = "192.0.2.20", config = { node_name = "server-00" } } } } }
+    agent_groups = { a = { machines = { "00" = { name = "00", address = "192.0.2.20", config = { node_name = "server-00" } } } } }
   }
 
-  expect_failures = [var.agent_machine_groups]
+  expect_failures = [var.agent_groups]
 }
 
-run "agent_machine_groups_address_hostname" {
+run "agent_groups_address_hostname" {
   command = plan
 
   module {
@@ -407,13 +412,13 @@ run "agent_machine_groups_address_hostname" {
   }
 
   variables {
-    agent_machine_groups = { a = { machines = { "00" = { name = "00", address = "agent-a-00.example.com" } } } }
+    agent_groups = { a = { machines = { "00" = { name = "00", address = "agent-a-00.example.com" } } } }
   }
 
-  expect_failures = [var.agent_machine_groups]
+  expect_failures = [var.agent_groups]
 }
 
-run "agent_machine_groups_external_ip_invalid" {
+run "agent_groups_external_ip_invalid" {
   command = plan
 
   module {
@@ -421,13 +426,13 @@ run "agent_machine_groups_external_ip_invalid" {
   }
 
   variables {
-    agent_machine_groups = { a = { machines = { "00" = { name = "00", address = "192.0.2.20", config = { node_external_ip = "192.0.2.300" } } } } }
+    agent_groups = { a = { machines = { "00" = { name = "00", address = "192.0.2.20", config = { node_external_ip = "192.0.2.300" } } } } }
   }
 
-  expect_failures = [var.agent_machine_groups]
+  expect_failures = [var.agent_groups]
 }
 
-run "agent_machine_groups_node_ip_hostname" {
+run "agent_groups_node_ip_hostname" {
   command = plan
 
   module {
@@ -435,13 +440,13 @@ run "agent_machine_groups_node_ip_hostname" {
   }
 
   variables {
-    agent_machine_groups = { a = { machines = { "00" = { name = "00", address = "agent-a-00.example.com", config = { node_external_ip = "198.51.100.20" } } } } }
+    agent_groups = { a = { machines = { "00" = { name = "00", address = "agent-a-00.example.com", config = { node_external_ip = "198.51.100.20" } } } } }
   }
 
-  expect_failures = [var.agent_machine_groups]
+  expect_failures = [var.agent_groups]
 }
 
-run "agent_machine_groups_node_ip_same_family_pair" {
+run "agent_groups_node_ip_same_family_pair" {
   command = plan
 
   module {
@@ -449,13 +454,13 @@ run "agent_machine_groups_node_ip_same_family_pair" {
   }
 
   variables {
-    agent_machine_groups = { a = { machines = { "00" = { name = "00", address = "192.0.2.20", config = { node_ip = "192.0.2.20,192.0.2.21" } } } } }
+    agent_groups = { a = { machines = { "00" = { name = "00", address = "192.0.2.20", config = { node_ip = "192.0.2.20,192.0.2.21" } } } } }
   }
 
-  expect_failures = [var.agent_machine_groups]
+  expect_failures = [var.agent_groups]
 }
 
-run "agent_machine_groups_node_ip_more_than_two" {
+run "agent_groups_node_ip_more_than_two" {
   command = plan
 
   module {
@@ -463,13 +468,13 @@ run "agent_machine_groups_node_ip_more_than_two" {
   }
 
   variables {
-    agent_machine_groups = { a = { machines = { "00" = { name = "00", address = "192.0.2.20", config = { node_ip = "192.0.2.20,2001:db8::20,2001:db8::21" } } } } }
+    agent_groups = { a = { machines = { "00" = { name = "00", address = "192.0.2.20", config = { node_ip = "192.0.2.20,2001:db8::20,2001:db8::21" } } } } }
   }
 
-  expect_failures = [var.agent_machine_groups]
+  expect_failures = [var.agent_groups]
 }
 
-run "agent_machine_groups_ssh_port_invalid" {
+run "agent_groups_ssh_port_invalid" {
   command = plan
 
   module {
@@ -477,13 +482,13 @@ run "agent_machine_groups_ssh_port_invalid" {
   }
 
   variables {
-    agent_machine_groups = { a = { ssh = { port = 65536 }, machines = { "00" = { name = "00", address = "192.0.2.20" } } } }
+    agent_groups = { a = { ssh = { port = 65536 }, machines = { "00" = { name = "00", address = "192.0.2.20" } } } }
   }
 
-  expect_failures = [var.agent_machine_groups]
+  expect_failures = [var.agent_groups]
 }
 
-run "agent_machine_groups_ssh_port_not_whole" {
+run "agent_groups_ssh_port_not_whole" {
   command = plan
 
   module {
@@ -491,13 +496,13 @@ run "agent_machine_groups_ssh_port_not_whole" {
   }
 
   variables {
-    agent_machine_groups = { a = { ssh = { port = 22.5 }, machines = { "00" = { name = "00", address = "192.0.2.20" } } } }
+    agent_groups = { a = { ssh = { port = 22.5 }, machines = { "00" = { name = "00", address = "192.0.2.20" } } } }
   }
 
-  expect_failures = [var.agent_machine_groups]
+  expect_failures = [var.agent_groups]
 }
 
-run "agent_machine_groups_firewall_rules_multiline" {
+run "agent_groups_firewall_rules_multiline" {
   command = plan
 
   module {
@@ -505,10 +510,10 @@ run "agent_machine_groups_firewall_rules_multiline" {
   }
 
   variables {
-    agent_machine_groups = { a = { firewall_rules = ["accept\n"], machines = { "00" = { name = "00", address = "192.0.2.20" } } } }
+    agent_groups = { a = { firewall_rules = ["accept\n"], machines = { "00" = { name = "00", address = "192.0.2.20" } } } }
   }
 
-  expect_failures = [var.agent_machine_groups]
+  expect_failures = [var.agent_groups]
 }
 
 run "k3s_version_v_prefix" {
@@ -575,13 +580,13 @@ run "kubelet_configs_not_list" {
   }
 
   variables {
-    kubelet_configs = { apiVersion = "kubelet.config.k8s.io/v1beta1", kind = "KubeletConfiguration" }
+    kubelet_configs = { content = { apiVersion = "kubelet.config.k8s.io/v1beta1", kind = "KubeletConfiguration" } }
   }
 
   expect_failures = [var.kubelet_configs]
 }
 
-run "kubelet_configs_not_objects" {
+run "kubelet_configs_without_content" {
   command = plan
 
   module {
@@ -589,7 +594,7 @@ run "kubelet_configs_not_objects" {
   }
 
   variables {
-    kubelet_configs = ["shutdownGracePeriod: 5m"]
+    kubelet_configs = [{ apiVersion = "kubelet.config.k8s.io/v1beta1", kind = "KubeletConfiguration" }]
   }
 
   expect_failures = [var.kubelet_configs]
@@ -603,7 +608,7 @@ run "kubelet_configs_missing_api_version" {
   }
 
   variables {
-    kubelet_configs = [{ kind = "KubeletConfiguration" }]
+    kubelet_configs = [{ content = { kind = "KubeletConfiguration" } }]
   }
 
   expect_failures = [var.kubelet_configs]
@@ -617,10 +622,94 @@ run "kubelet_configs_wrong_kind" {
   }
 
   variables {
-    kubelet_configs = [{ apiVersion = "kubelet.config.k8s.io/v1beta1", kind = "KubeProxyConfiguration" }]
+    kubelet_configs = [{ content = { apiVersion = "kubelet.config.k8s.io/v1beta1", kind = "KubeProxyConfiguration" } }]
   }
 
   expect_failures = [var.kubelet_configs]
+}
+
+run "kubelet_configs_unknown_group" {
+  command = plan
+
+  module {
+    source = "../"
+  }
+
+  variables {
+    kubelet_configs = [{ groups = ["servers"], content = { apiVersion = "kubelet.config.k8s.io/v1beta1", kind = "KubeletConfiguration" } }]
+  }
+
+  expect_failures = [var.kubelet_configs]
+}
+
+run "kubelet_configs_groups_not_list" {
+  command = plan
+
+  module {
+    source = "../"
+  }
+
+  variables {
+    kubelet_configs = [{ groups = "server", content = { apiVersion = "kubelet.config.k8s.io/v1beta1", kind = "KubeletConfiguration" } }]
+  }
+
+  expect_failures = [var.kubelet_configs]
+}
+
+run "kubelet_configs_empty_groups" {
+  command = plan
+
+  module {
+    source = "../"
+  }
+
+  variables {
+    kubelet_configs = [{ groups = [], content = { apiVersion = "kubelet.config.k8s.io/v1beta1", kind = "KubeletConfiguration" } }]
+  }
+
+  expect_failures = [var.kubelet_configs]
+}
+
+run "files_empty_groups" {
+  command = plan
+
+  module {
+    source = "../"
+  }
+
+  variables {
+    files = { "a.yaml" = { groups = [], content = "a: 1" } }
+  }
+
+  expect_failures = [var.files]
+}
+
+run "files_unknown_group" {
+  command = plan
+
+  module {
+    source = "../"
+  }
+
+  variables {
+    files = { "a.yaml" = { groups = ["missing"], content = "a: 1" } }
+  }
+
+  expect_failures = [var.files]
+}
+
+run "agent_groups_named_server" {
+  command = plan
+
+  module {
+    source = "../"
+  }
+
+  variables {
+    agent_groups = { server = { machines = { "00" = { name = "00", address = "192.0.2.20" } } } }
+  }
+
+  expect_failures = [var.agent_groups]
 }
 
 run "registries_config_not_object" {

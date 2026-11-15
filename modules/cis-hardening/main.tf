@@ -2,13 +2,8 @@ terraform {
   required_version = ">= 1.15.0"
 }
 
-output "all_nodes_config" {
-  type = object({
-    protect_kernel_defaults = bool
-    selinux                 = bool
-    kubelet_arg             = map(string)
-  })
-  value = {
+locals {
+  agent_config = {
     protect_kernel_defaults = true
     selinux                 = true
     kubelet_arg = {
@@ -18,16 +13,28 @@ output "all_nodes_config" {
       "seccomp-default"                   = var.seccomp_default
     }
   }
-  description = "CIS hardening configuration options that apply to all nodes."
 }
 
-output "server_nodes_config" {
+output "agent_config" {
   type = object({
+    protect_kernel_defaults = bool
+    selinux                 = bool
+    kubelet_arg             = map(string)
+  })
+  value       = local.agent_config
+  description = "CIS hardening K3s configuration options for agent_groups.<name>.config."
+}
+
+output "server_config" {
+  type = object({
+    protect_kernel_defaults     = bool
+    selinux                     = bool
+    kubelet_arg                 = map(string)
     secrets_encryption          = bool
     kube_apiserver_arg          = map(string)
     kube_controller_manager_arg = map(string)
   })
-  value = {
+  value = merge(local.agent_config, {
     secrets_encryption = true
     kube_apiserver_arg = {
       "enable-admission-plugins"                = join(",", concat(["NodeRestriction", "EventRateLimit"], var.deny_service_external_ips ? ["DenyServiceExternalIPs"] : []))
@@ -42,14 +49,17 @@ output "server_nodes_config" {
     kube_controller_manager_arg = {
       "terminated-pod-gc-threshold" = var.terminated_pod_gc_threshold
     }
-  }
-  description = "CIS hardening configuration options that apply to server nodes."
+  })
+  description = "CIS hardening K3s configuration options for server_group.config."
 }
 
 output "files" {
-  type = map(string)
+  type = map(object({
+    groups  = list(string)
+    content = string
+  }))
   value = {
-    "admission-control.yaml" = yamlencode({
+    "admission-control.yaml" = { groups = ["server"], content = yamlencode({
       apiVersion = "apiserver.config.k8s.io/v1"
       kind       = "AdmissionConfiguration"
       plugins = [
@@ -82,12 +92,12 @@ output "files" {
           }
         }
       ]
-    })
-    "audit.yaml" = yamlencode({
+    }) }
+    "audit.yaml" = { groups = ["server"], content = yamlencode({
       apiVersion = "audit.k8s.io/v1"
       kind       = "Policy"
       rules      = var.audit_policy_rules
-    })
+    }) }
   }
-  description = "Files copied to machines necessary for CIS hardening."
+  description = "CIS hardening files for the files variable, selecting the server group."
 }

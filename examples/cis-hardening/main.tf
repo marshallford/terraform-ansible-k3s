@@ -15,7 +15,8 @@ module "k3s" {
     agent  = "some-token"
   }
 
-  server_machines = {
+  server_group = {
+    config = module.k3s_cis_hardening.server_config
     machines = {
       a = {
         name    = "a"
@@ -24,7 +25,17 @@ module "k3s" {
     }
   }
 
-  all_nodes_config    = module.k3s_cis_hardening.all_nodes_config
-  server_nodes_config = module.k3s_cis_hardening.server_nodes_config
-  files               = module.k3s_cis_hardening.files
+  agent_groups = {
+    a = {
+      config = module.k3s_cis_hardening.agent_config
+      machines = {
+        a = {
+          name    = "a"
+          address = "192.168.1.101"
+        }
+      }
+    }
+  }
+
+  files = module.k3s_cis_hardening.files
 }

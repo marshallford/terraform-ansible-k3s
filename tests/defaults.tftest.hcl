@@ -1,9 +1,9 @@
 mock_provider "ansible" {}
 
 variables {
-  api_server      = { virtual_ip = "192.0.2.100", virtual_router_id = 1 }
-  tokens          = { server = "server", agent = "agent" }
-  server_machines = { machines = { "00" = { name = "00", address = "192.0.2.10" } } }
+  api_server   = { virtual_ip = "192.0.2.100", virtual_router_id = 1 }
+  tokens       = { server = "server", agent = "agent" }
+  server_group = { machines = { "00" = { name = "00", address = "192.0.2.10" } } }
 }
 
 run "role_defaults_match_variable_defaults" {

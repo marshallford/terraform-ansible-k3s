@@ -8,15 +8,15 @@ locals {
       children = {
         servers = {
           vars = {
-            ansible_user = var.server_machines.ssh.user
-            ansible_port = var.server_machines.ssh.port
+            ansible_user = var.server_group.ssh.user
+            ansible_port = var.server_group.ssh.port
           }
-          hosts = { for machine in var.server_machines.machines : "server-${machine.name}" => {
+          hosts = { for machine in var.server_group.machines : "server-${machine.name}" => {
             ansible_host = machine.address
           } }
         }
         agents = {
-          children = { for group_name, group in var.agent_machine_groups : "agents_${group_name}" => {
+          children = { for group_name, group in var.agent_groups : "agents_${group_name}" => {
             vars = {
               ansible_user = group.ssh.user
               ansible_port = group.ssh.port
